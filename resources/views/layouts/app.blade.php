@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}"> <!-- CSRF Token -->
 
-    <link rel="icon" href="{{ asset('/images/csj.png') }}" type="image/gif" sizes="17x15">
+    <link rel="icon" href="{{ asset('/images/krr.png') }}" type="image/gif" sizes="17x15">
     <title style="font-size: 20px">{{ config('app.name', 'Laravel') }}</title>
     <!-- Scripts -->
     <!-- JQuery -->

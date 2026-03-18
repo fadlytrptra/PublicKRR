@@ -14,8 +14,15 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    // return view('home');
-    abort(403);
+    return view('home');
+    // abort(403);
 });
+
+Route::get('SuratJalan-data', [App\Http\Controllers\SuratJalan\SuratJalanPesananController::class, 'data'])->name('SuratJalan.data');
+Route::get('SuratJalan/list-data', [App\Http\Controllers\SuratJalan\SuratJalanPesananController::class, 'listData'])->name('SuratJalan.listData');
+Route::get('SuratJalan/get-emails/{id_pengiriman}', [App\Http\Controllers\SuratJalan\SuratJalanPesananController::class, 'getEmails']);
+Route::post('SuratJalan/send-otp', [App\Http\Controllers\SuratJalan\SuratJalanPesananController::class, 'sendOtp']);
+Route::post('SuratJalan/verify-otp', [App\Http\Controllers\SuratJalan\SuratJalanPesananController::class, 'verifyOtp']);
 Route::resource('SuratJalan', App\Http\Controllers\SuratJalan\SuratJalanPesananController::class);
+
 Route::resource('Dokumen', App\Http\Controllers\SuratJalan\VerifyDokumenController::class);

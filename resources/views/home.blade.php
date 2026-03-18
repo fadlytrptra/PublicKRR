@@ -7,7 +7,10 @@
                     <div class="card-header">Product Receipt</div>
                     <div class="card-body">
                         <div style="overflow: auto;">
-                            <h1>silahkan scan qr barcode dari kami</h1>
+                            {{-- <h1>silahkan scan qr barcode dari kami</h1> --}}
+                            <a href="{{ route('SuratJalan.index') }}" class="btn btn-primary">
+                                Surat Jalan
+                            </a>
                         </div>
                     </div>
                 </div>
