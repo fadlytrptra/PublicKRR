@@ -26,7 +26,7 @@
         <p>No Surat Jalan : <b>{{ $header->IDPengiriman }}</b></p>
         <p>
             Tanggal :
-            {{ date('d-m-Y H:i:s', strtotime($header->TglKirim)) }}
+            {{ $header->TglKirim }}
         </p>
     </div>
 
@@ -79,8 +79,44 @@
                     </tr>
                     @endforelse
                 </tbody>
-
             </table>
+        </div>
+    </div>
+
+    <div class="card mt-4 shadow-sm border-0">
+        <div class="card-body">
+
+            {{-- DIKELUARKAN --}}
+            <p class="fw-bold mb-1">
+                Dikeluarkan Oleh <i>Logistic Manager</i>
+            </p>
+            <p class="fw-bold mb-0">
+                {{ $header->NamaExpeditor ?? 'BELUM ADA EXPEDITOR' }}
+            </p>
+            <p class="fw-bold">
+                {{ $header->TglKirim ?? '-' }}
+            </p>
+
+            <br>
+
+            {{-- DIKIRIM --}}
+            <p class="fw-bold mb-1">
+                Dikirim Oleh {{ $header->PengirimNama ?? 'BELUM DIKIRIM' }}
+            </p>
+            <p class="fw-bold">
+                {{ $header->TglPengirim ?? '-' }}
+            </p>
+
+            <br>
+
+            {{-- DITERIMA --}}
+            <p class="fw-bold mb-1">
+                Diterima Oleh {{ $header->NamaCust ?? 'BELUM DITERIMA' }}
+            </p>
+            <p class="fw-bold">
+                {{ $header->TglAcc ?? '-' }}
+            </p>
+
         </div>
     </div>
 

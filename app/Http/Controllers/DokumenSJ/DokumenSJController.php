@@ -51,7 +51,12 @@ class DokumenSJController extends Controller
                 'TrukNopol',
                 'No_PO',
                 'AlamatCustomer',
-                'AlamatKirimDO'
+                'AlamatKirimDO',
+                'NamaSatpam',
+                'TglAccSatpam',
+                'NamaSupir',
+                'TglTTSupir',
+                'TglAcc'
             ])
             ->get();
 
@@ -61,8 +66,23 @@ class DokumenSJController extends Controller
 
         $header = $data->first();
 
+        // Format tanggal kirim
         $header->TglKirim = $header->TglKirim
             ? Carbon::parse($header->TglKirim)->format('d-m-Y H:i:s')
+            : '-';
+
+        // LOGIC SATPAM ATAU SUPIR (PRIORITAS SATPAM)
+        $header->PengirimNama = $header->NamaSatpam ?: $header->NamaSupir;
+        $header->TglPengirim  = $header->TglAccSatpam ?: $header->TglTTSupir;
+
+        // FORMAT TANGGAL SATPAM ATAU SUPIR
+        $header->TglPengirim = $header->TglPengirim
+            ? Carbon::parse($header->TglPengirim)->format('d-m-Y H:i:s')
+            : '-';
+
+        // FORMAT TANGGAL DITERIMA
+        $header->TglAcc = $header->TglAcc
+            ? Carbon::parse($header->TglAcc)->format('d-m-Y H:i:s')
             : '-';
 
         return view('DokumenSJ.index', compact('header', 'data'));
