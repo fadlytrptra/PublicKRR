@@ -37,7 +37,7 @@ class SuratJalanPesananController extends Controller
             abort(404);
         }
 
-        $otp = DB::table('SuratJalanOTP')
+        $otp = DB::table('T_SuratJalanOTP')
             ->where('IdSuratJalan', $row->IdSuratJalan)
             ->where('IsUsed', 1)
             ->latest('ApprovedAt')
@@ -151,7 +151,7 @@ class SuratJalanPesananController extends Controller
                 'error' => 'Data pengiriman tidak ditemukan'
             ], 404);
         }
-        $lastOtp = DB::table('SuratJalanOTP')
+        $lastOtp = DB::table('T_SuratJalanOTP')
             ->where('IdSuratJalan', $idSuratJalan)
             ->where('Email', $request->email)
             ->latest('CreatedAt')
@@ -163,7 +163,7 @@ class SuratJalanPesananController extends Controller
             ], 400);
         }
 
-        DB::table('SuratJalanOTP')->insert([
+        DB::table('T_SuratJalanOTP')->insert([
             'IdSuratJalan' => $idSuratJalan,
             'Email' => $request->email,
             'OTP' => $otp,
@@ -203,7 +203,7 @@ class SuratJalanPesananController extends Controller
             ], 404);
         }
 
-        $otp = DB::table('SuratJalanOTP')
+        $otp = DB::table('T_SuratJalanOTP')
             ->where('IdSuratJalan', $idSuratJalan)
             ->where('Email', $request->email)
             ->where('OTP', $request->otp)
@@ -224,8 +224,9 @@ class SuratJalanPesananController extends Controller
                 'ACCCustomer' => 1
             ]);
 
-        DB::table('SuratJalanOTP')
-            ->where('IdOTP', $otp->IdOTP)
+        DB::connection('ConnPublic')
+            ->table('T_SuratJalanOTP')
+            ->where('Id', $otp->Id)
             ->update([
                 'IsUsed' => 1,
                 'ApprovedAt' => $now
