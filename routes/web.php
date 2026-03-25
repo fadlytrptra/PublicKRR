@@ -25,4 +25,5 @@ Route::post('SuratJalan/send-otp', [App\Http\Controllers\SuratJalan\SuratJalanPe
 Route::post('SuratJalan/verify-otp', [App\Http\Controllers\SuratJalan\SuratJalanPesananController::class, 'verifyOtp']);
 Route::resource('SuratJalan', App\Http\Controllers\SuratJalan\SuratJalanPesananController::class);
 
+Route::resource('DokumenSJ', App\Http\Controllers\DokumenSJ\DokumenSJController::class);
 Route::resource('Dokumen', App\Http\Controllers\SuratJalan\VerifyDokumenController::class);

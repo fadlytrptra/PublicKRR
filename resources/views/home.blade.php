@@ -11,6 +11,9 @@
                             <a href="{{ route('SuratJalan.index') }}" class="btn btn-primary">
                                 Surat Jalan
                             </a>
+                            <a href="{{ route('DokumenSJ.index') }}" class="btn btn-success ms-2">
+                                Dokumen SJ
+                            </a>
                         </div>
                     </div>
                 </div>
