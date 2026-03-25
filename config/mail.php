@@ -77,6 +77,21 @@ return [
                 'log',
             ],
         ],
+
+        'MailSales' => [
+            'transport' => 'smtp',
+            'host' => env('MAILSALES_HOST', 'smtp.mailgun.org'),
+            'port' => env('MAILSALES_PORT', 587),
+            'encryption' => env('MAILSALES_ENCRYPTION', 'tls'),
+            'username' => env('MAILSALES_USERNAME'),
+            'password' => env('MAILSALES_PASSWORD'),
+            'timeout' => null,
+            'auth_mode' => null,
+            'from' => [
+                'address' => env('MAILSALES_FROM_ADDRESS'),
+                'name' => env('MAILSALES_FROM_NAME'),
+            ],
+        ],
     ],
 
     /*

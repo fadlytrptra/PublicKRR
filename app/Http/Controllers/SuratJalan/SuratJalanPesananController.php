@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Encryption\Encrypter;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 
 class SuratJalanPesananController extends Controller
@@ -28,9 +30,21 @@ class SuratJalanPesananController extends Controller
 
     public function show($id_pengiriman)
     {
+        $encryptedId = $id_pengiriman;
+
+        $key = env('QR_SHARED_SECRET');
+        $cipher = 'AES-256-CBC';
+
+        $encrypter = new Encrypter($key, $cipher);
+        try {
+            $idPengiriman = $encrypter->decryptString(urldecode($encryptedId));
+        } catch (DecryptException $de) {
+            abort(404);
+        }
+
         $row = DB::connection('ConnPublic')
             ->table('T_KirimSuratJalan')
-            ->where('IDPengiriman', $id_pengiriman)
+            ->where('IDPengiriman', $idPengiriman)
             ->first();
 
         if (!$row) {
@@ -44,7 +58,7 @@ class SuratJalanPesananController extends Controller
             ->first();
 
         return view('SuratJalan.suratJalanPesanan', [
-            'id_pengiriman' => $id_pengiriman,
+            'id_pengiriman' => $idPengiriman,
             'no_po' => $row->No_PO,
             'otp' => $otp
         ]);
@@ -171,7 +185,7 @@ class SuratJalanPesananController extends Controller
             'CreatedAt' => $now
         ]);
 
-        Mail::raw("Kode OTP Verifikasi Anda: $otp", function ($message) use ($request) {
+        Mail::mailer('MailSales')->raw("Kode OTP Verifikasi Anda: $otp", function ($message) use ($request) {
             $message->to($request->email)
                 ->subject('OTP Approval Surat Jalan');
         });

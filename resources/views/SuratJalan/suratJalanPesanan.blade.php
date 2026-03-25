@@ -9,7 +9,7 @@
         <div class="col-11">
             <div class="card">
 
-                <div class="card-header">Surat Jalan Pesanan</div>
+                <div class="card-header">Product Receipt</div>
 
                 <div class="card-body">
 
