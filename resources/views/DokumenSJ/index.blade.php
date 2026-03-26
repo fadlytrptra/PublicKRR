@@ -101,7 +101,7 @@
 
             {{-- DIKIRIM --}}
             <p class="fw-bold mb-1">
-                Dikirim Oleh {{ $header->PengirimNama ?? 'BELUM DIKIRIM' }}
+                <i>Dikirim Oleh</i> {{ $header->PengirimNama ?? 'BELUM DIKIRIM' }}
             </p>
             <p class="fw-bold">
                 {{ $header->TglPengirim ?? '-' }}
@@ -111,10 +111,10 @@
 
             {{-- DITERIMA --}}
             <p class="fw-bold mb-1">
-                Diterima Oleh {{ $header->NamaCust ?? 'BELUM DITERIMA' }}
+                <i>Diterima Oleh</i> {{ $header->NamaCust ?? 'BELUM DITERIMA' }}
             </p>
             <p class="fw-bold">
-                {{ $header->TglAcc ?? '-' }}
+                {{ $header->TglApp ?? '-' }}
             </p>
 
         </div>

@@ -26,37 +26,40 @@ class DokumenSJController extends Controller
     public function show($id)
     {
         $data = DB::connection('ConnPublic')
-            ->table('T_KirimSuratJalan')
-            ->where('IDPengiriman', $id)
+            ->table('T_KirimSuratJalan as sj')
+            ->leftJoin('T_SuratJalanOTP as otp', function ($join) {
+                $join->on('otp.IdSuratJalan', '=', 'sj.IdSuratJalan')->whereNotNull('otp.ApprovedAt');
+            })
+            ->where('sj.IDPengiriman', $id)
             ->select([
-                'NamaType',
-                'Ket',
+                'sj.NamaType',
+                'sj.Ket',
 
                 DB::raw("
                     CASE
-                        WHEN RTRIM(SatJual) = RTRIM(satPrimer) THEN QtyPrimer
-                        WHEN RTRIM(SatJual) = RTRIM(satSekunder) THEN QtySekunder
-                        WHEN RTRIM(SatJual) = RTRIM(satTritier) THEN QtyTritier
+                        WHEN RTRIM(sj.SatJual) = RTRIM(sj.satPrimer) THEN sj.QtyPrimer
+                        WHEN RTRIM(sj.SatJual) = RTRIM(sj.satSekunder) THEN sj.QtySekunder
+                        WHEN RTRIM(sj.SatJual) = RTRIM(sj.satTritier) THEN sj.QtyTritier
                         ELSE 0
                     END as QtyJual
                 "),
 
-                DB::raw("RTRIM(SatJual) as SatJual"),
+                DB::raw("RTRIM(sj.SatJual) as SatJual"),
 
                 // HEADER
-                'IDPengiriman',
-                'TglKirim',
-                'NamaCust',
-                'NamaExpeditor',
-                'TrukNopol',
-                'No_PO',
-                'AlamatCustomer',
-                'AlamatKirimDO',
-                'NamaSatpam',
-                'TglAccSatpam',
-                'NamaSupir',
-                'TglTTSupir',
-                'TglAcc'
+                'sj.IDPengiriman',
+                'sj.TglKirim',
+                'sj.NamaCust',
+                'sj.NamaExpeditor',
+                'sj.TrukNopol',
+                'sj.No_PO',
+                'sj.AlamatCustomer',
+                'sj.AlamatKirimDO',
+                'sj.NamaSatpam',
+                'sj.TglAccSatpam',
+                'sj.NamaSupir',
+                'sj.TglTTSupir',
+                'otp.ApprovedAt as TglApp'
             ])
             ->get();
 
@@ -66,7 +69,7 @@ class DokumenSJController extends Controller
 
         $header = $data->first();
 
-        // Format tanggal kirim
+        // tanggal kirim
         $header->TglKirim = $header->TglKirim
             ? Carbon::parse($header->TglKirim)->format('d-m-Y H:i:s')
             : '-';
@@ -75,14 +78,14 @@ class DokumenSJController extends Controller
         $header->PengirimNama = $header->NamaSatpam ?: $header->NamaSupir;
         $header->TglPengirim  = $header->TglAccSatpam ?: $header->TglTTSupir;
 
-        // FORMAT TANGGAL SATPAM ATAU SUPIR
+        // TANGGAL SATPAM ATAU SUPIR
         $header->TglPengirim = $header->TglPengirim
             ? Carbon::parse($header->TglPengirim)->format('d-m-Y H:i:s')
             : '-';
 
-        // FORMAT TANGGAL DITERIMA
-        $header->TglAcc = $header->TglAcc
-            ? Carbon::parse($header->TglAcc)->format('d-m-Y H:i:s')
+        // TANGGAL DITERIMA CUSTOMER
+        $header->TglApp = $header->TglApp
+            ? Carbon::parse($header->TglApp)->format('d-m-Y H:i:s')
             : '-';
 
         return view('DokumenSJ.index', compact('header', 'data'));
