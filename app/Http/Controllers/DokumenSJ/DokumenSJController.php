@@ -74,9 +74,9 @@ class DokumenSJController extends Controller
             ? Carbon::parse($header->TglKirim)->format('d-m-Y H:i:s')
             : '-';
 
-        // LOGIC SATPAM ATAU SUPIR (PRIORITAS SATPAM)
-        $header->PengirimNama = $header->NamaSatpam ?: $header->NamaSupir;
-        $header->TglPengirim  = $header->TglAccSatpam ?: $header->TglTTSupir;
+        // LOGIC SATPAM ATAU SUPIR (PRIORITAS SOPIR)
+        $header->PengirimNama = $header->NamaSupir ?: $header->NamaSatpam;
+        $header->TglPengirim  = $header->TglTTSupir ?: $header->TglAccSatpam;
 
         // TANGGAL SATPAM ATAU SUPIR
         $header->TglPengirim = $header->TglPengirim

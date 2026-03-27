@@ -18,11 +18,13 @@ Route::get('/', function () {
     // abort(403);
 });
 
+
 Route::get('SuratJalan-data', [App\Http\Controllers\SuratJalan\SuratJalanPesananController::class, 'data'])->name('SuratJalan.data');
 Route::get('SuratJalan/list-data', [App\Http\Controllers\SuratJalan\SuratJalanPesananController::class, 'listData'])->name('SuratJalan.listData');
 Route::get('SuratJalan/get-emails/{id_pengiriman}', [App\Http\Controllers\SuratJalan\SuratJalanPesananController::class, 'getEmails']);
 Route::post('SuratJalan/send-otp', [App\Http\Controllers\SuratJalan\SuratJalanPesananController::class, 'sendOtp']);
 Route::post('SuratJalan/verify-otp', [App\Http\Controllers\SuratJalan\SuratJalanPesananController::class, 'verifyOtp']);
+Route::post('/SuratJalan/resend-email', [App\Http\Controllers\SuratJalan\SuratJalanPesananController::class, 'resendEmail']);
 Route::resource('SuratJalan', App\Http\Controllers\SuratJalan\SuratJalanPesananController::class);
 
 Route::resource('DokumenSJ', App\Http\Controllers\DokumenSJ\DokumenSJController::class);

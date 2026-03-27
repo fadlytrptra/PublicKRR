@@ -2,3 +2,16 @@
 #tableSuratJalan th {
     text-align: left;
 }
+
+#btnResendEmail {
+    background-color: #ff7f07;
+    color: #fff;
+    border: 1px solid #e0a800;
+    transition: all 0.3s ease;
+}
+
+#btnResendEmail:hover {
+    background-color: #e66f00; /* lebih gelap */
+    transform: translateY(-1px); /* sedikit naik */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* efek shadow */
+}

@@ -106,6 +106,36 @@ return [
             'trust_server_certificate' => true,
         ],
 
+        'ConnEDP' => [
+            'driver' => 'sqlsrv',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_HOST_FIRST', '127.0.0.1'),
+            'port' => env('DB_PORT_FIRST', '1433'),
+            'database' => env('DB_DATABASE_FIRST', 'forge'),
+            'username' => env('DB_USERNAME_FIRST', 'forge'),
+            'password' => env('DB_PASSWORD_FIRST', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'encrypt' => 'yes',
+            'trust_server_certificate' => true,
+        ],
+
+        'ConnSales' => [
+            'driver' => 'sqlsrv',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_HOST_SECOND', '127.0.0.1'),
+            'port' => env('DB_PORT_SECOND', '1433'),
+            'database' => env('DB_DATABASE_SECOND', 'forge'),
+            'username' => env('DB_USERNAME_SECOND', 'forge'),
+            'password' => env('DB_PASSWORD_SECOND', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'encrypt' => 'yes',
+            'trust_server_certificate' => true,
+        ],
+
     ],
 
     /*

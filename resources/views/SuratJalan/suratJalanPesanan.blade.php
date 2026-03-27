@@ -63,7 +63,14 @@
                             <div id="approvalInfo" class="mt-2 text-success" style="{{ isset($otp) && $otp ? '' : 'display:none;' }}">
                                 <div><strong>Approved By:</strong> <span id="approvedEmail"></span></div>
                                 <div><strong>Approved At:</strong> <span id="approvedAt"></span></div>
+
+                                <!--Resend Email-->
+                                <button id="btnResendEmail"
+                                    class="btn w-100 mt-2 fw-bold">
+                                    Resend Email
+                                </button>
                             </div>
+                            <br>
                         </div>
                     </div>
 

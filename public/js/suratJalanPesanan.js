@@ -150,6 +150,34 @@ jQuery(function ($) {
 
     });
 
+    $('#btnResendEmail').click(function () {
+
+        let email = $('#approvedEmail').text().trim();
+        let idPengiriman = window.appData?.idPengiriman;
+
+        if (!email) {
+            alert('Email approval tidak ditemukan');
+            return;
+        }
+
+        $('#btnResendEmail').prop('disabled', true).text('Sending...');
+
+        $.post('/SuratJalan/resend-email', {
+            id_pengiriman: idPengiriman,
+            email: email
+        })
+        .done(function (res) {
+            alert(res.message || 'Email berhasil dikirim');
+        })
+        .fail(function (xhr) {
+            alert(xhr.responseJSON?.message ?? 'Gagal kirim email');
+        })
+        .always(function () {
+            $('#btnResendEmail').prop('disabled', false).text('Resend Email');
+        });
+
+    });
+
     // =============================
     // HELPER
     // =============================

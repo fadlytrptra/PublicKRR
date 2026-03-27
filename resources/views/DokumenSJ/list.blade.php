@@ -20,9 +20,9 @@
             @forelse($list as $i => $item)
             <tr>
                 <td class="text-center">{{ $i + 1 }}</td>
-                <td>{{ $item->IDPengiriman }}</td>
-                <td>{{ \Carbon\Carbon::parse($item->TglKirim)->format('d-m-Y') }}</td>
-                <td>{{ $item->NamaCust }}</td>
+                <td class="text-center">{{ $item->IDPengiriman }}</td>
+                <td class="text-center">{{ \Carbon\Carbon::parse($item->TglKirim)->format('d-m-Y') }}</td>
+                <td class="text-center">{{ $item->NamaCust }}</td>
                 <td class="text-center">
                     <a href="{{ route('DokumenSJ.show', $item->IDPengiriman) }}"
                        class="btn btn-sm btn-success">

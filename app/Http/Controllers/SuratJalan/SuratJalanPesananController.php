@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Encryption\Encrypter;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\Encryption\DecryptException;
 
 
@@ -250,6 +251,102 @@ class SuratJalanPesananController extends Controller
             'status' => 'Approved',
             'email' => $request->email,
             'approved_at' => $now
+        ]);
+    }
+
+    public function resendEmail(Request $request)
+    {
+        $request->validate([
+            'id_pengiriman' => 'required',
+            'email' => 'required'
+        ]);
+
+        $items = DB::connection('ConnSales')
+            ->table('VW_PRG_1486_SLS_CETAK_SJ')
+            ->where('IDPengiriman', $request->id_pengiriman)
+            ->first();
+
+        if (!$items) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data Surat Jalan tidak ditemukan'
+            ]);
+        }
+
+        /* ===============================
+        * AMBIL TTD
+        * =============================== */
+        $ttdBinary1 = null;
+
+        if (!empty($items->AccMrg)) {
+            $ttdBinary1 = DB::connection('ConnEDP')
+                ->table('dbo.UserMaster')
+                ->where('NomorUser', $items->AccMrg)
+                ->value('FotoTtd');
+        }
+
+        $convertToBase64 = function ($fotoTtd) {
+            if (empty($fotoTtd)) return null;
+
+            if (str_starts_with($fotoTtd, 'data:image')) {
+                return $fotoTtd;
+            }
+
+            return 'data:image/png;base64,' . $fotoTtd;
+        };
+
+        $ttdBase64_1 = $convertToBase64($ttdBinary1);
+
+        /* ===============================
+        * VALIDASI EMAIL
+        * =============================== */
+        $emailString = $request->email;
+
+        $emails = array_map('trim', explode(',', $emailString));
+
+        $invalidEmails = [];
+
+        foreach ($emails as $email) {
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $invalidEmails[] = $email;
+            }
+        }
+
+        if (!empty($invalidEmails)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email tidak valid: ' . implode(', ', $invalidEmails)
+            ]);
+        }
+
+        /* ===============================
+        * GENERATE PDF
+        * =============================== */
+        $pdf = Pdf::loadView('SuratJalan.SuratJalanPDF', [
+            'items' => $items,
+            'ttdBase64_1' => $ttdBase64_1,
+        ])->setPaper('A4', 'portrait');
+
+        /* ===============================
+        * KIRIM EMAIL
+        * =============================== */
+        Mail::mailer('MailSales')->send([], [], function ($message) use ($emails, $request, $pdf) {
+            $message->to($emails)
+                ->subject("Surat Jalan {$request->id_pengiriman}")
+                ->html("
+                    Berikut adalah Surat Jalan dengan nomor <b>{$request->id_pengiriman}</b>.<br>
+                    Silakan cek dokumen terlampir.
+                ")
+                ->attachData(
+                    $pdf->output(),
+                    "Surat Jalan {$request->id_pengiriman}.pdf",
+                    ['mime' => 'application/pdf']
+                );
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Email berhasil dikirim ke ' . implode(', ', $emails)
         ]);
     }
 
