@@ -24,11 +24,42 @@
 </head>
 
 <body>
-    <div>
-        <main class="py-4">
-            @yield('content')
-        </main>
-    </div>
+    <nav class="navbar navbar-light bg-white shadow sticky-top px-4 py-3">
+        <div class="ms-auto d-flex align-items-center gap-2">
+            @if(session('user'))
+                <span class="fw-semibold nav_font">
+                    {{ session('user')->NamaUser }} |
+                </span>
+
+                <form action="{{ url('/logout') }}" method="POST" class="m-0">
+                    @csrf
+                    <button type="submit" class="no-border nav_font">
+                        Logout
+                    </button>
+                </form>
+            @endif
+        </div>
+    </nav>
+
+    <main class="py-4">
+        @yield('content')
+    </main>
 </body>
+
+<style>
+    .no-border {
+        border: none;
+        background: none;
+        padding: 0;
+        margin: 0;
+        color: #000308;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .nav_font {
+        font-size: 19px;
+    }
+</style>
 
 </html>
