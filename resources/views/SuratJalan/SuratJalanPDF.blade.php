@@ -29,7 +29,8 @@
             <td style="width:50%; vertical-align:top; border:1px solid black; padding:8px;">
                 <h5 style="margin:0;">Kepada Yth.</h5>
                 <h5 style="margin:0;">{{ $items->NamaCust }}</h5>
-                <p style="margin:0;">{{ $items->Alamat }}</p>
+                <p style="margin:0;">{{ $items->AlamatCustomer }}<br>
+                                     {{ $items->KotaCustomer }}</p>
             </td>
 
             <!-- RIGHT SIDE -->
@@ -62,16 +63,24 @@
         </tr>
     </table>
     @php
-        $satuanUmum = '';
-        $jumlahUmum = '';
-        if ($items->Satuan == trim($items->satSekunder)) {
-            $satuanUmum = trim($items->satSekunder);
-            $jumlahUmum = number_format($items->QtySekunder, 0, ',', '.');
-        } elseif ($items->Satuan == trim($items->SatTRitier)) {
-            $satuanUmum = trim($items->SatTRitier);
-            $jumlahUmum = number_format($items->QtyTritier, 0, ',', '.');
+        $satJual = strtoupper(trim($items->satJual ?? ''));
+        $satPrimer = strtoupper(trim($items->satPrimer ?? ''));
+        $satSekunder = strtoupper(trim($items->satSekunder ?? ''));
+        $satTritier = strtoupper(trim($items->satTritier ?? ''));
+        $satuanUmum = $satJual;
+        $jumlahUmum = 0;
+
+        if ($satJual == $satPrimer) {
+            $jumlahUmum = $items->QtyPrimer;
+        } elseif ($satJual == $satSekunder) {
+            $jumlahUmum = $items->QtySekunder;
+        } elseif ($satJual == $satTritier) {
+            $jumlahUmum = $items->QtyTritier;
         }
+
+        $jumlahUmum = number_format($jumlahUmum ?? 0, 0, ',', '.');
     @endphp
+
     <table style="border: 1px solid black;width: 100%;border-collapse: collapse;margin-top: 10px;">
         <tr>
             <th style="border: 1px solid black;padding:8px">Uraian</th>
@@ -79,9 +88,9 @@
             <th style="border: 1px solid black;padding:8px">Jumlah</th>
         </tr>
         <tr>
-            <td style="border: 1px solid black;padding:8px">{{ $items->NAMATYPEBARANG }} <br> {{ $items->NamaType }}
+            <td style="border: 1px solid black;padding:8px">{{ $items->NamaKelompokUtama ?? '' }} <br> {{ $items->NamaType }}
                 <br>
-                {{ $items->NO_PO }}
+                {{ $items->No_PO }}
             </td>
             <td style="border: 1px solid black;padding:8px">{{ trim($satuanUmum) }} <br> {{ trim($items->satPrimer) }}
             </td>
@@ -92,7 +101,7 @@
     </table>
     <div style="width: 98%;border: 1px solid black;margin-top: 10px;padding: 0.85%;">
         <h5>Syarat Penyerahan:</h5>
-        <p>Dikirim ke: {{ $items->AlamatKirim }}</p>
+        <p>Dikirim ke: {{ $items->AlamatKirimCustomer ?? $items->AlamatKirimDO }}</p>
     </div>
     <table style="width:100%; margin-top:10px;" cellpadding="0" cellspacing="0">
         <tr>
@@ -112,16 +121,15 @@
                     <!-- Signature Area -->
                     <tr>
                         <td style="height:90px; vertical-align:bottom;">
-                            @if (!empty($ttdBase64_1))
-                                <img src="{{ $ttdBase64_1 }}" style="display:block; margin:0 auto; max-height:70px;">
+                            @if (!empty($ttdPengirim))
+                                <img src="{{ $ttdPengirim }}" style="display:block; margin:0 auto; max-height:70px;">
                             @endif
                         </td>
                     </tr>
 
-                    <!-- Name -->
                     <tr>
                         <td>
-                            {{ $items->NamaMng ?? '' }}
+                            {{ $namaPengirim ?? '-' }}
                         </td>
                     </tr>
 

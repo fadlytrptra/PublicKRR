@@ -92,32 +92,40 @@
         <form method="POST" action="/register" enctype="multipart/form-data">
             @csrf
 
+            @php
+                $data = session('showOtp') ? session('register_data') : null;
+            @endphp
+
             <label>Email</label>
-            <input type="email" name="Email" value="{{ old('Email') }}">
+            <input type="email" name="Email"
+                value="{{ old('Email', $data['Email'] ?? '') }}">
             @error('Email')
                 <div class="error">{{ $message }}</div>
             @enderror
 
             <label>Nama User</label>
-            <input type="text" name="NamaUser" value="{{ old('NamaUser') }}">
+            <input type="text" name="NamaUser"
+                value="{{ old('NamaUser', $data['NamaUser'] ?? '') }}">
             @error('NamaUser')
                 <div class="error">{{ $message }}</div>
             @enderror
 
             <label>Nama Perusahaan</label>
-            <input type="text" name="NamaPerusahaan" value="{{ old('NamaPerusahaan') }}">
+            <input type="text" name="NamaPerusahaan"
+                value="{{ old('NamaPerusahaan', $data['NamaPerusahaan'] ?? '') }}">
             @error('NamaPerusahaan')
                 <div class="error">{{ $message }}</div>
             @enderror
 
             <label>Alamat Perusahaan</label>
-            <textarea name="AlamatPerusahaan">{{ old('AlamatPerusahaan') }}</textarea>
+            <textarea name="AlamatPerusahaan">{{ old('AlamatPerusahaan', $data['AlamatPerusahaan'] ?? '') }}</textarea>
             @error('AlamatPerusahaan')
                 <div class="error">{{ $message }}</div>
             @enderror
 
             <label>No HP</label>
-            <input type="text" name="NoHP" value="{{ old('NoHP') }}">
+           <input type="text" name="NoHP"
+                value="{{ old('NoHP', $data['NoHP'] ?? '') }}">
             @error('NoHP')
                 <div class="error">{{ $message }}</div>
             @enderror
@@ -135,7 +143,8 @@
             </div> --}}
 
             <label>NPWP</label>
-            <input type="text" name="NPWP" value="{{ old('NPWP') }}">
+            <input type="text" name="NPWP"
+                value="{{ old('NPWP', $data['NPWP'] ?? '') }}">
             @error('NPWP')
                 <div class="error">{{ $message }}</div>
             @enderror
@@ -162,6 +171,33 @@
 
             <button type="submit" class="register">Register</button>
         </form>
+
+        @if(session('showOtp'))
+            <hr>
+
+            <h3>Verifikasi OTP</h3>
+
+            @if(session('success'))
+                <div style="color: green;">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <form method="POST" action="/verify-otp">
+                @csrf
+
+                <input type="hidden" name="email" value="{{ session('email') }}">
+
+                <label>Masukkan OTP</label>
+                <input type="text" name="otp" placeholder="6 digit OTP">
+
+                @error('otp')
+                    <div class="error">{{ $message }}</div>
+                @enderror
+
+                <button type="submit">Verifikasi</button>
+            </form>
+        @endif
 
        <a href="/" class="btn-back">Kembali ke Login</a>
     </div>

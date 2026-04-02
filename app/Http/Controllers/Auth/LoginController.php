@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class LoginController extends Controller
 {
@@ -23,20 +25,15 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        $data = [
+        $validator = Validator::make($request->all(), [
             'login' => 'required',
             'Password' => 'required'
-        ];
-
-        $validator = Validator::make($request->all(), $data);
+        ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
 
-        $currentTime = Carbon::now('Asia/Bangkok');
-
-        // cek user (email atau namauser)
         $user = DB::connection('ConnPublic')
             ->table('UserPublic')
             ->where(function ($query) use ($request) {
@@ -46,31 +43,40 @@ class LoginController extends Controller
             ->first();
 
         if (!$user) {
-            return back()->withErrors([
-                'error' => 'User tidak ditemukan'
-            ]);
+            return back()->withErrors(['error' => 'User tidak ditemukan']);
         }
 
-        // cek password
         if (!Hash::check($request->Password, $user->Password)) {
-            return back()->withErrors([
-                'error' => 'Password salah'
-            ]);
+            return back()->withErrors(['error' => 'Password salah']);
         }
 
         if ($user->Deactivated) {
+            return back()->withErrors(['error' => 'Akun tidak aktif']);
+        }
+
+        // cek email verification
+        if (!$user->EmailVerification) {
+            return redirect('/register')
+                ->withErrors(['error' => 'Email belum diverifikasi'])
+                ->with('showOtp', true)
+                ->with('email', $user->Email);
+        }
+
+        // cek verification
+        if (!$user->Verification) {
             return back()->withErrors([
-                'error' => 'Akun tidak aktif'
+                'error' => 'Data Anda sedang diverifikasi oleh admin'
             ]);
         }
 
+        session()->regenerate();
         session(['user' => $user]);
 
         DB::connection('ConnPublic')
             ->table('UserPublic')
             ->where('IdUser', $user->IdUser)
             ->update([
-                'LastLogin' => $currentTime
+                'LastLogin' => now()
             ]);
 
         return redirect('/home');
@@ -84,55 +90,109 @@ class LoginController extends Controller
 
     public function register(Request $request)
     {
-        $data = [
-            'Email' => 'required|email',
+        $validator = Validator::make($request->all(), [
+            'Email' => 'required|email|unique:ConnPublic.UserPublic,Email',
             'NamaUser' => 'required',
             'NamaPerusahaan' => 'required',
             'AlamatPerusahaan' => 'required',
             'NoHP' => 'required',
-            // 'TTCustomer' => 'required|image|mimes:jpg,jpeg,png|max:2048',
             'NPWP' => 'required',
             'Password' => 'required|min:6'
-        ];
-
-        $validator = Validator::make($request->all(), $data);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $exists = DB::connection('ConnPublic')
-            ->table('UserPublic')
-            ->where('Email', $request->Email)
-            ->exists();
-
-        if ($exists) {
-            return back()->withErrors(['Email' => 'Email sudah terdaftar']);
-        }
-
-        // // upload file
-        // $file = $request->file('TTCustomer');
-        // // convert ke base64
-        // $base64 = base64_encode(file_get_contents($file));
-        // // ambil mime type (penting biar bisa ditampilkan)
-        // $mime = $file->getMimeType();
-        // // format final base64 (data:image/png;base64,...)
-        // $base64Image = 'data:' . $mime . ';base64,' . $base64;
-
-
-        DB::connection('ConnPublic')->table('UserPublic')->insert([
-            'Email' => $request->Email,
-            'NamaUser' => $request->NamaUser,
-            'NamaPerusahaan' => $request->NamaPerusahaan,
-            'AlamatPerusahaan' => $request->AlamatPerusahaan,
-            'NoHP' => $request->NoHP,
-            // 'TTCustomer' => $base64Image,
-            'NPWP' => $request->NPWP,
-            'Password' => Hash::make($request->Password),
-            'RegistDate' => Carbon::now('Asia/Jakarta'),
-            'Deactivated' => 0
         ]);
 
-        return redirect('/')->with('success', 'Registrasi berhasil');
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $now = Carbon::now('Asia/Jakarta');
+        $otp = rand(100000, 999999);
+
+        session([
+            'register_data' => [
+                'Email' => $request->Email,
+                'NamaUser' => $request->NamaUser,
+                'NamaPerusahaan' => $request->NamaPerusahaan,
+                'AlamatPerusahaan' => $request->AlamatPerusahaan,
+                'NoHP' => $request->NoHP,
+                'NPWP' => $request->NPWP,
+                'Password' => Hash::make($request->Password),
+            ],
+            'register_otp' => $otp,
+            'register_expired' => $now->copy()->addMinutes(5),
+        ]);
+
+        // kirim email
+        Mail::mailer('MailSales')->raw(
+            "Kode OTP verifikasi akun Anda: $otp",
+            function ($message) use ($request) {
+                $message->to($request->Email)
+                    ->from(env('MAILSALES_FROM_ADDRESS'), env('MAILSALES_FROM_NAME'))
+                    ->subject('OTP Verifikasi Akun');
+            }
+        );
+
+        return back()
+            ->with('success', 'OTP telah dikirim ke ' . $request->Email)
+            ->with('showOtp', true)
+            ->with('email', $request->Email)
+            ->withInput();
+    }
+
+    public function verifyOtp(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'otp' => 'required'
+        ], [
+            'otp.required' => 'OTP wajib diisi'
+        ]);
+
+        $data = session('register_data');
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->with('showOtp', true)
+                ->with('email', $data['Email'] ?? null)
+                ->withInput();
+        }
+
+        $now = Carbon::now('Asia/Jakarta');
+
+        $sessionOtp = session('register_otp');
+        $expired = session('register_expired');
+
+        if (!$data) {
+            return back()->withErrors(['error' => 'Session expired, silakan register ulang']);
+        }
+
+        if ($request->otp != $sessionOtp || $now->gt($expired)) {
+            return back()
+                ->withErrors(['error' => 'OTP tidak valid / expired'])
+                ->with('showOtp', true)
+                ->with('email', $data['Email'])
+                ->withInput();
+        }
+
+        // INSERT KE DB
+        DB::connection('ConnPublic')
+            ->table('UserPublic')
+            ->insert([
+                'Email' => $data['Email'],
+                'NamaUser' => $data['NamaUser'],
+                'NamaPerusahaan' => $data['NamaPerusahaan'],
+                'AlamatPerusahaan' => $data['AlamatPerusahaan'],
+                'NoHP' => $data['NoHP'],
+                'NPWP' => $data['NPWP'],
+                'Password' => $data['Password'],
+                'RegistDate' => $now,
+                'Deactivated' => 0,
+                'Verification' => 0,
+                'EmailVerification' => $now
+            ]);
+
+        session()->forget(['register_data', 'register_otp', 'register_expired']);
+
+        return redirect('/')
+            ->with('success', 'Registrasi berhasil, menunggu approval admin');
     }
 }
