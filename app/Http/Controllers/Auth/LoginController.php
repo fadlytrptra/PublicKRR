@@ -90,14 +90,19 @@ class LoginController extends Controller
 
     public function register(Request $request)
     {
+        $npwp = preg_replace('/[^0-9]/', '', $request->NPWP);
+        $request->merge(['NPWP' => $npwp]);
+
         $validator = Validator::make($request->all(), [
             'Email' => 'required|email|unique:ConnPublic.UserPublic,Email',
             'NamaUser' => 'required',
             'NamaPerusahaan' => 'required',
             'AlamatPerusahaan' => 'required',
             'NoHP' => 'required',
-            'NPWP' => 'required',
+            'NPWP' => ['required', 'digits:16'],
             'Password' => 'required|min:6'
+        ], [
+            'NPWP.digits' => 'NPWP harus 16 digit',
         ]);
 
         if ($validator->fails()) {
@@ -114,14 +119,13 @@ class LoginController extends Controller
                 'NamaPerusahaan' => $request->NamaPerusahaan,
                 'AlamatPerusahaan' => $request->AlamatPerusahaan,
                 'NoHP' => $request->NoHP,
-                'NPWP' => $request->NPWP,
+                'NPWP' => $request->NPWP, // sudah bersih & 16 digit
                 'Password' => Hash::make($request->Password),
             ],
             'register_otp' => $otp,
             'register_expired' => $now->copy()->addMinutes(5),
         ]);
 
-        // kirim email
         Mail::mailer('MailSales')->raw(
             "Kode OTP verifikasi akun Anda: $otp",
             function ($message) use ($request) {

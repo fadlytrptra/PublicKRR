@@ -36,12 +36,11 @@ Route::post('SuratJalan/verify-otp', [SuratJalanPesananController::class, 'verif
 Route::post('SuratJalan/resend-email', [SuratJalanPesananController::class, 'resendEmail']);
 Route::resource('SuratJalan', SuratJalanPesananController::class);
 
+Route::resource('DokumenSJ', DokumenSJController::class);
+
 Route::middleware(['check.login'])->group(function () {
     Route::get('/home', function () {
         return view('home');
     })->name('home');
 
-
-    Route::resource('DokumenSJ', DokumenSJController::class);
-    Route::resource('Dokumen', VerifyDokumenController::class);
 });
