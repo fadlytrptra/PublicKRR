@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Encryption\Encrypter;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Encryption\DecryptException;
 
 
@@ -206,7 +207,6 @@ class SuratJalanPesananController extends Controller
 
         $now = Carbon::now('Asia/Jakarta');
 
-        // 🔥 FIX: mapping ke PK
         $idSuratJalan = DB::connection('ConnPublic')
             ->table('T_KirimSuratJalan')
             ->where('IDPengiriman', $request->id_pengiriman)
@@ -216,6 +216,17 @@ class SuratJalanPesananController extends Controller
             return response()->json([
                 'error' => 'Data tidak ditemukan'
             ], 404);
+        }
+
+        $alreadyApproved = DB::connection('ConnPublic')
+            ->table('T_KirimSuratJalan')
+            ->where('IdSuratJalan', $idSuratJalan)
+            ->value('ACCCustomer');
+
+        if ($alreadyApproved) {
+            return response()->json([
+                'error' => 'Sudah di-approve sebelumnya'
+            ], 400);
         }
 
         $otp = DB::table('T_SuratJalanOTP')
@@ -247,108 +258,24 @@ class SuratJalanPesananController extends Controller
                 'ApprovedAt' => $now
             ]);
 
+        // AUTO SEND EMAIL
+        try {
+            $this->sendSuratJalanEmail(
+                $request->id_pengiriman,
+                [$request->email]
+            );
+        } catch (\Exception $e) {
+            logger()->error('Gagal kirim email setelah OTP', [
+                'error' => $e->getMessage()
+            ]);
+        }
+
         return response()->json([
             'status' => 'Approved',
             'email' => $request->email,
             'approved_at' => $now
         ]);
     }
-
-    // public function resendEmail(Request $request)
-    // {
-    //     $request->validate([
-    //         'id_pengiriman' => 'required',
-    //         'email' => 'required'
-    //     ]);
-
-    //     $items = DB::connection('ConnSales')
-    //         ->table('VW_PRG_1486_SLS_CETAK_SJ')
-    //         ->where('IDPengiriman', $request->id_pengiriman)
-    //         ->first();
-
-    //     if (!$items) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Data Surat Jalan tidak ditemukan'
-    //         ]);
-    //     }
-
-    //     /* ===============================
-    //     * AMBIL TTD
-    //     * =============================== */
-    //     $ttdBinary1 = null;
-
-    //     if (!empty($items->AccMrg)) {
-    //         $ttdBinary1 = DB::connection('ConnEDP')
-    //             ->table('dbo.UserMaster')
-    //             ->where('NomorUser', $items->AccMrg)
-    //             ->value('FotoTtd');
-    //     }
-
-    //     $convertToBase64 = function ($fotoTtd) {
-    //         if (empty($fotoTtd)) return null;
-
-    //         if (str_starts_with($fotoTtd, 'data:image')) {
-    //             return $fotoTtd;
-    //         }
-
-    //         return 'data:image/png;base64,' . $fotoTtd;
-    //     };
-
-    //     $ttdBase64_1 = $convertToBase64($ttdBinary1);
-
-    //     /* ===============================
-    //     * VALIDASI EMAIL
-    //     * =============================== */
-    //     $emailString = $request->email;
-
-    //     $emails = array_map('trim', explode(',', $emailString));
-
-    //     $invalidEmails = [];
-
-    //     foreach ($emails as $email) {
-    //         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    //             $invalidEmails[] = $email;
-    //         }
-    //     }
-
-    //     if (!empty($invalidEmails)) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Email tidak valid: ' . implode(', ', $invalidEmails)
-    //         ]);
-    //     }
-
-    //     /* ===============================
-    //     * GENERATE PDF
-    //     * =============================== */
-    //     $pdf = Pdf::loadView('SuratJalan.SuratJalanPDF', [
-    //         'items' => $items,
-    //         'ttdBase64_1' => $ttdBase64_1,
-    //     ])->setPaper('A4', 'portrait');
-
-    //     /* ===============================
-    //     * KIRIM EMAIL
-    //     * =============================== */
-    //     Mail::mailer('MailSales')->send([], [], function ($message) use ($emails, $request, $pdf) {
-    //         $message->to($emails)
-    //             ->subject("Surat Jalan {$request->id_pengiriman}")
-    //             ->html("
-    //                 Berikut adalah Surat Jalan dengan nomor <b>{$request->id_pengiriman}</b>.<br>
-    //                 Silakan cek dokumen terlampir.
-    //             ")
-    //             ->attachData(
-    //                 $pdf->output(),
-    //                 "Surat Jalan {$request->id_pengiriman}.pdf",
-    //                 ['mime' => 'application/pdf']
-    //             );
-    //     });
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Email berhasil dikirim ke ' . implode(', ', $emails)
-    //     ]);
-    // }
 
     public function resendEmail(Request $request)
     {
@@ -357,21 +284,6 @@ class SuratJalanPesananController extends Controller
             'email' => 'required'
         ]);
 
-        $items = DB::connection('ConnPublic')
-            ->table('T_KirimSuratJalan')
-            ->where('IDPengiriman', $request->id_pengiriman)
-            ->first();
-
-        if (!$items) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data Surat Jalan tidak ditemukan'
-            ]);
-        }
-
-        /* ===============================
-        * VALIDASI EMAIL
-        * =============================== */
         $emails = array_map('trim', explode(',', $request->email));
 
         $invalidEmails = [];
@@ -389,48 +301,103 @@ class SuratJalanPesananController extends Controller
             ]);
         }
 
-        /* ===============================
-        * GENERATE PDF
-        * =============================== */
-        $namaPengirim = null;
-        $ttdPengirim = null;
-
-        if (!empty($items->NamaSupir) || !empty($items->GbrACCSupir)) {
-            $namaPengirim = $items->NamaSupir;
-            $ttdPengirim = $items->GbrACCSupir;
-        } elseif (!empty($items->NamaSatpam) || !empty($items->GbrACCSatpam)) {
-            $namaPengirim = $items->NamaSatpam;
-            $ttdPengirim = $items->GbrACCSatpam;
+        try {
+            $this->sendSuratJalanEmail(
+                $request->id_pengiriman,
+                $emails
+            );
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
         }
-
-
-        $pdf = Pdf::loadView('SuratJalan.SuratJalanPDF', [
-            'items' => $items,
-            'namaPengirim' => $namaPengirim,
-            'ttdPengirim' => $ttdPengirim,
-        ])->setPaper('A4', 'portrait');
-
-        /* ===============================
-        * KIRIM EMAIL
-        * =============================== */
-        Mail::mailer('MailSales')->send([], [], function ($message) use ($emails, $request, $pdf) {
-            $message->to($emails)
-                ->subject("Surat Jalan {$request->id_pengiriman}")
-                ->html("
-                    Berikut adalah Surat Jalan dengan nomor <b>{$request->id_pengiriman}</b>.<br>
-                    Silakan cek dokumen terlampir.
-                ")
-                ->attachData(
-                    $pdf->output(),
-                    "Surat Jalan {$request->id_pengiriman}.pdf",
-                    ['mime' => 'application/pdf']
-                );
-        });
 
         return response()->json([
             'success' => true,
             'message' => 'Email berhasil dikirim ke ' . implode(', ', $emails)
         ]);
+    }
+
+    public function sendSuratJalanEmail($idPengiriman, array $emails)
+    {
+        $items = DB::connection('ConnPublic')
+            ->table('T_KirimSuratJalan')
+            ->where('IDPengiriman', $idPengiriman)
+            ->first();
+
+        if (!$items) {
+            throw new \Exception('Data Surat Jalan tidak ditemukan');
+        }
+
+        // Helper universal
+        $formatBase64Image = function ($base64) {
+            if (empty($base64)) return null;
+
+            $clean = trim(str_replace(["\r", "\n"], '', $base64));
+            $binary = base64_decode($clean);
+
+            if ($binary === false) return null;
+
+            $mime = 'image/png';
+            if (substr($binary, 0, 2) === "\xFF\xD8") {
+                $mime = 'image/jpeg';
+            }
+
+            return "data:$mime;base64," . $clean;
+        };
+
+        // TTD internal
+        $barcodeGudang = $formatBase64Image($items->GbrACCGudang);
+        $barcodeSupir  = $formatBase64Image($items->GbrACCSupir);
+
+        // ✅ Customer sekarang dari tabel yang sama
+        $ttCustomer = $formatBase64Image($items->GbrACCCustomer);
+
+        // (opsional) kalau nama customer masih mau ditampilkan
+        $namaCustomer = DB::connection('ConnPublic')
+            ->table('CustomerUserPublic as cup')
+            ->join('UserPublic as up', 'cup.IdUser', '=', 'up.IdUser')
+            ->where('cup.IDCust', $items->IDCust)
+            ->value('up.NamaUser') ?? '-';
+
+        // Pengirim (supir / satpam)
+        $namaPengirim = null;
+        $ttdPengirim = null;
+
+        if (!empty($items->NamaSupir) || !empty($items->GbrACCSupir)) {
+            $namaPengirim = $items->NamaSupir;
+            $ttdPengirim = $barcodeSupir;
+        } elseif (!empty($items->NamaSatpam) || !empty($items->GbrACCSatpam)) {
+            $namaPengirim = $items->NamaSatpam;
+            $ttdPengirim = $formatBase64Image($items->GbrACCSatpam);
+        }
+
+        $pdf = Pdf::loadView('SuratJalan.SuratJalanPDF', [
+            'items' => $items,
+            'namaPengirim' => $namaPengirim,
+            'ttdPengirim' => $ttdPengirim,
+
+            // semua ttd
+            'barcodeGudang' => $barcodeGudang,
+            'barcodeSupir' => $barcodeSupir,
+            'ttCustomer' => $ttCustomer,
+            'namaCustomer' => $namaCustomer,
+        ])->setPaper('A4', 'portrait');
+
+        Mail::mailer('MailSales')->send([], [], function ($message) use ($emails, $idPengiriman, $pdf) {
+            $message->to($emails)
+                ->subject("Surat Jalan {$idPengiriman}")
+                ->html("
+                    Berikut adalah Surat Jalan dengan nomor <b>{$idPengiriman}</b>.<br>
+                    Silakan cek dokumen terlampir.
+                ")
+                ->attachData(
+                    $pdf->output(),
+                    "Surat Jalan {$idPengiriman}.pdf",
+                    ['mime' => 'application/pdf']
+                );
+        });
     }
 
     public function edit($id)

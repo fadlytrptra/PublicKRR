@@ -111,25 +111,39 @@
 
                 <!-- SIGNATURE TABLE -->
                 <table style="width:100%; text-align:center; border-bottom:1px solid black; border-collapse:collapse;">
-
                     <tr>
                         <td style="font-weight:bold;">
                             PENGIRIM,
                         </td>
                     </tr>
 
-                    <!-- Signature Area -->
-                    <tr>
-                        <td style="height:90px; vertical-align:bottom;">
-                            @if (!empty($ttdPengirim))
-                                <img src="{{ $ttdPengirim }}" style="display:block; margin:0 auto; max-height:70px;">
-                            @endif
-                        </td>
-                    </tr>
-
+                    <!-- Signature Area (2 kolom) -->
                     <tr>
                         <td>
-                            {{ $namaPengirim ?? '-' }}
+                            <table style="width:100%;">
+                                <tr>
+                                    <td style="width:50%; height:90px; text-align:center; vertical-align:bottom;">
+                                        @if ($barcodeGudang)
+                                            <img src="{{ $barcodeGudang }}" style="max-height:70px;">
+                                        @endif
+                                    </td>
+
+                                    <td style="width:50%; height:90px; text-align:center; vertical-align:bottom;">
+                                        @if ($barcodeSupir)
+                                            <img src="{{ $barcodeSupir }}" style="max-height:70px;">
+                                        @endif
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td style="font-size:15px; text-align: center">
+                                        PT Warehouse Kerta Rajasa Raya
+                                    </td>
+                                    <td style="font-size:15px; text-align: center">
+                                        {{ $items->NamaSupir ?? '-' }}
+                                    </td>
+                                </tr>
+                            </table>
                         </td>
                     </tr>
 
@@ -171,7 +185,6 @@
 
                 <table
                     style="width:100%; text-align:center; border-bottom:1px solid black; border-collapse:collapse; font-size:14px; font-weight:bold;">
-
                     <tr>
                         <td>
                             TANDA TERIMA <br>
@@ -179,8 +192,18 @@
                         </td>
                     </tr>
 
+                   <tr>
+                        <td style="height:110px; text-align:center; vertical-align:bottom; padding-bottom: 20px">
+                            @if ($ttCustomer)
+                                <img src="{{ $ttCustomer }}" style="max-height:85px;">
+                            @endif
+                        </td>
+                    </tr>
+
                     <tr>
-                        <td style="height:110px;"></td>
+                        <td style="font-size:15px; text-align: center; font-weight: normal; padding-bottom: 15px">
+                            {{ $namaCustomer ?? '-' }}
+                        </td>
                     </tr>
 
                 </table>

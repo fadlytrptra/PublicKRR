@@ -119,7 +119,7 @@ class LoginController extends Controller
                 'NamaPerusahaan' => $request->NamaPerusahaan,
                 'AlamatPerusahaan' => $request->AlamatPerusahaan,
                 'NoHP' => $request->NoHP,
-                'NPWP' => $request->NPWP, // sudah bersih & 16 digit
+                'NPWP' => $request->NPWP,
                 'Password' => Hash::make($request->Password),
             ],
             'register_otp' => $otp,

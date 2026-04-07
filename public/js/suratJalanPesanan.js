@@ -132,7 +132,7 @@ jQuery(function ($) {
             // sembunyikan OTP section
             $('#otpSection').hide();
 
-            // 🔥 hilangkan tombol tanpa refresh
+            // hilangkan tombol tanpa refresh
             $('#btnOpenOtp').hide();
             $('#btnSendOtp').hide();
             $('#btnVerifyOtp').hide();
