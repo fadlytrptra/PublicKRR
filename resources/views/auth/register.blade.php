@@ -153,7 +153,8 @@
                 <label>Password</label>
 
                 <div class="input-group">
-                    <input type="password" name="Password" id="password">
+                    <input type="password" name="Password" id="password"
+                        value="{{ old('Password', $data['raw_password'] ?? '') }}">
 
                    <span class="toggle-password" onclick="togglePassword()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"

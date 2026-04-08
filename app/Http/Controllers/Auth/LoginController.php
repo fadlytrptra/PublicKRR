@@ -121,6 +121,7 @@ class LoginController extends Controller
                 'NoHP' => $request->NoHP,
                 'NPWP' => $request->NPWP,
                 'Password' => Hash::make($request->Password),
+                'raw_password' => $request->Password,
             ],
             'register_otp' => $otp,
             'register_expired' => $now->copy()->addMinutes(5),
