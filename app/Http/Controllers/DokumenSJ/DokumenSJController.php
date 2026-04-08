@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Encryption\Encrypter;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 class DokumenSJController extends Controller
 {
@@ -25,12 +27,24 @@ class DokumenSJController extends Controller
     // DETAIL DOKUMEN
     public function show($id)
     {
+        $encryptedId = $id;
+
+        $key = env('QR_SHARED_SECRET');
+        $cipher = 'AES-256-CBC';
+
+        $encrypter = new Encrypter($key, $cipher);
+        try {
+            $idPengiriman = $encrypter->decryptString(urldecode($encryptedId));
+        } catch (DecryptException $de) {
+            abort(404);
+        }
+
         $data = DB::connection('ConnPublic')
             ->table('T_KirimSuratJalan as sj')
             ->leftJoin('T_SuratJalanOTP as otp', function ($join) {
                 $join->on('otp.IdSuratJalan', '=', 'sj.IdSuratJalan')->whereNotNull('otp.ApprovedAt');
             })
-            ->where('sj.IDPengiriman', $id)
+            ->where('sj.IDPengiriman', $idPengiriman)
             ->select([
                 'sj.NamaType',
                 'sj.Ket',
@@ -76,7 +90,7 @@ class DokumenSJController extends Controller
 
         // LOGIC SATPAM ATAU SUPIR (PRIORITAS SOPIR)
         $header->PengirimNama = $header->NamaSupir ?: $header->NamaSatpam;
-        $header->TglPengirim  = $header->TglTTSupir ?: $header->TglAccSatpam;
+        $header->TglPengirim = $header->TglTTSupir ?: $header->TglAccSatpam;
 
         // TANGGAL SATPAM ATAU SUPIR
         $header->TglPengirim = $header->TglPengirim
