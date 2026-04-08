@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Encryption\Encrypter;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Contracts\Encryption\DecryptException;
 
 
@@ -207,66 +208,116 @@ class SuratJalanPesananController extends Controller
 
         $now = Carbon::now('Asia/Jakarta');
 
-        $idSuratJalan = DB::connection('ConnPublic')
-            ->table('T_KirimSuratJalan')
-            ->where('IDPengiriman', $request->id_pengiriman)
-            ->value('IdSuratJalan');
+        try {
 
-        if (!$idSuratJalan) {
-            return response()->json([
-                'error' => 'Data tidak ditemukan'
-            ], 404);
-        }
+            // Ambil IdSuratJalan
+            $idSuratJalan = DB::connection('ConnPublic')
+                ->table('T_KirimSuratJalan')
+                ->where('IDPengiriman', $request->id_pengiriman)
+                ->value('IdSuratJalan');
 
-        $alreadyApproved = DB::connection('ConnPublic')
-            ->table('T_KirimSuratJalan')
-            ->where('IdSuratJalan', $idSuratJalan)
-            ->value('ACCCustomer');
+            if (!$idSuratJalan) {
+                return response()->json([
+                    'error' => 'Data tidak ditemukan'
+                ], 404);
+            }
 
-        if ($alreadyApproved) {
-            return response()->json([
-                'error' => 'Sudah di-approve sebelumnya'
-            ], 400);
-        }
+            // Cek sudah approve
+            $alreadyApproved = DB::connection('ConnPublic')
+                ->table('T_KirimSuratJalan')
+                ->where('IdSuratJalan', $idSuratJalan)
+                ->value('ACCCustomer');
 
-        $otp = DB::table('T_SuratJalanOTP')
-            ->where('IdSuratJalan', $idSuratJalan)
-            ->where('Email', $request->email)
-            ->where('OTP', $request->otp)
-            ->where('IsUsed', 0)
-            ->where('ExpiredAt', '>=', $now)
-            ->first();
+            if ($alreadyApproved) {
+                return response()->json([
+                    'error' => 'Sudah di-approve sebelumnya'
+                ], 400);
+            }
 
-        if (!$otp) {
-            return response()->json([
-                'error' => 'OTP tidak valid atau sudah expired'
-            ], 400);
-        }
+            // Validasi OTP
+            $otp = DB::table('T_SuratJalanOTP')
+                ->where('IdSuratJalan', $idSuratJalan)
+                ->where('Email', $request->email)
+                ->where('OTP', $request->otp)
+                ->where('IsUsed', 0)
+                ->where('ExpiredAt', '>=', $now)
+                ->first();
 
-        DB::connection('ConnPublic')
-            ->table('T_KirimSuratJalan')
-            ->where('IdSuratJalan', $idSuratJalan)
-            ->update([
-                'ACCCustomer' => 1
+            if (!$otp) {
+                return response()->json([
+                    'error' => 'OTP tidak valid atau sudah expired'
+                ], 400);
+            }
+
+            // ===============
+            // GENERATE QR
+            // ===============
+
+            $idPengiriman = $request->id_pengiriman;
+
+            // Validasi key
+            $key = env('QR_SHARED_SECRET');
+            if (!$key || strlen($key) !== 32) {
+                throw new \Exception('QR_SHARED_SECRET tidak valid (harus 32 karakter)');
+            }
+
+            // Encrypt
+            $encrypter = new Encrypter($key, 'AES-256-CBC');
+
+            $encryptedIdPengiriman = urlencode(
+                $encrypter->encryptString((string) $idPengiriman)
+            );
+
+            $baseUrl = 'http://192.168.100.67:8000';
+            $link = $baseUrl . '/DokumenSJ/' . $encryptedIdPengiriman;
+
+            // Generate QR (dipisah biar aman)
+            $qrImage = QrCode::format('svg')
+                ->size(150)
+                ->generate($link);
+
+            $qrBase64 = base64_encode($qrImage);
+
+            $updated = DB::connection('ConnPublic')
+                ->table('T_KirimSuratJalan')
+                ->where('IdSuratJalan', $idSuratJalan)
+                ->update([
+                    'ACCCustomer' => 1,
+                    'GbrACCCustomer' => $qrBase64
+                ]);
+
+            if (!$updated) {
+                throw new \Exception('Gagal update data Surat Jalan');
+            }
+
+            DB::table('T_SuratJalanOTP')
+                ->where('Id', $otp->Id)
+                ->update([
+                    'IsUsed' => 1,
+                    'ApprovedAt' => $now
+                ]);
+
+        } catch (\Exception $e) {
+
+            Log::error('VERIFY OTP ERROR', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
             ]);
 
-        DB::connection('ConnPublic')
-            ->table('T_SuratJalanOTP')
-            ->where('Id', $otp->Id)
-            ->update([
-                'IsUsed' => 1,
-                'ApprovedAt' => $now
-            ]);
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
 
-        // AUTO SEND EMAIL
+        // Kirim email
         try {
             $this->sendSuratJalanEmail(
                 $request->id_pengiriman,
                 [$request->email]
             );
         } catch (\Exception $e) {
-            logger()->error('Gagal kirim email setelah OTP', [
-                'error' => $e->getMessage()
+            Log::error('EMAIL ERROR', [
+                'message' => $e->getMessage()
             ]);
         }
 
@@ -347,14 +398,13 @@ class SuratJalanPesananController extends Controller
             return "data:$mime;base64," . $clean;
         };
 
-        // TTD internal
         $barcodeGudang = $formatBase64Image($items->GbrACCGudang);
         $barcodeSupir  = $formatBase64Image($items->GbrACCSupir);
 
-        // ✅ Customer sekarang dari tabel yang sama
+        // Customer
         $ttCustomer = $formatBase64Image($items->GbrACCCustomer);
 
-        // (opsional) kalau nama customer masih mau ditampilkan
+        //nama customer
         $namaCustomer = DB::connection('ConnPublic')
             ->table('CustomerUserPublic as cup')
             ->join('UserPublic as up', 'cup.IdUser', '=', 'up.IdUser')
