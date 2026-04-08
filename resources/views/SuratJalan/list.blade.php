@@ -199,13 +199,15 @@ $(document).on('click', '.btn-detail', function () {
                 `;
             });
 
+            let tgl = first.TglKirim ? first.TglKirim.split(' ')[0] : '-';
+
             $('#detailBody').html(rows);
 
             // ISI FORM
             $('#No_PO').val(first.No_PO ?? '-');
             $('#IDPengiriman').val(first.IDPengiriman ?? '-');
             $('#SuratPesanan').val(first.SuratPesanan ?? '-');
-            $('#TglKirim').val(first.TglKirim ?? '-');
+            $('#TglKirim').val(tgl);
 
             $('#NamaCust').val(first.NamaCust ?? '-');
             $('#JnsCust').val(first.JnsCust ?? '-');

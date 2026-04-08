@@ -212,9 +212,6 @@
     </div>
 
 <script>
-    // ==============================
-    // PREVIEW FILE (AMANIN BIAR GA ERROR)
-    // ==============================
     let inputFile = document.getElementById('TTCustomer');
     let previewContainer = document.getElementById('preview-container');
     let previewImage = document.getElementById('preview-image');
@@ -238,9 +235,6 @@
         });
     }
 
-    // ==============================
-    // TOGGLE PASSWORD
-    // ==============================
     function togglePassword() {
         let input = document.getElementById("password");
 
@@ -251,11 +245,7 @@
         }
     }
 
-    // ==============================
-    // VALIDASI NPWP
-    // ==============================
     let npwpInput = document.getElementById('npwp');
-
     if (npwpInput) {
         npwpInput.addEventListener('input', function (e) {
             let value = e.target.value;
@@ -270,28 +260,19 @@
         });
     }
 
-    // ==============================
-    // VALIDASI NO HP
-    // ==============================
     let nohpInput = document.getElementById('nohp');
 
     if (nohpInput) {
         nohpInput.addEventListener('input', function (e) {
             let value = e.target.value;
-
-            // hapus selain angka (ini juga otomatis hapus koma jadi ga bisa multi nomor)
             value = value.replace(/[^0-9]/g, '');
 
             // max 15 digit
             value = value.substring(0, 15);
-
             e.target.value = value;
         });
     }
 
-    // ==============================
-    // VALIDASI SAAT SUBMIT
-    // ==============================
     let form = document.querySelector('form');
 
     if (form) {
