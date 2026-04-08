@@ -91,18 +91,19 @@ class LoginController extends Controller
     public function register(Request $request)
     {
         $npwp = preg_replace('/[^0-9]/', '', $request->NPWP);
-        $request->merge(['NPWP' => $npwp]);
+        $nohp = preg_replace('/[^0-9]/', '', $request->NoHP);
+
+        $request->merge([
+            'NPWP' => $npwp,
+            'NoHP' => $nohp,
+        ]);
 
         $validator = Validator::make($request->all(), [
             'Email' => 'required|email|unique:ConnPublic.UserPublic,Email',
             'NamaUser' => 'required',
             'NamaPerusahaan' => 'required',
             'AlamatPerusahaan' => 'required',
-            'NoHP' => 'required',
-            'NPWP' => ['required', 'digits:16'],
             'Password' => 'required|min:6'
-        ], [
-            'NPWP.digits' => 'NPWP harus 16 digit',
         ]);
 
         if ($validator->fails()) {
@@ -112,14 +113,24 @@ class LoginController extends Controller
         $now = Carbon::now('Asia/Jakarta');
         $otp = rand(100000, 999999);
 
+        // INSERT KE DATABASE
+        DB::connection('ConnPublic')->table('T_RegisterOTP')->insert([
+            'Email'     => $request->Email,
+            'OTP'       => $otp,
+            'IsUsed'    => 0,
+            'ExpiredAt' => $now->copy()->addMinutes(5),
+            'CreatedAt' => $now,
+        ]);
+
+        // SESSION (untuk simpan data sementara)
         session([
             'register_data' => [
                 'Email' => $request->Email,
                 'NamaUser' => $request->NamaUser,
                 'NamaPerusahaan' => $request->NamaPerusahaan,
                 'AlamatPerusahaan' => $request->AlamatPerusahaan,
-                'NoHP' => $request->NoHP,
-                'NPWP' => $request->NPWP,
+                'NoHP' => $nohp,
+                'NPWP' => $npwp,
                 'Password' => Hash::make($request->Password),
                 'raw_password' => $request->Password,
             ],
@@ -127,6 +138,7 @@ class LoginController extends Controller
             'register_expired' => $now->copy()->addMinutes(5),
         ]);
 
+        // KIRIM EMAIL
         Mail::mailer('MailSales')->raw(
             "Kode OTP verifikasi akun Anda: $otp",
             function ($message) use ($request) {
@@ -161,27 +173,43 @@ class LoginController extends Controller
                 ->withInput();
         }
 
-        $now = Carbon::now('Asia/Jakarta');
-
-        $sessionOtp = session('register_otp');
-        $expired = session('register_expired');
-
         if (!$data) {
-            return back()->withErrors(['error' => 'Session expired, silakan register ulang']);
+            return back()->withErrors([
+                'error' => 'Session expired, silakan register ulang'
+            ]);
         }
 
-        if ($request->otp != $sessionOtp || $now->gt($expired)) {
+        $now = Carbon::now('Asia/Jakarta');
+
+        // VALIDASI OTP KE DATABASE
+        $otpData = DB::connection('ConnPublic')->table('T_RegisterOTP')
+            ->where('Email', $data['Email'])
+            ->where('OTP', $request->otp)
+            ->where('IsUsed', 0)
+            ->orderByDesc('CreatedAt')
+            ->first();
+
+        if (!$otpData) {
             return back()
-                ->withErrors(['error' => 'OTP tidak valid / expired'])
+                ->withErrors(['error' => 'OTP tidak valid'])
                 ->with('showOtp', true)
                 ->with('email', $data['Email'])
                 ->withInput();
         }
 
-        // INSERT KE DB
-        DB::connection('ConnPublic')
+        // CEK EXPIRED
+        if ($now->gt(Carbon::parse($otpData->ExpiredAt))) {
+            return back()
+                ->withErrors(['error' => 'OTP sudah expired'])
+                ->with('showOtp', true)
+                ->with('email', $data['Email'])
+                ->withInput();
+        }
+
+        // INSERT USER
+        $userId = DB::connection('ConnPublic')
             ->table('UserPublic')
-            ->insert([
+            ->insertGetId([
                 'Email' => $data['Email'],
                 'NamaUser' => $data['NamaUser'],
                 'NamaPerusahaan' => $data['NamaPerusahaan'],
@@ -193,6 +221,13 @@ class LoginController extends Controller
                 'Deactivated' => 0,
                 'Verification' => 0,
                 'EmailVerification' => $now
+            ]);
+
+        // UPDATE OTP
+        DB::connection('ConnPublic')->table('T_RegisterOTP')
+            ->where('Id', $otpData->Id)
+            ->update([
+                'IsUsed' => 1
             ]);
 
         session()->forget(['register_data', 'register_otp', 'register_expired']);

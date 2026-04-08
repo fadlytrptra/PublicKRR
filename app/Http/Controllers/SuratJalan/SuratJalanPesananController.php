@@ -67,6 +67,54 @@ class SuratJalanPesananController extends Controller
         ]);
     }
 
+    public function detailModalSJ($id)
+    {
+        $data = DB::connection('ConnPublic')
+            ->table('T_KirimSuratJalan')
+            ->where('IDPengiriman', $id)
+            ->select([
+                'SuratPesanan',
+                'TglKirim',
+                'TrukNopol',
+                'SatJual',
+
+                DB::raw("
+                    CASE
+                        WHEN RTRIM(SatJual) = RTRIM(satPrimer) THEN QtyPrimer
+                        WHEN RTRIM(SatJual) = RTRIM(satSekunder) THEN QtySekunder
+                        WHEN RTRIM(SatJual) = RTRIM(satTritier) THEN QtyTritier
+                        ELSE 0
+                    END as Qty
+                "),
+
+                'NamaType',
+                'AlamatKirimCustomer',
+                'AlamatCustomer',
+                'KotaCustomer',
+                'NamaCust',
+                'IDPengiriman',
+                'No_PO',
+                'NoContainer',
+                'NoSeal',
+                'JnsIdPengiriman',
+                'AlamatKirimDO',
+                'NamaKelompokUtama',
+                'NamaExpeditor',
+                'AlamatExpeditor',
+                'KotaExpeditor',
+                'IdType',
+                'Ket',
+                'JnsCust',
+                'NamaSupir',
+                'NamaSatpam'
+            ])
+            ->get();
+
+        return response()->json([
+            'data' => $data
+        ]);
+    }
+
     public function data(Request $request)
     {
         $no_po = $request->no_po;
@@ -268,10 +316,11 @@ class SuratJalanPesananController extends Controller
                 $encrypter->encryptString((string) $idPengiriman)
             );
 
+            // link id pengiriman yang di enkripsi
             $baseUrl = 'http://192.168.100.67:8000';
             $link = $baseUrl . '/DokumenSJ/' . $encryptedIdPengiriman;
 
-            // Generate QR (dipisah biar aman)
+            // Generate QR
             $qrImage = QrCode::format('svg')
                 ->size(150)
                 ->generate($link);

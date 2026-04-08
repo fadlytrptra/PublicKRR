@@ -124,10 +124,14 @@
             @enderror
 
             <label>No HP</label>
-           <input type="text" name="NoHP"
+            <input type="text" name="NoHP" id="nohp"
+                inputmode="numeric"
+                maxlength="15"
+                required
                 value="{{ old('NoHP', $data['NoHP'] ?? '') }}">
+
             @error('NoHP')
-                <div class="error">{{ $message }}</div>
+            <div class="error">{{ $message }}</div>
             @enderror
 
             {{-- <label>Tanda Tangan (TT Customer)</label>
@@ -143,10 +147,14 @@
             </div> --}}
 
             <label>NPWP</label>
-            <input type="text" name="NPWP"
+            <input type="text" name="NPWP" id="npwp"
+                inputmode="numeric"
+                maxlength="16"
+                required
                 value="{{ old('NPWP', $data['NPWP'] ?? '') }}">
+
             @error('NPWP')
-                <div class="error">{{ $message }}</div>
+            <div class="error">{{ $message }}</div>
             @enderror
 
            <div class="password-wrapper">
@@ -204,27 +212,35 @@
     </div>
 
 <script>
+    // ==============================
+    // PREVIEW FILE (AMANIN BIAR GA ERROR)
+    // ==============================
     let inputFile = document.getElementById('TTCustomer');
     let previewContainer = document.getElementById('preview-container');
     let previewImage = document.getElementById('preview-image');
 
-    inputFile.addEventListener('change', function () {
-        let file = this.files[0];
+    if (inputFile) {
+        inputFile.addEventListener('change', function () {
+            let file = this.files[0];
 
-        if (file) {
-            let reader = new FileReader();
+            if (file) {
+                let reader = new FileReader();
 
-            reader.onload = function (e) {
-                previewImage.src = e.target.result;
-                previewContainer.style.display = 'block';
+                reader.onload = function (e) {
+                    previewImage.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                }
+
+                reader.readAsDataURL(file);
+            } else {
+                previewContainer.style.display = 'none';
             }
+        });
+    }
 
-            reader.readAsDataURL(file);
-        } else {
-            previewContainer.style.display = 'none';
-        }
-    });
-
+    // ==============================
+    // TOGGLE PASSWORD
+    // ==============================
     function togglePassword() {
         let input = document.getElementById("password");
 
@@ -234,7 +250,68 @@
             input.type = "password";
         }
     }
-</script>
 
+    // ==============================
+    // VALIDASI NPWP
+    // ==============================
+    let npwpInput = document.getElementById('npwp');
+
+    if (npwpInput) {
+        npwpInput.addEventListener('input', function (e) {
+            let value = e.target.value;
+
+            // hanya angka
+            value = value.replace(/[^0-9]/g, '');
+
+            // max 16 digit
+            value = value.substring(0, 16);
+
+            e.target.value = value;
+        });
+    }
+
+    // ==============================
+    // VALIDASI NO HP
+    // ==============================
+    let nohpInput = document.getElementById('nohp');
+
+    if (nohpInput) {
+        nohpInput.addEventListener('input', function (e) {
+            let value = e.target.value;
+
+            // hapus selain angka (ini juga otomatis hapus koma jadi ga bisa multi nomor)
+            value = value.replace(/[^0-9]/g, '');
+
+            // max 15 digit
+            value = value.substring(0, 15);
+
+            e.target.value = value;
+        });
+    }
+
+    // ==============================
+    // VALIDASI SAAT SUBMIT
+    // ==============================
+    let form = document.querySelector('form');
+
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            let npwp = document.getElementById('npwp')?.value || '';
+            let nohp = document.getElementById('nohp')?.value || '';
+
+            if (npwp.length !== 16) {
+                alert('NPWP harus 16 digit');
+                e.preventDefault();
+                return;
+            }
+
+            if (nohp.length < 10) {
+                alert('No HP tidak valid');
+                e.preventDefault();
+                return;
+            }
+        });
+    }
+</script>
 </body>
 </html>

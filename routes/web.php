@@ -30,6 +30,7 @@ Route::post('/verify-otp', [LoginController::class, 'verifyOtp']);
 
 Route::get('SuratJalan-data', [SuratJalanPesananController::class, 'data'])->name('SuratJalan.data');
 Route::get('SuratJalan/list-data', [SuratJalanPesananController::class, 'listData'])->name('SuratJalan.listData');
+Route::get('/SuratJalan/detail-modal/{id}', [SuratJalanPesananController::class, 'detailModalSJ']);
 Route::get('SuratJalan/get-emails/{id_pengiriman}', [SuratJalanPesananController::class, 'getEmails']);
 Route::post('SuratJalan/send-otp', [SuratJalanPesananController::class, 'sendOtp']);
 Route::post('SuratJalan/verify-otp', [SuratJalanPesananController::class, 'verifyOtp']);
