@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\SuratJalan\SuratJalanPesananController;
 use App\Http\Controllers\DokumenSJ\DokumenSJController;
@@ -24,9 +25,12 @@ Route::get('/register', function () {
     return view('auth.register');
 });
 
+
 Route::post('/register', [LoginController::class, 'register']);
 Route::post('/verify-otp', [LoginController::class, 'verifyOtp']);
 #endregion
+
+Route::resource('profile', UserController::class);
 
 Route::get('SuratJalan-data', [SuratJalanPesananController::class, 'data'])->name('SuratJalan.data');
 Route::get('SuratJalan/list-data', [SuratJalanPesananController::class, 'listData'])->name('SuratJalan.listData');

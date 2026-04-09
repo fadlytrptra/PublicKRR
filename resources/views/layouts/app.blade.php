@@ -27,9 +27,10 @@
     <nav class="navbar navbar-light bg-white shadow sticky-top px-4 py-3">
         <div class="ms-auto d-flex align-items-center gap-2">
             @if(session('user'))
-                <span class="fw-semibold nav_font">
-                    {{ session('user')->NamaUser }} |
-                </span>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#profileModal"
+                    class="text-decoration-none text-dark">
+                        {{ session('user')->NamaUser }}
+                </a> |
 
                 <form action="{{ url('/logout') }}" method="POST" class="m-0">
                     @csrf
@@ -41,9 +42,25 @@
         </div>
     </nav>
 
+    <div class="w-100">
+        @if(session('success'))
+            <div class="alert alert-success rounded-0 text-start">
+                {{ session('success') }}
+            </div>
+        @endif
+    </div>
+
+
     <main class="py-4">
         @yield('content')
     </main>
+
+    @if($errors->any())
+    <script>
+        var modal = new bootstrap.Modal(document.getElementById('profileModal'));
+        modal.show();
+    </script>
+    @endif
 </body>
 
 <style>
@@ -63,3 +80,5 @@
 </style>
 
 </html>
+
+@include('profile_modal')
