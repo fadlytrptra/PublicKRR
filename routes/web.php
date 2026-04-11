@@ -38,6 +38,7 @@ Route::get('/SuratJalan/detail-modal/{id}', [SuratJalanPesananController::class,
 Route::get('SuratJalan/get-emails/{id_pengiriman}', [SuratJalanPesananController::class, 'getEmails']);
 Route::post('SuratJalan/send-otp', [SuratJalanPesananController::class, 'sendOtp']);
 Route::post('SuratJalan/verify-otp', [SuratJalanPesananController::class, 'verifyOtp']);
+Route::post('SuratJalan/confirm-approval', [SuratJalanPesananController::class, 'confirmApproval']);
 Route::post('SuratJalan/resend-email', [SuratJalanPesananController::class, 'resendEmail']);
 Route::resource('SuratJalan', SuratJalanPesananController::class);
 

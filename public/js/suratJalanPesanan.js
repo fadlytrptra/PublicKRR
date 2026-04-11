@@ -1,5 +1,6 @@
 jQuery(function ($) {
 
+//#region Variables
     let idPengiriman = window.appData?.idPengiriman;
     let noPo = window.appData?.noPo;
 
@@ -42,6 +43,34 @@ jQuery(function ($) {
             { data: 'TrukNopol' }
         ]
     });
+
+//#endregion
+
+//#region function
+
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+
+        let date = new Date(dateString);
+        return date.toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    }
+
+    function formatDateTime(dateString) {
+        if (!dateString) return '-';
+
+        let date = new Date(dateString);
+        return date.toLocaleString('id-ID', {
+            timeZone: 'Asia/Jakarta'
+        });
+    }
+
+//#endregion
+
+//#region Event Listener
 
     // =============================
     // OTP FLOW
@@ -114,7 +143,9 @@ jQuery(function ($) {
             return;
         }
 
-        $('#btnVerifyOtp').prop('disabled', true).text('Verifying...');
+        $('#btnVerifyOtp')
+            .prop('disabled', true)
+            .html('Verifying...');
 
         $.post('/SuratJalan/verify-otp', {
             id_pengiriman: idPengiriman,
@@ -122,32 +153,118 @@ jQuery(function ($) {
             otp: otp
         })
         .done(function (res) {
-            alert('Approved berhasil');
 
-            // tampilkan info
-            $('#approvalInfo').show();
-            $('#approvedEmail').text(res.email ?? email);
-            $('#approvedAt').text(formatDateTime(res.approved_at));
+            // simpan id surat jalan dari backend
+            window.idSuratJalan = res.id_surat_jalan;
 
-            // sembunyikan OTP section
+            // tampilkan section konfirmasi
             $('#otpSection').hide();
 
-            // hilangkan tombol tanpa refresh
-            $('#btnOpenOtp').hide();
-            $('#btnSendOtp').hide();
-            $('#btnVerifyOtp').hide();
+            // reset modal state
+            $('#stepKonfirmasi').show();
+            $('#stepQty').hide();
+            $('#qtyInput').val('');
 
-            $('#emailSelect').prop('disabled', true);
-            $('#otpInput').prop('disabled', true);
+            // tampilkan modal
+            $('#modalKonfirmasi').modal('show');
 
         })
         .fail(function (xhr) {
             alert(xhr.responseJSON?.error ?? 'OTP tidak valid');
-        })
-        .always(function () {
-            $('#btnVerifyOtp').prop('disabled', false).text('Verify OTP');
-        });
 
+            $('#btnVerifyOtp')
+                .prop('disabled', false)
+                .html('Verify OTP');
+        });
+    });
+
+
+    // PILIH YA
+    $('#btnYa').click(function () {
+        $('#btnYa').prop('disabled', true).text('Processing...');
+
+        $.post('/SuratJalan/confirm-approval', {
+            id_surat_jalan: window.idSuratJalan,
+            is_sesuai: 1,
+            email: $('#emailSelect').val()
+        })
+        .done(function () {
+            alert('Approved & Email berhasil dikirim');
+
+            $('#modalKonfirmasi').modal('hide');
+
+            $('#btnOpenOtp').hide();
+            $('#otpSection').hide();
+
+            $('#approvalInfo').show();
+
+            $('#approvedEmail').text($('#emailSelect').val());
+            $('#approvedAt').text(formatDateTime(new Date()));
+        })
+        .fail(function (xhr) {
+            alert(xhr.responseJSON?.error ?? 'Terjadi kesalahan');
+            $('#btnYa').prop('disabled', false).text('Ya');
+        });
+    });
+
+    // PILIH TIDAK
+    $('#btnTidak').click(function () {
+        console.log('Klik Tidak');
+
+        $('#stepKonfirmasi').hide();
+        $('#stepQty').fadeIn();
+    });
+
+    // SUBMIT QTY
+    $('#btnSubmitQty').click(function () {
+
+    let qty = parseFloat($('#qtyInput').val());
+
+    if (!qty || qty <= 0) {
+        alert('Qty harus diisi dengan benar');
+        return;
+    }
+
+    // VALIDASI QTY INPUT VS QTY JUAL
+    let rowData = table.row(0).data();
+
+    if (!rowData) {
+        alert('Data tabel belum siap');
+        return;
+    }
+
+    let qtyJual = parseFloat(rowData.QtyJual);
+
+    if (qty > qtyJual) {
+        alert(`Qty tidak boleh melebihi Qty Jual (${qtyJual})`);
+        return;
+    }
+
+    $('#btnSubmitQty').prop('disabled', true).text('Processing...');
+        $.post('/SuratJalan/confirm-approval', {
+            id_surat_jalan: window.idSuratJalan,
+            is_sesuai: 0,
+            qty_temp: qty,
+            email: $('#emailSelect').val()
+        })
+        .done(function () {
+            alert('Approved tanpa email');
+
+            $('#modalKonfirmasi').modal('hide');
+
+            $('#btnOpenOtp').hide();
+            $('#otpSection').hide();
+
+            $('#approvalInfo').show();
+
+            $('#approvedEmail').text($('#emailSelect').val());
+            $('#approvedAt').text(formatDateTime(new Date()));
+        })
+        .fail(function (xhr) {
+            console.log(xhr.responseJSON);
+            alert(xhr.responseJSON?.error ?? 'Terjadi kesalahan');
+            $('#btnSubmitQty').prop('disabled', false).text('Submit');
+        });
     });
 
     $('#btnResendEmail').click(function () {
@@ -177,29 +294,7 @@ jQuery(function ($) {
         });
 
     });
+//#endregion
 
-    // =============================
-    // HELPER
-    // =============================
-
-    function formatDate(dateString) {
-        if (!dateString) return '-';
-
-        let date = new Date(dateString);
-        return date.toLocaleDateString('id-ID', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        });
-    }
-
-    function formatDateTime(dateString) {
-        if (!dateString) return '-';
-
-        let date = new Date(dateString);
-        return date.toLocaleString('id-ID', {
-            timeZone: 'Asia/Jakarta'
-        });
-    }
 
 });

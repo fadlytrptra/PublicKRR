@@ -246,19 +246,147 @@ class SuratJalanPesananController extends Controller
         ]);
     }
 
+    // public function verifyOtp(Request $request)
+    // {
+    //     $request->validate([
+    //         'id_pengiriman' => 'required',
+    //         'email' => 'required|email',
+    //         'otp' => 'required'
+    //     ]);
+
+    //     $now = Carbon::now('Asia/Jakarta');
+
+    //     try {
+
+    //         // Ambil IdSuratJalan
+    //         $idSuratJalan = DB::connection('ConnPublic')
+    //             ->table('T_KirimSuratJalan')
+    //             ->where('IDPengiriman', $request->id_pengiriman)
+    //             ->value('IdSuratJalan');
+
+    //         if (!$idSuratJalan) {
+    //             return response()->json([
+    //                 'error' => 'Data tidak ditemukan'
+    //             ], 404);
+    //         }
+
+    //         // Cek sudah approve
+    //         $alreadyApproved = DB::connection('ConnPublic')
+    //             ->table('T_KirimSuratJalan')
+    //             ->where('IdSuratJalan', $idSuratJalan)
+    //             ->value('ACCCustomer');
+
+    //         if ($alreadyApproved) {
+    //             return response()->json([
+    //                 'error' => 'Sudah di-approve sebelumnya'
+    //             ], 400);
+    //         }
+
+    //         // Validasi OTP
+    //         $otp = DB::table('T_SuratJalanOTP')
+    //             ->where('IdSuratJalan', $idSuratJalan)
+    //             ->where('Email', $request->email)
+    //             ->where('OTP', $request->otp)
+    //             ->where('IsUsed', 0)
+    //             ->where('ExpiredAt', '>=', $now)
+    //             ->first();
+
+    //         if (!$otp) {
+    //             return response()->json([
+    //                 'error' => 'OTP tidak valid atau sudah expired'
+    //             ], 400);
+    //         }
+
+    //         // ===============
+    //         // GENERATE QR
+    //         // ===============
+    //         $idPengiriman = $request->id_pengiriman;
+
+    //         // Validasi key
+    //         $key = env('QR_SHARED_SECRET');
+    //         if (!$key || strlen($key) !== 32) {
+    //             throw new \Exception('QR_SHARED_SECRET tidak valid (harus 32 karakter)');
+    //         }
+
+    //         // Encrypt
+    //         $encrypter = new Encrypter($key, 'AES-256-CBC');
+
+    //         $encryptedIdPengiriman = urlencode(
+    //             $encrypter->encryptString((string) $idPengiriman)
+    //         );
+
+    //         // link id pengiriman yang di enkripsi
+    //         $baseUrl = 'http://192.168.100.67:8000';
+    //         $link = $baseUrl . '/DokumenSJ/' . $encryptedIdPengiriman;
+
+    //         // Generate QR
+    //         $qrImage = QrCode::format('svg')
+    //             ->size(150)
+    //             ->generate($link);
+
+    //         $qrBase64 = base64_encode($qrImage);
+
+    //         $updated = DB::connection('ConnPublic')
+    //             ->table('T_KirimSuratJalan')
+    //             ->where('IdSuratJalan', $idSuratJalan)
+    //             ->update([
+    //                 'ACCCustomer' => 1,
+    //                 'GbrACCCustomer' => $qrBase64
+    //             ]);
+
+    //         if (!$updated) {
+    //             throw new \Exception('Gagal update data Surat Jalan');
+    //         }
+
+    //         DB::table('T_SuratJalanOTP')
+    //             ->where('Id', $otp->Id)
+    //             ->update([
+    //                 'IsUsed' => 1,
+    //                 'ApprovedAt' => $now
+    //             ]);
+
+    //     } catch (\Exception $e) {
+    //         Log::error('VERIFY OTP ERROR', [
+    //             'message' => $e->getMessage(),
+    //             'line' => $e->getLine()
+    //         ]);
+
+    //         return response()->json([
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+
+    //     // Kirim email
+    //     try {
+    //         $this->sendSuratJalanEmail(
+    //             $request->id_pengiriman,
+    //             [$request->email]
+    //         );
+    //     } catch (\Exception $e) {
+    //         Log::error('EMAIL ERROR', [
+    //             'message' => $e->getMessage()
+    //         ]);
+    //     }
+
+    //     return response()->json([
+    //         'status' => 'Approved',
+    //         'email' => $request->email,
+    //         'approved_at' => $now
+    //     ]);
+    // }
+
     public function verifyOtp(Request $request)
     {
         $request->validate([
             'id_pengiriman' => 'required',
             'email' => 'required|email',
-            'otp' => 'required'
+            'otp' => 'required|digits:6'
         ]);
 
         $now = Carbon::now('Asia/Jakarta');
 
         try {
 
-            // Ambil IdSuratJalan
             $idSuratJalan = DB::connection('ConnPublic')
                 ->table('T_KirimSuratJalan')
                 ->where('IDPengiriman', $request->id_pengiriman)
@@ -270,87 +398,144 @@ class SuratJalanPesananController extends Controller
                 ], 404);
             }
 
-            // Cek sudah approve
-            $alreadyApproved = DB::connection('ConnPublic')
-                ->table('T_KirimSuratJalan')
-                ->where('IdSuratJalan', $idSuratJalan)
-                ->value('ACCCustomer');
+            DB::beginTransaction();
 
-            if ($alreadyApproved) {
-                return response()->json([
-                    'error' => 'Sudah di-approve sebelumnya'
-                ], 400);
-            }
-
-            // Validasi OTP
             $otp = DB::table('T_SuratJalanOTP')
                 ->where('IdSuratJalan', $idSuratJalan)
                 ->where('Email', $request->email)
                 ->where('OTP', $request->otp)
                 ->where('IsUsed', 0)
                 ->where('ExpiredAt', '>=', $now)
+                ->lockForUpdate()
                 ->first();
 
             if (!$otp) {
+                DB::rollBack();
+
                 return response()->json([
-                    'error' => 'OTP tidak valid atau sudah expired'
+                    'error' => 'OTP tidak valid atau expired'
                 ], 400);
             }
 
-            // ===============
-            // GENERATE QR
-            // ===============
+            DB::commit();
 
-            $idPengiriman = $request->id_pengiriman;
+            return response()->json([
+                'status' => 'OTP_VALID',
+                'id_surat_jalan' => $idSuratJalan
+            ]);
 
-            // Validasi key
-            $key = env('QR_SHARED_SECRET');
-            if (!$key || strlen($key) !== 32) {
-                throw new \Exception('QR_SHARED_SECRET tidak valid (harus 32 karakter)');
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            Log::error('VERIFY OTP ERROR', [
+                'message' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'error' => 'Terjadi kesalahan server'
+            ], 500);
+        }
+    }
+
+    public function confirmApproval(Request $request)
+    {
+        $request->validate([
+            'id_surat_jalan' => 'required',
+            'is_sesuai' => 'required|boolean',
+            'qty_temp' => 'nullable|integer|min:1',
+            'email' => 'required|email' // 🔥 WAJIB
+        ]);
+
+        $now = Carbon::now('Asia/Jakarta');
+
+        DB::beginTransaction();
+
+        try {
+
+            $data = DB::connection('ConnPublic')
+                ->table('T_KirimSuratJalan')
+                ->where('IdSuratJalan', $request->id_surat_jalan)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$data) {
+                throw new \Exception('Data tidak ditemukan');
             }
 
-            // Encrypt
+            // FIX: strict check (hindari false positive)
+            if ((int)$data->ACCCustomer === 1) {
+                DB::commit();
+
+                return response()->json([
+                    'status' => 'ALREADY_APPROVED'
+                ]);
+            }
+
+            // validasi qty
+            if (!(int)$request->is_sesuai && !$request->qty_temp) {
+                throw new \Exception('Qty harus diisi');
+            }
+
+            // =====================
+            // GENERATE QR (TIDAK DIUBAH)
+            // =====================
+            $key = env('QR_SHARED_SECRET');
+
+            if (!$key || strlen($key) !== 32) {
+                throw new \Exception('QR key tidak valid');
+            }
+
             $encrypter = new Encrypter($key, 'AES-256-CBC');
 
-            $encryptedIdPengiriman = urlencode(
-                $encrypter->encryptString((string) $idPengiriman)
+            $encrypted = urlencode(
+                $encrypter->encryptString((string) $data->IDPengiriman)
             );
 
-            // link id pengiriman yang di enkripsi
-            $baseUrl = 'http://192.168.100.67:8000';
-            $link = $baseUrl . '/DokumenSJ/' . $encryptedIdPengiriman;
+            $link = url('/DokumenSJ/' . $encrypted);
 
-            // Generate QR
             $qrImage = QrCode::format('svg')
                 ->size(150)
                 ->generate($link);
 
             $qrBase64 = base64_encode($qrImage);
 
-            $updated = DB::connection('ConnPublic')
-                ->table('T_KirimSuratJalan')
-                ->where('IdSuratJalan', $idSuratJalan)
-                ->update([
-                    'ACCCustomer' => 1,
-                    'GbrACCCustomer' => $qrBase64
-                ]);
+            // =====================
+            // UPDATE DATA
+            // =====================
+            $update = [
+                'ACCCustomer' => 1,
+                'GbrACCCustomer' => $qrBase64
+            ];
 
-            if (!$updated) {
-                throw new \Exception('Gagal update data Surat Jalan');
+            if (!(int)$request->is_sesuai) {
+                $update['QtyTemp'] = $request->qty_temp;
             }
 
+            DB::connection('ConnPublic')
+                ->table('T_KirimSuratJalan')
+                ->where('IdSuratJalan', $request->id_surat_jalan)
+                ->update($update);
+
+            // =====================
+            // UPDATE OTP (PINDAHAN)
+            // =====================
             DB::table('T_SuratJalanOTP')
-                ->where('Id', $otp->Id)
+                ->where('IdSuratJalan', $request->id_surat_jalan)
+                ->where('IsUsed', 0)
                 ->update([
                     'IsUsed' => 1,
                     'ApprovedAt' => $now
                 ]);
 
+            DB::commit();
+
         } catch (\Exception $e) {
 
-            Log::error('VERIFY OTP ERROR', [
-                'message' => $e->getMessage(),
-                'line' => $e->getLine()
+            DB::rollBack();
+
+            Log::error('CONFIRM APPROVAL ERROR', [
+                'message' => $e->getMessage()
             ]);
 
             return response()->json([
@@ -358,22 +543,24 @@ class SuratJalanPesananController extends Controller
             ], 500);
         }
 
-        // Kirim email
-        try {
-            $this->sendSuratJalanEmail(
-                $request->id_pengiriman,
-                [$request->email]
-            );
-        } catch (\Exception $e) {
-            Log::error('EMAIL ERROR', [
-                'message' => $e->getMessage()
-            ]);
+        // =====================
+        // EMAIL (FIX UTAMA DI SINI)
+        // =====================
+        if ((int)$request->is_sesuai === 1) {
+            try {
+                $this->sendSuratJalanEmail(
+                    $data->IDPengiriman,
+                    [$request->email] // 🔥 FIX
+                );
+            } catch (\Exception $e) {
+                Log::error('EMAIL ERROR', [
+                    'message' => $e->getMessage()
+                ]);
+            }
         }
 
         return response()->json([
-            'status' => 'Approved',
-            'email' => $request->email,
-            'approved_at' => $now
+            'status' => 'APPROVED'
         ]);
     }
 

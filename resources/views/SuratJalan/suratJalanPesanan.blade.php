@@ -95,6 +95,45 @@
     </div>
 </div>
 
+<!-- MODAL KONFIRMASI -->
+<div class="modal fade" id="modalKonfirmasi" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Konfirmasi Penerimaan Barang</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- STEP 1 -->
+                <div id="stepKonfirmasi">
+                    <p><strong>Apakah jumlah barang sudah sesuai?</strong></p>
+
+                    <div class="d-flex gap-2">
+                        <button id="btnYa" class="btn btn-success w-50">Ya</button>
+                        <button id="btnTidak" class="btn btn-danger w-50">Tidak</button>
+                    </div>
+                </div>
+
+                <!-- STEP 2 -->
+                <div id="stepQty" style="display:none;">
+                    <p><strong>Berapa jumlah barang yang sudah sesuai?</strong></p>
+
+                    <input type="number" id="qtyInput" class="form-control mb-2" placeholder="Masukkan jumlah">
+
+                    <button id="btnSubmitQty" class="btn btn-primary w-100">
+                        Submit
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
 @if(isset($otp) && $otp)
 <script>
     $(function(){
