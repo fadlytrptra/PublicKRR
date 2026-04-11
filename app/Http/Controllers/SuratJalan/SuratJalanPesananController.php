@@ -444,7 +444,7 @@ class SuratJalanPesananController extends Controller
             'id_surat_jalan' => 'required',
             'is_sesuai' => 'required|boolean',
             'qty_temp' => 'nullable|integer|min:1',
-            'email' => 'required|email' // 🔥 WAJIB
+            'email' => 'required|email'
         ]);
 
         $now = Carbon::now('Asia/Jakarta');
@@ -463,7 +463,6 @@ class SuratJalanPesananController extends Controller
                 throw new \Exception('Data tidak ditemukan');
             }
 
-            // FIX: strict check (hindari false positive)
             if ((int)$data->ACCCustomer === 1) {
                 DB::commit();
 
@@ -477,9 +476,9 @@ class SuratJalanPesananController extends Controller
                 throw new \Exception('Qty harus diisi');
             }
 
-            // =====================
-            // GENERATE QR (TIDAK DIUBAH)
-            // =====================
+            // ============
+            // GENERATE QR
+            // ============
             $key = env('QR_SHARED_SECRET');
 
             if (!$key || strlen($key) !== 32) {
@@ -517,9 +516,9 @@ class SuratJalanPesananController extends Controller
                 ->where('IdSuratJalan', $request->id_surat_jalan)
                 ->update($update);
 
-            // =====================
-            // UPDATE OTP (PINDAHAN)
-            // =====================
+            // ===========
+            // UPDATE OTP
+            // ===========
             DB::table('T_SuratJalanOTP')
                 ->where('IdSuratJalan', $request->id_surat_jalan)
                 ->where('IsUsed', 0)
@@ -543,14 +542,14 @@ class SuratJalanPesananController extends Controller
             ], 500);
         }
 
-        // =====================
-        // EMAIL (FIX UTAMA DI SINI)
-        // =====================
+        // =====
+        // EMAIL
+        // =====
         if ((int)$request->is_sesuai === 1) {
             try {
                 $this->sendSuratJalanEmail(
                     $data->IDPengiriman,
-                    [$request->email] // 🔥 FIX
+                    [$request->email]
                 );
             } catch (\Exception $e) {
                 Log::error('EMAIL ERROR', [
