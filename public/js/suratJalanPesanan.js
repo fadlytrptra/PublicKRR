@@ -44,6 +44,62 @@ jQuery(function ($) {
         ]
     });
 
+    // =============================
+    // INIT STATE (dari backend)
+    // =============================
+    let otpData = window.otpData || null;
+
+    if (otpData) {
+
+        $('#approvalInfo').show();
+
+        let email = otpData.Email;
+        let approvedAt = otpData.ApprovedAt;
+        let createdAt = otpData.CreatedAt;
+
+        if (approvedAt) {
+            // Approve (ACC)
+            $('#rowStatus').hide();
+
+            $('#labelApprovedBy').text('Approved By:');
+            $('#labelApprovedAt').text('Approved At:');
+
+            $('#approvedEmail').text(email);
+            $('#approvedAt').text(approvedAt);
+
+            $('#approvalInfo')
+                .removeClass('text-danger')
+                .addClass('text-success');
+
+            $('#btnResendEmail')
+                .prop('disabled', false)
+                .removeClass('btn-secondary')
+                .addClass('btn-primary')
+                .text('Resend Email');
+
+        } else {
+            // PASCA KIRIM
+            $('#rowStatus').show();
+            $('#statusApproval').text('Ditolak');
+
+            $('#labelApprovedBy').text('Email:');
+            $('#labelApprovedAt').text('Tanggal:');
+
+            $('#approvedEmail').text(email);
+            $('#approvedAt').text(createdAt ?? '-');
+
+            $('#approvalInfo')
+                .removeClass('text-success')
+                .addClass('text-danger');
+
+            $('#btnResendEmail')
+                .prop('disabled', true)
+                .removeClass('btn-primary')
+                .addClass('btn-secondary')
+                .text('Pasca Kirim');
+        }
+    }
+
 //#endregion
 
 //#region function
@@ -200,6 +256,12 @@ jQuery(function ($) {
 
             $('#approvedEmail').text($('#emailSelect').val());
             $('#approvedAt').text(formatDateTime(new Date()));
+
+            $('#btnResendEmail')
+                .prop('disabled', false)
+                .removeClass('btn-secondary')
+                .addClass('btn-primary')
+                .text('Resend Email');
         })
         .fail(function (xhr) {
             alert(xhr.responseJSON?.error ?? 'Terjadi kesalahan');
@@ -248,7 +310,7 @@ jQuery(function ($) {
             email: $('#emailSelect').val()
         })
         .done(function () {
-            alert('Approved tanpa email');
+            alert('Data disimpan sebagai PASCA KIRIM');
 
             $('#modalKonfirmasi').modal('hide');
 
@@ -257,8 +319,26 @@ jQuery(function ($) {
 
             $('#approvalInfo').show();
 
-            $('#approvedEmail').text($('#emailSelect').val());
+            $('#rowStatus').show();
+            $('#statusApproval').text('Ditolak');
+
+            $('#labelApprovedBy').text('Email:');
+            $('#labelApprovedAt').text('Tanggal:');
+
+            let email = $('#emailSelect').val();
+
+            $('#approvedEmail').text(email);
             $('#approvedAt').text(formatDateTime(new Date()));
+
+            $('#approvalInfo')
+                .removeClass('text-success')
+                .addClass('text-danger');
+
+            $('#btnResendEmail')
+                .prop('disabled', true)
+                .removeClass('btn-primary')
+                .addClass('btn-secondary')
+                .text('Pasca Kirim');
         })
         .fail(function (xhr) {
             console.log(xhr.responseJSON);
@@ -270,6 +350,10 @@ jQuery(function ($) {
     $('#btnResendEmail').click(function () {
 
         let email = $('#approvedEmail').text().trim();
+        if (email === 'PASCA KIRIM' || email === '-') {
+            alert('Tidak bisa resend email (status Pasca Kirim)');
+            return;
+        }
         let idPengiriman = window.appData?.idPengiriman;
 
         if (!email) {

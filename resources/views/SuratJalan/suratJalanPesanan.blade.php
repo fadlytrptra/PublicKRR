@@ -13,16 +13,6 @@
 
                 <div class="card-body">
 
-                    {{-- <!-- FILTER -->
-                    <div class="mb-3 d-flex align-items-center gap-2">
-                        <label class="form-label mb-0">Pilih Satuan:</label>
-                        <select id="filterSat" class="form-select w-auto">
-                            <option value="primer">Primer</option>
-                            <option value="sekunder">Sekunder</option>
-                            <option value="tritier">Tritier</option>
-                        </select>
-                    </div> --}}
-
                     <!-- HEADER + OTP -->
                     <div class="mb-3 d-flex justify-content-between align-items-start">
 
@@ -59,12 +49,22 @@
                                 </div>
                             @endif
 
+                            <div id="approvalInfo" class="mt-2" style="{{ isset($otp) && $otp ? '' : 'display:none;' }}">
+                                <div id="rowStatus" style="display:none;">
+                                    <strong>Status:</strong> <span id="statusApproval"></span>
+                                </div>
 
-                            <div id="approvalInfo" class="mt-2 text-success" style="{{ isset($otp) && $otp ? '' : 'display:none;' }}">
-                                <div><strong>Approved By:</strong> <span id="approvedEmail"></span></div>
-                                <div><strong>Approved At:</strong> <span id="approvedAt"></span></div>
+                               <div id="rowApprovedBy">
+                                    <strong id="labelApprovedBy">Approved By:</strong>
+                                    <span id="approvedEmail"></span>
+                                </div>
 
-                                <!--Resend Email-->
+                                <div id="rowApprovedAt">
+                                    <strong id="labelApprovedAt">Approved At:</strong>
+                                    <span id="approvedAt"></span>
+                                </div>
+
+                                <!-- Resend Email -->
                                 <button id="btnResendEmail"
                                     class="btn w-100 mt-2 fw-bold">
                                     Resend Email
@@ -134,22 +134,14 @@
     </div>
 </div>
 
-@if(isset($otp) && $otp)
-<script>
-    $(function(){
-        $('#approvalInfo').show();
-        $('#approvedEmail').text("{{ $otp->Email }}");
-        $('#approvedAt').text("{{ $otp->ApprovedAt }}");
-    });
-</script>
-@endif
-
 {{-- Inject data --}}
 <script>
     window.appData = {
         idPengiriman: "{{ $id_pengiriman }}",
         noPo: "{{ $no_po }}"
     };
+
+    window.otpData = @json($otp ?? null);
 </script>
 
 <script src="{{ asset('js/suratJalanPesanan.js') }}"></script>
