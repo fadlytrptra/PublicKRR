@@ -51,7 +51,8 @@
 
                             <div id="approvalInfo" class="mt-2" style="{{ isset($otp) && $otp ? '' : 'display:none;' }}">
                                 <div id="rowStatus" style="display:none;">
-                                    <strong>Status:</strong> <span id="statusApproval"></span>
+                                    <strong id="labelStatus">Status:</strong>
+                                    <span id="statusApproval"></span>
                                 </div>
 
                                <div id="rowApprovedBy">

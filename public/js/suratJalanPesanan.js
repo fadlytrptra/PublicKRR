@@ -67,7 +67,7 @@ jQuery(function ($) {
             $('#approvedEmail').text(email);
             $('#approvedAt').text(approvedAt);
 
-            $('#approvalInfo')
+            $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
                 .removeClass('text-danger')
                 .addClass('text-success');
 
@@ -88,7 +88,7 @@ jQuery(function ($) {
             $('#approvedEmail').text(email);
             $('#approvedAt').text(createdAt ?? '-');
 
-            $('#approvalInfo')
+            $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
                 .removeClass('text-success')
                 .addClass('text-danger');
 
@@ -254,8 +254,18 @@ jQuery(function ($) {
 
             $('#approvalInfo').show();
 
+            $('#rowStatus').hide();
+
+            $('#labelApprovedBy').text('Approved By:');
+            $('#labelApprovedAt').text('Approved At:');
+
+
             $('#approvedEmail').text($('#emailSelect').val());
             $('#approvedAt').text(formatDateTime(new Date()));
+
+            $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
+                .removeClass('text-danger')
+                .addClass('text-success');
 
             $('#btnResendEmail')
                 .prop('disabled', false)
@@ -330,7 +340,7 @@ jQuery(function ($) {
             $('#approvedEmail').text(email);
             $('#approvedAt').text(formatDateTime(new Date()));
 
-            $('#approvalInfo')
+            $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
                 .removeClass('text-success')
                 .addClass('text-danger');
 
