@@ -160,10 +160,14 @@ class SuratJalanPesananController extends Controller
             ->select(
                 'IDPengiriman',
                 'No_PO',
-                'NamaCust',
+                DB::raw('CONVERT(date, TglKirim) as TglKirim'),
                 DB::raw('MIN(NamaType) as NamaType')
             )
-            ->groupBy('IDPengiriman', 'No_PO', 'NamaCust')
+            ->groupBy(
+                'IDPengiriman',
+                'No_PO',
+                DB::raw('CONVERT(date, TglKirim)')
+            )
             ->get();
 
         return response()->json([

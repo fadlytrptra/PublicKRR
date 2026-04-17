@@ -53,11 +53,20 @@ class UserController extends Controller
     {
         $request->validate([
             'NamaUser' => 'required|string|max:255',
-            'NamaPerusahaan' => 'nullable|string|max:255',
-            'AlamatPerusahaan' => 'nullable|string|max:255',
-            'NoHP' => 'nullable|string|max:20',
-            'NPWP' => 'nullable|string|max:50',
-            'Password' => 'nullable|min:6',
+            'NamaPerusahaan' => 'required|string|max:255',
+            'AlamatPerusahaan' => 'required|string|max:255',
+            'NoHP' => 'required|string|max:20',
+            'NPWP' => 'required|string|max:50',
+             'Password' => [
+                'nullable',
+                'min:8',
+                'regex:/[A-Z]/',
+                'regex:/[a-z]/',
+                'regex:/[^A-Za-z0-9]/'
+            ],
+        ], [
+            'Password.min' => 'Password minimal 8 karakter',
+            'Password.regex' => 'Password harus ada huruf besar, kecil, dan simbol',
         ]);
 
         $user = session('user');
@@ -66,12 +75,17 @@ class UserController extends Controller
             return redirect('/login');
         }
 
+        $currentUser = DB::connection('ConnPublic')
+            ->table('UserPublic')
+            ->where('IdUser', $user->IdUser)
+            ->first();
+
         $data = [
-            'NamaUser' => $request->NamaUser,
-            'NamaPerusahaan' => $request->NamaPerusahaan,
-            'AlamatPerusahaan' => $request->AlamatPerusahaan,
-            'NoHP' => $request->NoHP,
-            'NPWP' => $request->NPWP,
+            'NamaUser' => $request->NamaUser ?: $currentUser->NamaUser,
+            'NamaPerusahaan' => $currentUser->NamaPerusahaan,
+            'AlamatPerusahaan' => $currentUser->AlamatPerusahaan,
+            'NoHP' => $request->NoHP ?: $currentUser->NoHP,
+            'NPWP' => $request->NPWP ?: $currentUser->NPWP,
         ];
 
         // kalau password diisi → update

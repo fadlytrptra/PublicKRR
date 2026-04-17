@@ -43,11 +43,11 @@ class LoginController extends Controller
             ->first();
 
         if (!$user) {
-            return back()->withErrors(['error' => 'User tidak ditemukan']);
+            return back()->withErrors(['error' => 'User / Password tidak ditemukan']);
         }
 
         if (!Hash::check($request->Password, $user->Password)) {
-            return back()->withErrors(['error' => 'Password salah']);
+            return back()->withErrors(['error' => 'User / Password tidak ditemukan']);
         }
 
         if ($user->Deactivated) {
@@ -103,7 +103,13 @@ class LoginController extends Controller
             'NamaUser' => 'required',
             'NamaPerusahaan' => 'required',
             'AlamatPerusahaan' => 'required',
-            'Password' => 'required|min:6'
+            'Password' => [
+                'required',
+                'min:8',
+                'regex:/[A-Z]/',
+                'regex:/[a-z]/',
+                'regex:/[^A-Za-z0-9]/'
+            ]
         ]);
 
         if ($validator->fails()) {

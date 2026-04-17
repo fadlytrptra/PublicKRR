@@ -7,7 +7,14 @@
         max-height: 70vh;
         overflow-y: auto;
     }
+
+    #tableList th,
+    #tableList td {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
 </style>
+
 
 <div class="container">
     <div class="card">
@@ -18,7 +25,7 @@
                 <thead>
                     <tr>
                         <th>No PO</th>
-                        <th>Nama Customer</th>
+                        <th>Tanggal Kirim</th>
                         <th>Nama Type</th>
                         <th>Action</th>
                     </tr>
@@ -54,7 +61,7 @@
                         <input type="text" id="SuratPesanan" class="form-control" readonly>
                     </div>
                     <div class="col-md-3">
-                        <label>Tgl Kirim</label>
+                        <label>Tanggal Kirim</label>
                         <input type="text" id="TglKirim" class="form-control" readonly>
                     </div>
                 </div>
@@ -65,7 +72,6 @@
                         <thead>
                             <tr>
                                 <th>Nama Type</th>
-                                <th>Kelompok</th>
                                 <th>Qty</th>
                                 <th>Satuan</th>
                             </tr>
@@ -75,23 +81,19 @@
                 </div>
 
                 <!-- CUSTOMER -->
-                <div class="card mb-3">
+                {{-- <div class="card mb-3">
                     <div class="card-header">Customer</div>
                     <div class="card-body row">
                         <div class="col-md-6">
                             <label>Nama</label>
                             <input type="text" id="NamaCust" class="form-control" readonly>
                         </div>
-                        <div class="col-md-6">
-                            <label>Jenis</label>
-                            <input type="text" id="JnsCust" class="form-control" readonly>
-                        </div>
                         <div class="col-md-12 mt-2">
                             <label>Alamat</label>
                             <input type="text" id="AlamatCustomer" class="form-control" readonly>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- EXPEDITOR -->
                 <div class="card mb-3">
@@ -109,43 +111,12 @@
                             <label>Supir</label>
                             <input type="text" id="Supir" class="form-control" readonly>
                         </div>
-
-                        <div class="col-md-4 mt-2">
-                            <label>No Container</label>
-                            <input type="text" id="NoContainer" class="form-control" readonly>
-                        </div>
-                        <div class="col-md-4 mt-2">
-                            <label>No Seal</label>
-                            <input type="text" id="NoSeal" class="form-control" readonly>
-                        </div>
-                        <div class="col-md-4 mt-2">
-                            <label>Jenis Pengiriman</label>
-                            <input type="text" id="JnsPengiriman" class="form-control" readonly>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ALAMAT KIRIM -->
-                <div class="card mb-3">
-                    <div class="card-header">Alamat Kirim</div>
-                    <div class="card-body">
-                        <div class="mb-2">
-                            <label>Alamat Kirim Customer</label>
+                         <div class="mt-2">
+                            <label>Alamat Kirim</label>
                             <input type="text" id="AlamatKirimCustomer" class="form-control" readonly>
                         </div>
-                        <div>
-                            <label>Alamat Kirim DO</label>
-                            <input type="text" id="AlamatKirimDO" class="form-control" readonly>
-                        </div>
                     </div>
                 </div>
-
-                <!-- KETERANGAN -->
-                <div class="mb-3">
-                    <label>Keterangan</label>
-                    <input type="text" id="Ket" class="form-control" readonly>
-                </div>
-
             </div>
         </div>
     </div>
@@ -156,7 +127,7 @@ $('#tableList').DataTable({
     ajax: '/SuratJalan/list-data',
     columns: [
         { data: 'No_PO' },
-        { data: 'NamaCust' },
+        { data: 'TglKirim', className: 'text-start' },
         { data: 'NamaType' },
         {
             data: 'IDPengiriman',
@@ -192,7 +163,6 @@ $(document).on('click', '.btn-detail', function () {
                 rows += `
                     <tr>
                         <td>${item.NamaType ?? '-'}</td>
-                        <td>${item.NamaKelompokUtama ?? '-'}</td>
                         <td>${item.Qty ?? 0}</td>
                         <td>${item.SatJual ?? '-'}</td>
                     </tr>

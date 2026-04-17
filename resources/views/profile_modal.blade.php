@@ -3,7 +3,7 @@
         <div class="modal-content">
 
             @if(session('user'))
-                <form action="{{ route('profile.update', session('user')->IdUser) }}" method="POST">
+                <form action="{{ route('profile.update', session('user')->IdUser) }}" method="POST" novalidate>
                     @csrf
                     @method('PUT')
 
@@ -23,47 +23,55 @@
                         <div class="mb-3">
                             <label>Nama</label>
                             <input type="text" name="NamaUser" class="form-control"
-                                value="{{ $user->NamaUser }}" required>
+                                value="{{ old('NamaUser', $user->NamaUser) }}">
+                            <div class="invalid-feedback">Nama wajib diisi</div>
                         </div>
 
                         <div class="mb-3">
                             <label>Nama Perusahaan</label>
-                            <input type="text" name="NamaPerusahaan" class="form-control"
-                                value="{{ $user->NamaPerusahaan }}">
+                            <input type="text" name="NamaPerusahaan" class="form-control bg-secondary-subtle"
+                                value="{{ $user->NamaPerusahaan }}" readonly>
                         </div>
 
                         <div class="mb-3">
                             <label>Alamat Perusahaan</label>
                             <textarea name="AlamatPerusahaan"
-                                class="form-control">{{ $user->AlamatPerusahaan }}</textarea>
+                                class="form-control bg-secondary-subtle" readonly>{{ $user->AlamatPerusahaan }}</textarea>
                         </div>
 
                         <div class="mb-3">
                             <label>No HP</label>
                             <input type="text" name="NoHP" class="form-control"
-                                value="{{ $user->NoHP }}">
+                                value="{{ old('NoHP', $user->NoHP) }}">
+                            <div class="invalid-feedback">No HP wajib diisi</div>
                         </div>
 
                         <div class="mb-3">
                             <label>NPWP</label>
                             <input type="text" name="NPWP" class="form-control"
-                                value="{{ $user->NPWP }}">
+                                value="{{ old('NPWP', $user->NPWP) }}">
+                            <div class="invalid-feedback">NPWP wajib diisi</div>
                         </div>
 
                         <div class="mb-3">
                             <label>Password (kosongkan jika tidak diubah)</label>
                             <div class="input-group">
-                                <input type="password" name="Password" id="passwordField" class="form-control">
+                                <input type="password" name="Password" id="passwordField"
+                                    class="form-control @error('Password') is-invalid @enderror">
 
-                                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">
+                               <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">
                                     <span id="eyeIcon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                            fill="currentColor" viewBox="0 0 24 24">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M12 9a3 3 0 1 0 0 6 3 3 0 1 0 0-6"></path>
                                             <path d="M12 19c7.63 0 9.93-6.62 9.95-6.68.07-.21.07-.43 0-.63-.02-.07-2.32-6.68-9.95-6.68s-9.93 6.61-9.95 6.67c-.07.21-.07.43 0 .63.02.07 2.32 6.68 9.95 6.68Zm0-12c5.35 0 7.42 3.85 7.93 5-.5 1.16-2.58 5-7.93 5s-7.42-3.84-7.93-5c.5-1.16 2.58-5 7.93-5"></path>
                                         </svg>
                                     </span>
                                 </button>
+                                 @error('Password')
+                                    <div class="invalid-feedback d-block">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
                             </div>
                         </div>
                     </div>
@@ -80,12 +88,63 @@
 </div>
 
 <script>
-    function togglePassword() {
-        let input = document.getElementById('passwordField');
-        if (input.type === "password") {
-            input.type = "text";
-        } else {
-            input.type = "password";
+document.addEventListener("DOMContentLoaded", function () {
+
+    const modalEl = document.getElementById('profileModal');
+    const form = modalEl?.querySelector('form');
+
+    if (!modalEl || !form) return;
+
+    const nama = form.querySelector('[name="NamaUser"]');
+    const nohp = form.querySelector('[name="NoHP"]');
+    const npwp = form.querySelector('[name="NPWP"]');
+    const inputs = form.querySelectorAll('input');
+
+    // ✅ VALIDASI SUBMIT
+    form.addEventListener('submit', function (e) {
+        let isValid = true;
+
+        [nama, nohp, npwp].forEach(input => {
+            if (input.value.trim() === '') {
+                input.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                input.classList.remove('is-invalid');
+            }
+        });
+
+        if (!isValid) {
+            e.preventDefault();
         }
-    }
+    });
+
+    // ✅ REALTIME VALIDATION
+    inputs.forEach(input => {
+        input.addEventListener('input', function () {
+            if (this.value.trim() !== '') {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+
+    // ✅ TOGGLE PASSWORD
+    window.togglePassword = function () {
+        const input = document.getElementById('passwordField');
+        if (input) {
+            input.type = input.type === "password" ? "text" : "password";
+        }
+    };
+
+    // ✅ AUTO RELOAD SAAT MODAL DITUTUP
+    modalEl.addEventListener('hidden.bs.modal', function () {
+        location.reload();
+    });
+
+    // ✅ AUTO OPEN MODAL JIKA ADA ERROR (Laravel)
+    @if ($errors->any())
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    @endif
+
+});
 </script>
