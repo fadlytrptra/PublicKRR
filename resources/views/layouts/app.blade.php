@@ -25,6 +25,12 @@
 
 <body>
     <nav class="navbar navbar-light bg-white shadow sticky-top px-4 py-3">
+        <div>
+            <a href="{{ url('/home') }}" class="text-decoration-none text-dark fw-bold">
+                Home
+            </a>
+        </div>
+
         <div class="ms-auto d-flex align-items-center gap-2">
             @if(session('user'))
                 <a href="#" data-bs-toggle="modal" data-bs-target="#profileModal"

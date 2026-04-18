@@ -17,6 +17,7 @@ use App\Http\Controllers\SuratJalan\VerifyDokumenController;
 Route::get('/', [LoginController::class, 'index'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::post('/forgot-password', [LoginController::class, 'forgotPassword']);
 
 Route::get('/register', function () {
     if (!session('showOtp')) {

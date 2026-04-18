@@ -155,8 +155,28 @@ class SuratJalanPesananController extends Controller
 
     public function listData()
     {
+        $user = session('user');
+
+        if (!$user) {
+            return response()->json([
+                'data' => []
+            ]);
+        }
+
+        $idCustList = DB::connection('ConnPublic')
+            ->table('CustomerUserPublic')
+            ->where('IdUser', $user->IdUser)
+            ->pluck('IDCust');
+
+        if ($idCustList->isEmpty()) {
+            return response()->json([
+                'data' => []
+            ]);
+        }
+
         $data = DB::connection('ConnPublic')
             ->table('T_KirimSuratJalan')
+            ->whereIn('IDCust', $idCustList)
             ->select(
                 'IDPengiriman',
                 'No_PO',

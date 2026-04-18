@@ -5,95 +5,8 @@
 
     <!-- MATERIAL ICON -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
 
-    <style>
-        body {
-            font-family: Arial;
-            background-color: #f1f3f5;
-        }
-
-        .container {
-            width: 600px;
-            margin: 80px auto;
-        }
-
-        .card {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .card-header {
-            padding: 15px;
-            font-weight: bold;
-            border-bottom: 1px solid #ddd;
-            background: #f7f7f7;
-        }
-
-        .card-body {
-            padding: 20px;
-        }
-
-        .input-group {
-            display: flex;
-            margin-bottom: 15px;
-        }
-
-        .input-group .icon {
-            background: #e9ecef;
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            border: 1px solid #ccc;
-            border-right: none;
-        }
-
-        .input-group input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
-            outline: none;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            color: white;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-        }
-
-        .btn-login {
-            background: #3b82c4;
-            font-size: 16px;
-        }
-
-        .btn-login:hover {
-            background: #2f6fa3;
-        }
-
-        .btn-register {
-            background: #343a40;
-            font-size: 16px;
-        }
-
-        .btn-register:hover {
-            background: #23272b;
-        }
-
-        .error {
-            color: red;
-            margin-bottom: 10px;
-        }
-
-        .success {
-            color: green;
-            margin-bottom: 10px;
-        }
-    </style>
 </head>
 <body>
 
@@ -142,11 +55,86 @@
                     Register
                 </button>
 
+                <div style="text-align:right; margin-top:10px;">
+                    <a href="#"
+                    style="font-size:14px; color:#dc3545; text-decoration:none;"
+                    onclick="openModal()">
+                        Lupa Password?
+                    </a>
+                </div>
             </form>
 
         </div>
     </div>
 </div>
 
+<div id="modalForgot" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5);">
+    <div style="background:white; width:400px; margin:100px auto; padding:20px; border-radius:8px;">
+        <h3 class="modal-title">Lupa Password</h3>
+
+        @error('forgot_error')
+            <div style="color:red">{{ $message }}</div>
+        @enderror
+
+        <form method="POST" action="/forgot-password">
+            @csrf
+            <input type="text" name="login" placeholder="Email / Username" class="input-modal">
+            <button type="submit" class="btn btn-login">Reset Password</button>
+        </form>
+
+        @if(session('generated_password'))
+            <div style="background:#e6ffed; padding:10px; border-radius:5px; margin-bottom:10px; color:#155724;">
+                <strong>Password Baru:</strong><br>
+                <span style="font-size:16px; font-weight:bold;">
+                    {{ session('generated_password') }}
+                </span>
+            </div>
+        @endif
+
+        <button type="button" class="btn-close" onclick="closeModal()">Close</button>
+    </div>
+</div>
+
+@if($errors->has('forgot_error'))
+<script>
+    window.onload = function() {
+        openModal();
+    }
+</script>
+@endif
+
+@if(session('generated_password'))
+<script>
+    window.onload = function() {
+        openModal();
+    }
+</script>
+@endif
+
 </body>
 </html>
+
+<script>
+    function openModal() {
+        document.getElementById('modalForgot').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('modalForgot').style.display = 'none';
+    }
+
+    // klik area gelap (overlay)
+    window.onclick = function(event) {
+        const modal = document.getElementById('modalForgot');
+        if (event.target === modal) {
+            closeModal();
+        }
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") {
+            closeModal();
+        }
+    });
+</script>
+

@@ -241,4 +241,67 @@ class LoginController extends Controller
         return redirect('/')
             ->with('success', 'Registrasi berhasil, menunggu approval admin');
     }
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'login' => 'required'
+        ]);
+
+        $user = DB::connection('ConnPublic')
+            ->table('UserPublic')
+            ->where(function ($query) use ($request) {
+                $query->where('Email', $request->login)
+                    ->orWhere('NamaUser', $request->login);
+            })
+            ->first();
+
+        if (!$user) {
+            return back()->withErrors([
+                'forgot_error' => 'Email / Username tidak ditemukan'
+            ]);
+        }
+
+        // GENERATE PASSWORD
+        $newPassword = $this->generateStrongPassword();
+
+        // HASH PASSWORD
+        $hashedPassword = Hash::make($newPassword);
+
+        // UPDATE DB
+        DB::connection('ConnPublic')
+            ->table('UserPublic')
+            ->where('IdUser', $user->IdUser)
+            ->update([
+                'Password' => $hashedPassword
+            ]);
+
+        return back()
+        ->with('generated_password', $newPassword)
+        ->with('success', 'Password berhasil direset. Silakan gunakan password baru di bawah.');
+        }
+
+    public function generateStrongPassword($length = 10)
+    {
+        $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        $numbers   = '0123456789';
+        $symbols   = '!@#$%^&*()_+=-';
+
+        // pastikan minimal 1 dari masing-masing
+        $password = [
+            $uppercase[rand(0, strlen($uppercase) - 1)],
+            $lowercase[rand(0, strlen($lowercase) - 1)],
+            $symbols[rand(0, strlen($symbols) - 1)],
+            $numbers[rand(0, strlen($numbers) - 1)],
+        ];
+
+        $all = $uppercase . $lowercase . $numbers . $symbols;
+
+        for ($i = 4; $i < $length; $i++) {
+            $password[] = $all[rand(0, strlen($all) - 1)];
+        }
+
+        return str_shuffle(implode('', $password));
+    }
 }

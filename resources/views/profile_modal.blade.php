@@ -1,3 +1,27 @@
+
+<!--Hanya NPWP-->
+{{-- @php
+$npwpCustomers = DB::connection('ConnPublic')
+    ->table('CustomerUserPublic')
+    ->where('IdUser', session('user')->IdUser)
+    ->whereNotNull('NPWP')
+    ->pluck('NPWP')
+    // ->unique()
+    ->values();
+@endphp --}}
+
+<!--Dengan ID Cust-->
+@php
+$npwpCustomers = DB::connection('ConnPublic')
+    ->table('CustomerUserPublic')
+    ->where('IdUser', session('user')->IdUser)
+    ->whereNotNull('NPWP')
+    ->select('IDCust', 'NPWP')
+    ->get();
+@endphp
+
+
+
 <div class="modal fade" id="profileModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -47,10 +71,29 @@
                         </div>
 
                         <div class="mb-3">
-                            <label>NPWP</label>
+                            <label>NPWP User</label>
                             <input type="text" name="NPWP" class="form-control"
                                 value="{{ old('NPWP', $user->NPWP) }}">
                             <div class="invalid-feedback">NPWP wajib diisi</div>
+                        </div>
+
+                       <div class="mb-3">
+                            <label>NPWP (Customer)</label>
+
+                            @if($npwpCustomers->count())
+                                <ul class="list-group">
+                                    @foreach($npwpCustomers as $row)
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>{{ $row->NPWP }}</span>
+                                            <small class="text-muted">IDCust: {{ $row->IDCust }}</small>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                <div class="form-control bg-secondary-subtle">
+                                    Tidak ada NPWP customer
+                                </div>
+                            @endif
                         </div>
 
                         <div class="mb-3">
@@ -90,17 +133,16 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    const modalEl = document.getElementById('profileModal');
-    const form = modalEl?.querySelector('form');
+    let modalEl = document.getElementById('profileModal');
+    let form = modalEl?.querySelector('form');
 
     if (!modalEl || !form) return;
 
-    const nama = form.querySelector('[name="NamaUser"]');
-    const nohp = form.querySelector('[name="NoHP"]');
-    const npwp = form.querySelector('[name="NPWP"]');
-    const inputs = form.querySelectorAll('input');
+    let nama = form.querySelector('[name="NamaUser"]');
+    let nohp = form.querySelector('[name="NoHP"]');
+    let npwp = form.querySelector('[name="NPWP"]');
+    let inputs = form.querySelectorAll('input');
 
-    // ✅ VALIDASI SUBMIT
     form.addEventListener('submit', function (e) {
         let isValid = true;
 
@@ -118,7 +160,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // ✅ REALTIME VALIDATION
     inputs.forEach(input => {
         input.addEventListener('input', function () {
             if (this.value.trim() !== '') {
@@ -127,22 +168,19 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // ✅ TOGGLE PASSWORD
     window.togglePassword = function () {
-        const input = document.getElementById('passwordField');
+        let input = document.getElementById('passwordField');
         if (input) {
             input.type = input.type === "password" ? "text" : "password";
         }
     };
 
-    // ✅ AUTO RELOAD SAAT MODAL DITUTUP
     modalEl.addEventListener('hidden.bs.modal', function () {
         location.reload();
     });
 
-    // ✅ AUTO OPEN MODAL JIKA ADA ERROR (Laravel)
     @if ($errors->any())
-        const modal = new bootstrap.Modal(modalEl);
+        let modal = new bootstrap.Modal(modalEl);
         modal.show();
     @endif
 

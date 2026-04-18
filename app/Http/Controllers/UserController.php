@@ -42,11 +42,19 @@ class UserController extends Controller
     {
         $user = session('user');
 
+        $npwpCustomers = DB::connection('ConnPublic')
+            ->table('CustomerUserPublic')
+            ->where('IdUser', $user->IdUser)
+            ->whereNotNull('NPWP')
+            ->pluck('NPWP')
+            ->unique()
+            ->values();
+
         if (!$user) {
             return redirect('/login');
         }
 
-        return view('profile.edit', compact('user'));
+        return view('profile.edit', compact('user', 'npwpCustomers'));
     }
 
     public function update(Request $request, $id = null)
@@ -56,7 +64,10 @@ class UserController extends Controller
             'NamaPerusahaan' => 'required|string|max:255',
             'AlamatPerusahaan' => 'required|string|max:255',
             'NoHP' => 'required|string|max:20',
-            'NPWP' => 'required|string|max:50',
+            'NPWP' => [
+                'required',
+                'regex:/^[0-9]{16}$/'
+            ],
              'Password' => [
                 'nullable',
                 'min:8',
