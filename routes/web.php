@@ -31,23 +31,33 @@ Route::post('/register', [LoginController::class, 'register']);
 Route::post('/verify-otp', [LoginController::class, 'verifyOtp']);
 #endregion
 
-Route::resource('profile', UserController::class);
+// Dokumen SJ (QR / email)
+Route::get('/DokumenSJ/view/{id}', [DokumenSJController::class, 'show'])
+    ->where('id', '.*')
+    ->name('DokumenSJ.show');
 
-Route::get('SuratJalan-data', [SuratJalanPesananController::class, 'data'])->name('SuratJalan.data');
-Route::get('SuratJalan/list-data', [SuratJalanPesananController::class, 'listData'])->name('SuratJalan.listData');
-Route::get('/SuratJalan/detail-modal/{id}', [SuratJalanPesananController::class, 'detailModalSJ']);
-Route::get('SuratJalan/get-emails/{id_pengiriman}', [SuratJalanPesananController::class, 'getEmails']);
-Route::post('SuratJalan/send-otp', [SuratJalanPesananController::class, 'sendOtp']);
-Route::post('SuratJalan/verify-otp', [SuratJalanPesananController::class, 'verifyOtp']);
-Route::post('SuratJalan/confirm-approval', [SuratJalanPesananController::class, 'confirmApproval']);
-Route::post('SuratJalan/resend-email', [SuratJalanPesananController::class, 'resendEmail']);
-Route::resource('SuratJalan', SuratJalanPesananController::class);
+// Surat Jalan (QR / email)
+Route::get('/SuratJalan/{id}', [SuratJalanPesananController::class, 'show'])
+    ->where('id', '[A-Za-z0-9%]+')
+    ->name('SuratJalan.show');
 
-Route::resource('DokumenSJ', DokumenSJController::class);
 
 Route::middleware(['check.login'])->group(function () {
     Route::get('/home', function () {
         return view('home');
     })->name('home');
+
+    Route::resource('profile', UserController::class);
+
+    Route::get('SuratJalan-data', [SuratJalanPesananController::class, 'data'])->name('SuratJalan.data');
+    Route::get('SuratJalan/list-data', [SuratJalanPesananController::class, 'listData'])->name('SuratJalan.listData');
+    Route::get('/SuratJalan/detail-modal/{id}', [SuratJalanPesananController::class, 'detailModalSJ']);
+    Route::get('SuratJalan/get-emails/{id_pengiriman}', [SuratJalanPesananController::class, 'getEmails']);
+    Route::post('SuratJalan/send-otp', [SuratJalanPesananController::class, 'sendOtp']);
+    Route::post('SuratJalan/verify-otp', [SuratJalanPesananController::class, 'verifyOtp']);
+    Route::post('SuratJalan/confirm-approval', [SuratJalanPesananController::class, 'confirmApproval']);
+    Route::post('SuratJalan/resend-email', [SuratJalanPesananController::class, 'resendEmail']);
+    Route::resource('SuratJalan', SuratJalanPesananController::class)->except(['show']);
+    Route::resource('DokumenSJ', DokumenSJController::class)->except(['show']);
 
 });

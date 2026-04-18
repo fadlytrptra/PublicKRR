@@ -1,24 +1,24 @@
 
 <!--Hanya NPWP-->
-{{-- @php
+@php
 $npwpCustomers = DB::connection('ConnPublic')
     ->table('CustomerUserPublic')
     ->where('IdUser', session('user')->IdUser)
     ->whereNotNull('NPWP')
     ->pluck('NPWP')
-    // ->unique()
+    ->unique()
     ->values();
-@endphp --}}
+@endphp
 
 <!--Dengan ID Cust-->
-@php
+{{-- @php
 $npwpCustomers = DB::connection('ConnPublic')
     ->table('CustomerUserPublic')
     ->where('IdUser', session('user')->IdUser)
     ->whereNotNull('NPWP')
     ->select('IDCust', 'NPWP')
     ->get();
-@endphp
+@endphp --}}
 
 
 
@@ -78,17 +78,12 @@ $npwpCustomers = DB::connection('ConnPublic')
                         </div>
 
                        <div class="mb-3">
-                            <label>NPWP (Customer)</label>
+                            <label>NPWP Perusahaan yang terhubung dengan User</label>
 
-                            @if($npwpCustomers->count())
-                                <ul class="list-group">
-                                    @foreach($npwpCustomers as $row)
-                                        <li class="list-group-item d-flex justify-content-between">
-                                            <span>{{ $row->NPWP }}</span>
-                                            <small class="text-muted">IDCust: {{ $row->IDCust }}</small>
-                                        </li>
-                                    @endforeach
-                                </ul>
+                           @if($npwpCustomers->count())
+                                <div class="form-control bg-secondary-subtle">
+                                    {{ $npwpCustomers->implode(', ') }}
+                                </div>
                             @else
                                 <div class="form-control bg-secondary-subtle">
                                     Tidak ada NPWP customer

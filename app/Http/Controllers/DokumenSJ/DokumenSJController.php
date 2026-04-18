@@ -47,6 +47,11 @@ class DokumenSJController extends Controller
             ->orderBy('sj.TglKirim', 'desc')
             ->get();
 
+            $list->transform(function ($item) {
+                $item->encrypted_id = encrypt($item->IDPengiriman);
+                return $item;
+            });
+
         return view('DokumenSJ.list', compact('list'));
     }
 
@@ -58,9 +63,8 @@ class DokumenSJController extends Controller
         $user = $this->getUser();
 
         try {
-            $encrypter = new Encrypter(env('QR_SHARED_SECRET'), 'AES-256-CBC');
-            $idPengiriman = $encrypter->decryptString(urldecode($id));
-        } catch (DecryptException $e) {
+            $idPengiriman = decrypt(urldecode($id));
+        } catch (\Exception $e) {
             abort(404);
         }
 

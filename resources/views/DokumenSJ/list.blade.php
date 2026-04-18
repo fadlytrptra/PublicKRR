@@ -24,9 +24,9 @@
                 <td class="text-center">{{ \Carbon\Carbon::parse($item->TglKirim)->format('d-m-Y') }}</td>
                 <td class="text-center">{{ $item->NamaCust }}</td>
                 <td class="text-center">
-                    <a href="{{ route('DokumenSJ.show', $item->IDPengiriman) }}"
-                       class="btn btn-sm btn-success">
-                        Lihat Dokumen
+                   <a href="{{ route('DokumenSJ.show', $item->encrypted_id) }}"
+                        class="btn btn-sm btn-success">
+                            Lihat Dokumen
                     </a>
                 </td>
             </tr>
