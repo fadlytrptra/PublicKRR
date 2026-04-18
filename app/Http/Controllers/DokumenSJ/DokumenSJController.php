@@ -11,40 +11,68 @@ use Illuminate\Contracts\Encryption\DecryptException;
 
 class DokumenSJController extends Controller
 {
-    // LIST DATA
+
+    public function getUser()
+    {
+        $user = session('user');
+
+        if (!$user) {
+            abort(403, 'Unauthorized');
+        }
+
+        return $user;
+    }
+
+    /**
+     * LIST DATA
+     */
     public function index()
     {
+        $user = $this->getUser();
+
         $list = DB::connection('ConnPublic')
-            ->table('T_KirimSuratJalan')
-            ->select('IDPengiriman', 'TglKirim', 'NamaCust')
-            ->groupBy('IDPengiriman', 'TglKirim', 'NamaCust')
-            ->orderBy('TglKirim', 'desc')
+            ->table('T_KirimSuratJalan as sj')
+            ->join('CustomerUserPublic as cup', 'cup.IDCust', '=', 'sj.IDCust')
+            ->where('cup.IdUser', $user->IdUser)
+            ->select(
+                'sj.IDPengiriman',
+                'sj.TglKirim',
+                'sj.NamaCust'
+            )
+            ->groupBy(
+                'sj.IDPengiriman',
+                'sj.TglKirim',
+                'sj.NamaCust'
+            )
+            ->orderBy('sj.TglKirim', 'desc')
             ->get();
 
         return view('DokumenSJ.list', compact('list'));
     }
 
-    // DETAIL DOKUMEN
+    /**
+     * DETAIL DOKUMEN
+     */
     public function show($id)
     {
-        $encryptedId = $id;
+        $user = $this->getUser();
 
-        $key = env('QR_SHARED_SECRET');
-        $cipher = 'AES-256-CBC';
-
-        $encrypter = new Encrypter($key, $cipher);
         try {
-            $idPengiriman = $encrypter->decryptString(urldecode($encryptedId));
-        } catch (DecryptException $de) {
+            $encrypter = new Encrypter(env('QR_SHARED_SECRET'), 'AES-256-CBC');
+            $idPengiriman = $encrypter->decryptString(urldecode($id));
+        } catch (DecryptException $e) {
             abort(404);
         }
 
         $data = DB::connection('ConnPublic')
             ->table('T_KirimSuratJalan as sj')
+            ->join('CustomerUserPublic as cup', 'cup.IDCust', '=', 'sj.IDCust')
             ->leftJoin('T_SuratJalanOTP as otp', function ($join) {
-                $join->on('otp.IdSuratJalan', '=', 'sj.IdSuratJalan')->whereNotNull('otp.ApprovedAt');
+                $join->on('otp.IdSuratJalan', '=', 'sj.IdSuratJalan')
+                     ->whereNotNull('otp.ApprovedAt');
             })
             ->where('sj.IDPengiriman', $idPengiriman)
+            ->where('cup.IdUser', $user->IdUser)
             ->select([
                 'sj.NamaType',
                 'sj.Ket',
@@ -78,26 +106,25 @@ class DokumenSJController extends Controller
             ->get();
 
         if ($data->isEmpty()) {
-            abort(404, 'Data tidak ditemukan');
+            abort(404, 'Data tidak ditemukan atau tidak memiliki akses');
         }
 
         $header = $data->first();
 
-        // tanggal kirim
+        // Tgl Kirim
         $header->TglKirim = $header->TglKirim
             ? Carbon::parse($header->TglKirim)->format('d-m-Y H:i:s')
             : '-';
 
-        // LOGIC SATPAM ATAU SUPIR (PRIORITAS SOPIR)
+        // Prioritas: Supir > Satpam
         $header->PengirimNama = $header->NamaSupir ?: $header->NamaSatpam;
-        $header->TglPengirim = $header->TglTTSupir ?: $header->TglAccSatpam;
+        $tglPengirim = $header->TglTTSupir ?: $header->TglAccSatpam;
 
-        // TANGGAL SATPAM ATAU SUPIR
-        $header->TglPengirim = $header->TglPengirim
-            ? Carbon::parse($header->TglPengirim)->format('d-m-Y H:i:s')
+        $header->TglPengirim = $tglPengirim
+            ? Carbon::parse($tglPengirim)->format('d-m-Y H:i:s')
             : '-';
 
-        // TANGGAL DITERIMA CUSTOMER
+        // Tanggal diterima customer
         $header->TglApp = $header->TglApp
             ? Carbon::parse($header->TglApp)->format('d-m-Y H:i:s')
             : '-';
@@ -105,28 +132,19 @@ class DokumenSJController extends Controller
         return view('DokumenSJ.index', compact('header', 'data'));
     }
 
-    public function create()
-    {
+    public function create() {
 
     }
-
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
 
     }
-
-    public function edit($id)
-    {
+    public function edit($id) {
 
     }
-
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
 
     }
-
-    public function destroy($id)
-    {
+    public function destroy($id) {
 
     }
 }
