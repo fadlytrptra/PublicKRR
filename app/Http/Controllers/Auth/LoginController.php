@@ -262,13 +262,19 @@ class LoginController extends Controller
             ]);
         }
 
-        // GENERATE PASSWORD
+        if (empty($user->Email)) {
+            return back()->withErrors([
+                'forgot_error' => 'User tidak memiliki email'
+            ]);
+        }
+
+        // Generate password baru
         $newPassword = $this->generateStrongPassword();
 
-        // HASH PASSWORD
+        // Hash password
         $hashedPassword = Hash::make($newPassword);
 
-        // UPDATE DB
+        // Update ke DB
         DB::connection('ConnPublic')
             ->table('UserPublic')
             ->where('IdUser', $user->IdUser)
@@ -276,10 +282,19 @@ class LoginController extends Controller
                 'Password' => $hashedPassword
             ]);
 
-        return back()
-        ->with('generated_password', $newPassword)
-        ->with('success', 'Password berhasil direset. Silakan gunakan password baru di bawah.');
-        }
+        // Kirim email (simple seperti OTP)
+        Mail::mailer('MailSales')->raw(
+            "Password Anda telah direset.\n" .
+            "Password baru Anda: {$newPassword}\n\n" .
+            "Terima kasih.",
+            function ($message) use ($user) {
+                $message->to($user->Email)
+                        ->subject('Reset Password');
+            }
+        );
+
+        return back()->with('success', 'Password baru telah dikirim ke email Anda.');
+    }
 
     public function generateStrongPassword($length = 10)
     {
