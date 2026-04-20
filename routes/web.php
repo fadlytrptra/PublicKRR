@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\LoginController;
@@ -13,8 +14,19 @@ use App\Http\Controllers\SuratJalan\VerifyDokumenController;
 |--------------------------------------------------------------------------
 */
 
+
+// $redirectIfAuthenticated = function () {
+//     if (Auth::guest())
+//         return view('auth.login');
+//     else
+//         return redirect('/home');
+// };
+
+// Route::get('/', $redirectIfAuthenticated);
+// Route::get('/logout', $redirectIfAuthenticated);
+
 #region Auth
-Route::get('/', [LoginController::class, 'index'])->name('login');
+//Route::get('/', [LoginController::class, 'index'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::post('/forgot-password', [LoginController::class, 'forgotPassword']);
@@ -31,25 +43,26 @@ Route::post('/register', [LoginController::class, 'register']);
 Route::post('/verify-otp', [LoginController::class, 'verifyOtp']);
 #endregion
 
-// Dokumen SJ (QR / email)
+// Dokumen SJ
 Route::get('/DokumenSJ/view/{id}', [DokumenSJController::class, 'show'])
     ->where('id', '.*')
     ->name('DokumenSJ.show');
 
-// Surat Jalan (QR / email)
+// Surat Jalan
 Route::get('/SuratJalan/{id}', [SuratJalanPesananController::class, 'show'])
     ->where('id', '[A-Za-z0-9%]+')
     ->name('SuratJalan.show');
 
+
+Route::resource('profile', UserController::class);
+
+Route::get('SuratJalan-data', [SuratJalanPesananController::class, 'data'])->name('SuratJalan.data');
 
 Route::middleware(['check.login'])->group(function () {
     Route::get('/home', function () {
         return view('home');
     })->name('home');
 
-    Route::resource('profile', UserController::class);
-
-    Route::get('SuratJalan-data', [SuratJalanPesananController::class, 'data'])->name('SuratJalan.data');
     Route::get('SuratJalan/list-data', [SuratJalanPesananController::class, 'listData'])->name('SuratJalan.listData');
     Route::get('/SuratJalan/detail-modal/{id}', [SuratJalanPesananController::class, 'detailModalSJ']);
     Route::get('SuratJalan/get-emails/{id_pengiriman}', [SuratJalanPesananController::class, 'getEmails']);
