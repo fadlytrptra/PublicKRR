@@ -1,13 +1,20 @@
 
 <!--Hanya NPWP-->
 @php
-$npwpCustomers = DB::connection('ConnPublic')
-    ->table('CustomerUserPublic')
-    ->where('IdUser', session('user')->IdUser)
-    ->whereNotNull('NPWP')
-    ->pluck('NPWP')
-    ->unique()
-    ->values();
+$user = session('user');
+$idUser = optional($user)->IdUser;
+
+$npwpCustomers = collect();
+
+if ($idUser) {
+    $npwpCustomers = DB::connection('ConnPublic')
+        ->table('CustomerUserPublic')
+        ->where('IdUser', $idUser)
+        ->whereNotNull('NPWP')
+        ->pluck('NPWP')
+        ->unique()
+        ->values();
+}
 @endphp
 
 <!--Dengan ID Cust-->

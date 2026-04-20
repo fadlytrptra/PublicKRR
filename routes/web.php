@@ -15,15 +15,15 @@ use App\Http\Controllers\SuratJalan\VerifyDokumenController;
 */
 
 
-// $redirectIfAuthenticated = function () {
-//     if (Auth::guest())
-//         return view('auth.login');
-//     else
-//         return redirect('/home');
-// };
+$redirectIfAuthenticated = function () {
+    if (Auth::guest())
+        return view('auth.login');
+    else
+        return redirect('/home');
+};
 
-// Route::get('/', $redirectIfAuthenticated);
-// Route::get('/logout', $redirectIfAuthenticated);
+Route::get('/', $redirectIfAuthenticated);
+Route::get('/logout', $redirectIfAuthenticated);
 
 #region Auth
 //Route::get('/', [LoginController::class, 'index'])->name('login');

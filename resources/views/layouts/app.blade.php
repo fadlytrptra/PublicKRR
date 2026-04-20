@@ -87,4 +87,4 @@
 
 </html>
 
-{{-- @include('profile_modal') --}}
+@include('profile_modal')
