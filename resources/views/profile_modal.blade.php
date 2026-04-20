@@ -1,28 +1,33 @@
+
+<!--Hanya NPWP-->
 @php
-$user = session('user');
-
-$npwpCustomers = collect();
-
-if ($user) {
-    $npwpCustomers = DB::connection('ConnPublic')
-        ->table('CustomerUserPublic')
-        ->where('IdUser', $user->IdUser)
-        ->whereNotNull('NPWP')
-        ->pluck('NPWP')
-        ->unique()
-        ->values();
-}
+$npwpCustomers = DB::connection('ConnPublic')
+    ->table('CustomerUserPublic')
+    ->where('IdUser', session('user')->IdUser)
+    ->whereNotNull('NPWP')
+    ->pluck('NPWP')
+    ->unique()
+    ->values();
 @endphp
+
+<!--Dengan ID Cust-->
+{{-- @php
+$npwpCustomers = DB::connection('ConnPublic')
+    ->table('CustomerUserPublic')
+    ->where('IdUser', session('user')->IdUser)
+    ->whereNotNull('NPWP')
+    ->select('IDCust', 'NPWP')
+    ->get();
+@endphp --}}
+
 
 
 <div class="modal fade" id="profileModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
 
-            @php $user = session('user'); @endphp
-
-                @if($user)
-                <form action="{{ route('profile.update', $user->IdUser) }}">
+            @if(session('user'))
+                <form action="{{ route('profile.update', session('user')->IdUser) }}" method="POST" novalidate>
                     @csrf
                     @method('PUT')
 
