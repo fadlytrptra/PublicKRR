@@ -24,9 +24,9 @@
             <table id="tableList" class="table table-striped">
                 <thead>
                     <tr>
-                        <th>No PO</th>
+                        <th>Nomor PO</th>
                         <th>Tanggal Kirim</th>
-                        <th>Nama Type</th>
+                        <th>Nama Barang</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -49,7 +49,7 @@
                 <!-- INFORMASI SURAT -->
                 <div class="row mb-3">
                     <div class="col-md-3">
-                        <label>No PO</label>
+                        <label>Nomor PO</label>
                         <input type="text" id="No_PO" class="form-control" readonly>
                     </div>
                     <div class="col-md-3">
@@ -71,8 +71,8 @@
                     <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th>Nama Type</th>
-                                <th>Qty</th>
+                                <th>Nama Barang</th>
+                                <th>Quantity</th>
                                 <th>Satuan</th>
                             </tr>
                         </thead>
@@ -111,7 +111,11 @@
                             <label>Supir</label>
                             <input type="text" id="Supir" class="form-control" readonly>
                         </div>
-                         <div class="mt-2">
+                        <div class="mt-2">
+                            <label>Nama PT</label>
+                            <input type="text" id="NamaPerusahaan" class="form-control" readonly>
+                        </div>
+                        <div class="mt-2">
                             <label>Alamat Kirim</label>
                             <input type="text" id="AlamatKirimCustomer" class="form-control" readonly>
                         </div>
@@ -126,7 +130,7 @@
 $('#tableList').DataTable({
     ajax: '/SuratJalan/list-data',
     columns: [
-        { data: 'No_PO' },
+        { data: 'No_PO', width: '200px' },
         { data: 'TglKirim', className: 'text-start' },
         { data: 'NamaType' },
         {
@@ -186,6 +190,8 @@ $(document).on('click', '.btn-detail', function () {
             $('#NamaExpeditor').val(first.NamaExpeditor ?? '-');
             $('#TrukNopol').val(first.TrukNopol ?? '-');
             $('#Supir').val(first.NamaSupir ?? first.NamaSatpam ?? '-');
+
+            $('#NamaPerusahaan').val(first.NamaPerusahaan ?? '-');
 
             $('#NoContainer').val(first.NoContainer ?? '-');
             $('#NoSeal').val(first.NoSeal ?? '-');

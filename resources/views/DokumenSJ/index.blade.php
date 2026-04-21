@@ -26,7 +26,7 @@
         <p>No Surat Jalan : <b>{{ $header->IDPengiriman }}</b></p>
         <p>
             Tanggal :
-            {{ $header->TglKirim }}
+            {{ \Carbon\Carbon::parse($header->TglKirim)->format('d-m-Y') }}
         </p>
     </div>
 
@@ -60,7 +60,6 @@
                         <th>NAMA BARANG</th>
                         <th>JUMLAH</th>
                         <th>SATUAN</th>
-                        <th>CATATAN</th>
                     </tr>
                 </thead>
 
@@ -71,7 +70,6 @@
                         <td class="text-center">{{ $item->NamaType ?? '-' }}</td>
                         <td class="text-center">{{ number_format($item->QtyJual ?? 0) }}</td>
                         <td class="text-center">{{ $item->SatJual ?? '-' }}</td>
-                        <td class="text-center">{{ $item->Ket ?? '-' }}</td>
                     </tr>
                     @empty
                     <tr>
@@ -94,7 +92,7 @@
                 {{ $header->NamaExpeditor ?? 'BELUM ADA EXPEDITOR' }}
             </p>
             <p class="fw-bold">
-                {{ $header->TglKirim ?? '-' }}
+                {{ \Carbon\Carbon::parse($header->TglKirim)->format('d-m-Y') }}
             </p>
 
             <br>

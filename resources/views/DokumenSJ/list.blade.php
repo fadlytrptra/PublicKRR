@@ -11,7 +11,7 @@
                 <th>No</th>
                 <th>No Surat Jalan</th>
                 <th>Tanggal</th>
-                <th>Customer</th>
+                <th>Nama Perusahaan</th>
                 <th>Aksi</th>
             </tr>
         </thead>

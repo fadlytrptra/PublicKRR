@@ -70,43 +70,48 @@ class SuratJalanPesananController extends Controller
     public function detailModalSJ($id)
     {
         $data = DB::connection('ConnPublic')
-            ->table('T_KirimSuratJalan')
-            ->where('IDPengiriman', $id)
+            ->table('T_KirimSuratJalan as sj')
+
+            ->leftJoin('CustomerUserPublic as cup', 'sj.IDCust', '=', 'cup.IDCust')
+            ->leftJoin('UserPublic as u', 'cup.IdUser', '=', 'u.IdUser')
+
+            ->where('sj.IDPengiriman', $id)
             ->select([
-                'SuratPesanan',
-                'TglKirim',
-                'TrukNopol',
-                'SatJual',
+                'sj.SuratPesanan',
+                'sj.TglKirim',
+                'sj.TrukNopol',
+                'sj.SatJual',
 
                 DB::raw("
                     CASE
-                        WHEN RTRIM(SatJual) = RTRIM(satPrimer) THEN QtyPrimer
-                        WHEN RTRIM(SatJual) = RTRIM(satSekunder) THEN QtySekunder
-                        WHEN RTRIM(SatJual) = RTRIM(satTritier) THEN QtyTritier
+                        WHEN RTRIM(sj.SatJual) = RTRIM(sj.satPrimer) THEN sj.QtyPrimer
+                        WHEN RTRIM(sj.SatJual) = RTRIM(sj.satSekunder) THEN sj.QtySekunder
+                        WHEN RTRIM(sj.SatJual) = RTRIM(sj.satTritier) THEN sj.QtyTritier
                         ELSE 0
                     END as Qty
                 "),
 
-                'NamaType',
-                'AlamatKirimCustomer',
-                'AlamatCustomer',
-                'KotaCustomer',
-                'NamaCust',
-                'IDPengiriman',
-                'No_PO',
-                'NoContainer',
-                'NoSeal',
-                'JnsIdPengiriman',
-                'AlamatKirimDO',
-                'NamaKelompokUtama',
-                'NamaExpeditor',
-                'AlamatExpeditor',
-                'KotaExpeditor',
-                'IdType',
-                'Ket',
-                'JnsCust',
-                'NamaSupir',
-                'NamaSatpam'
+                'sj.NamaType',
+                'sj.AlamatKirimCustomer',
+                'sj.AlamatCustomer',
+                'sj.KotaCustomer',
+                'sj.NamaCust',
+                'sj.IDPengiriman',
+                'sj.No_PO',
+                'sj.NoContainer',
+                'sj.NoSeal',
+                'sj.JnsIdPengiriman',
+                'sj.AlamatKirimDO',
+                'sj.NamaKelompokUtama',
+                'sj.NamaExpeditor',
+                'sj.AlamatExpeditor',
+                'sj.KotaExpeditor',
+                'sj.IdType',
+                'sj.Ket',
+                'sj.JnsCust',
+                'sj.NamaSupir',
+                'sj.NamaSatpam',
+                'u.NamaPerusahaan'
             ])
             ->get();
 

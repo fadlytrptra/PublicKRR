@@ -37,8 +37,7 @@ class LoginController extends Controller
         $user = DB::connection('ConnPublic')
             ->table('UserPublic')
             ->where(function ($query) use ($request) {
-                $query->where('Email', $request->login)
-                    ->orWhere('NamaUser', $request->login);
+                $query->where('Email', $request->login);
             })
             ->first();
 
@@ -110,6 +109,8 @@ class LoginController extends Controller
                 'regex:/[a-z]/',
                 'regex:/[^A-Za-z0-9]/'
             ]
+        ], [
+            'Password.*' => 'Password harus minimal 8 karakter, mengandung huruf besar, huruf kecil, dan spesial karakter'
         ]);
 
         if ($validator->fails()) {
@@ -251,8 +252,7 @@ class LoginController extends Controller
         $user = DB::connection('ConnPublic')
             ->table('UserPublic')
             ->where(function ($query) use ($request) {
-                $query->where('Email', $request->login)
-                    ->orWhere('NamaUser', $request->login);
+                $query->where('Email', $request->login);
             })
             ->first();
 
@@ -264,7 +264,7 @@ class LoginController extends Controller
 
         if (empty($user->Email)) {
             return back()->withErrors([
-                'forgot_error' => 'User tidak memiliki email'
+                'forgot_error' => 'Email / Username tidak ditemukan'
             ]);
         }
 

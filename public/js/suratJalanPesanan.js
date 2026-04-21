@@ -35,7 +35,17 @@ jQuery(function ($) {
         },
         columns: [
             { data: 'NamaType' },
-            { data: 'QtyJual' },
+            {
+                data: 'QtyJual',
+                render: function (data, type, row) {
+                    if (data == null) return '-';
+
+                    return parseFloat(data).toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                }
+            },
             { data: 'SatJual' },
             { data: 'NamaCust' },
             { data: 'SuratPesanan' },
@@ -65,7 +75,7 @@ jQuery(function ($) {
             $('#labelApprovedAt').text('Approved At:');
 
             $('#approvedEmail').text(email);
-            $('#approvedAt').text(approvedAt);
+            $('#approvedAt').text(formatDateTime(approvedAt));
 
             $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
                 .removeClass('text-danger')
@@ -86,7 +96,7 @@ jQuery(function ($) {
             $('#labelApprovedAt').text('Tanggal:');
 
             $('#approvedEmail').text(email);
-            $('#approvedAt').text(createdAt ?? '-');
+            $('#approvedAt').text(formatDateTime(createdAt));
 
             $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
                 .removeClass('text-success')
@@ -110,18 +120,37 @@ jQuery(function ($) {
         let date = new Date(dateString);
         return date.toLocaleDateString('id-ID', {
             day: '2-digit',
-            month: 'short',
+            month: 'long',
             year: 'numeric'
         });
     }
 
-    function formatDateTime(dateString) {
-        if (!dateString) return '-';
+    function formatDateTime(dateInput) {
+        if (!dateInput) return '-';
 
-        let date = new Date(dateString);
-        return date.toLocaleString('id-ID', {
-            timeZone: 'Asia/Jakarta'
-        });
+        let date;
+
+        // kalau string dari DB
+        if (typeof dateInput === 'string') {
+            let clean = dateInput.split('.')[0];
+            date = new Date(clean.replace(' ', 'T'));
+        }
+        // kalau object Date
+        else {
+            date = dateInput;
+        }
+
+        if (isNaN(date)) return '-';
+
+        let day = String(date.getDate()).padStart(2, '0');
+        let month = String(date.getMonth() + 1).padStart(2, '0');
+        let year = date.getFullYear();
+
+        let hours = String(date.getHours()).padStart(2, '0');
+        let minutes = String(date.getMinutes()).padStart(2, '0');
+        let seconds = String(date.getSeconds()).padStart(2, '0');
+
+        return `${day}/${month}/${year}, ${hours}:${minutes}:${seconds}`;
     }
 
 //#endregion
@@ -152,7 +181,7 @@ jQuery(function ($) {
                 alert('Gagal mengambil email');
             })
             .always(function () {
-                $('#btnOpenOtp').prop('disabled', false).text('Send OTP');
+                $('#btnOpenOtp').prop('disabled', false).text('Konfirmasi Product Receipt');
             });
 
     });
@@ -199,9 +228,14 @@ jQuery(function ($) {
             return;
         }
 
-        $('#btnVerifyOtp')
-            .prop('disabled', true)
-            .html('Verifying...');
+        let $btn = $('#btnVerifyOtp');
+
+        $btn.prop('disabled', true).html('Verifying...');
+
+        // ⏱ AUTO ENABLE setelah 3 detik (apapun hasilnya)
+        setTimeout(() => {
+            $btn.prop('disabled', false).html('Verify OTP');
+        }, 3000);
 
         $.post('/SuratJalan/verify-otp', {
             id_pengiriman: idPengiriman,
@@ -210,27 +244,19 @@ jQuery(function ($) {
         })
         .done(function (res) {
 
-            // simpan id surat jalan dari backend
             window.idSuratJalan = res.id_surat_jalan;
 
-            // tampilkan section konfirmasi
             $('#otpSection').hide();
 
-            // reset modal state
             $('#stepKonfirmasi').show();
             $('#stepQty').hide();
             $('#qtyInput').val('');
 
-            // tampilkan modal
             $('#modalKonfirmasi').modal('show');
 
         })
         .fail(function (xhr) {
             alert(xhr.responseJSON?.error ?? 'OTP tidak valid');
-
-            $('#btnVerifyOtp')
-                .prop('disabled', false)
-                .html('Verify OTP');
         });
     });
 

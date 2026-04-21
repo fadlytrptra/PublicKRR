@@ -37,7 +37,7 @@
                     <div class="icon">
                         <span class="material-icons">person</span>
                     </div>
-                    <input type="text" name="login" placeholder="Email / Username"
+                    <input type="text" name="login" placeholder="Email"
                         value="{{ old('login') }}">
                 </div>
 
@@ -78,7 +78,7 @@
 
         <form method="POST" action="/forgot-password">
             @csrf
-            <input type="text" name="login" placeholder="Email / Username" class="input-modal">
+            <input type="text" name="login" placeholder="Email" class="input-modal">
             <button type="submit" class="btn btn-login">Reset Password</button>
         </form>
 

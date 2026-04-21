@@ -18,8 +18,8 @@
 
                         <!-- LEFT -->
                         <div>
-                            <div style="font-size:18px"><strong>No. PO</strong> : <span id="noPo">-</span></div>
-                            <div style="font-size:18px"><strong>Tgl Kirim</strong> : <span id="tglKirim">-</span></div>
+                            <div style="font-size:18px"><strong>Nomor PO</strong> : <span id="noPo">-</span></div>
+                            <div style="font-size:18px"><strong>Tanggal Kirim</strong> : <span id="tglKirim">-</span></div>
                         </div>
 
                         <!-- RIGHT -->
@@ -27,7 +27,7 @@
                             @if(!isset($otp) || !$otp)
 
                                 <button id="btnOpenOtp" class="btn btn-primary w-100 mb-2">
-                                    Send OTP
+                                    Konfirmasi Product Receipt
                                 </button>
 
                                 <div id="otpSection" style="display:none;">
@@ -36,7 +36,7 @@
                                     </select>
 
                                     <button id="btnSendOtp" class="btn btn-warning w-100 mb-2">
-                                        Kirim OTP
+                                        Send OTP
                                     </button>
 
                                     <input type="text" id="otpInput"
@@ -79,13 +79,13 @@
                     <table id="tableSuratJalan" class="table table-striped">
                         <thead>
                             <tr>
-                                <th>Nama Type</th>
-                                <th>Qty Jual</th>
-                                <th>Sat Jual</th>
+                                <th>Nama Barang</th>
+                                <th>Quantity</th>
+                                <th>Satuan</th>
                                 <th>Nama Customer</th>
                                 <th>Surat Pesanan</th>
-                                <th>Nama Exp</th>
-                                <th>Truk NoPol</th>
+                                <th>Nama Ekspedisi</th>
+                                <th>Nomor Polisi</th>
                             </tr>
                         </thead>
                     </table>
