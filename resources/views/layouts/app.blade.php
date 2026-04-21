@@ -21,6 +21,8 @@
     <script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/2.3.7/js/dataTables.bootstrap5.min.js"></script>
     <link href="https://cdn.datatables.net/2.3.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!--Sweet Alert-->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>

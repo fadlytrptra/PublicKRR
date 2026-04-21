@@ -78,7 +78,13 @@ class LoginController extends Controller
                 'LastLogin' => now()
             ]);
 
-        return redirect('/home')->with('ForgetPassword', $user->ForgetPassword);
+        // return redirect('/home')->with('ForgetPassword', $user->ForgetPassword);
+        session([
+            'user' => $user,
+            'ForgetPassword' => $user->ForgetPassword
+        ]);
+
+        return redirect('/home');
     }
 
     public function logout(Request $request)
@@ -295,6 +301,43 @@ class LoginController extends Controller
         );
 
         return back()->with('success', 'Password baru telah dikirim ke email Anda.');
+    }
+
+    public function forceResetPassword(Request $request)
+    {
+        $request->validate([
+            'password' => [
+                'required',
+                'min:8',
+                'regex:/[A-Z]/',
+                'regex:/[a-z]/',
+                'regex:/[^A-Za-z0-9]/'
+            ]
+        ], [
+            'password.*' => 'Password harus minimal 8 karakter, mengandung huruf besar, huruf kecil, dan spesial karakter'
+        ]);
+
+        $user = session('user');
+
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        DB::connection('ConnPublic')
+            ->table('UserPublic')
+            ->where('IdUser', $user->IdUser)
+            ->update([
+                'Password' => Hash::make($request->password),
+                'ForgetPassword' => false
+            ]);
+
+        // update session juga
+        $user->ForgetPassword = false;
+        session(['user' => $user, 'ForgetPassword' => false]);
+
+        return response()->json([
+            'success' => true
+        ]);
     }
 
     public function generateStrongPassword($length = 10)
