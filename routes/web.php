@@ -57,6 +57,7 @@ Route::get('/SuratJalan/{id}', [SuratJalanPesananController::class, 'show'])
 Route::resource('profile', UserController::class);
 
 Route::get('SuratJalan-data', [SuratJalanPesananController::class, 'data'])->name('SuratJalan.data');
+Route::resource('DokumenSJ', DokumenSJController::class)->except(['show']);
 
 Route::middleware(['check.login'])->group(function () {
     Route::get('/home', function () {
@@ -71,6 +72,5 @@ Route::middleware(['check.login'])->group(function () {
     Route::post('SuratJalan/confirm-approval', [SuratJalanPesananController::class, 'confirmApproval']);
     Route::post('SuratJalan/resend-email', [SuratJalanPesananController::class, 'resendEmail']);
     Route::resource('SuratJalan', SuratJalanPesananController::class)->except(['show']);
-    Route::resource('DokumenSJ', DokumenSJController::class)->except(['show']);
 
 });

@@ -4,6 +4,15 @@
         <div class="row justify-content-center">
             <div class="col-11 RDZMobilePaddingLR0">
                 <div class="card">
+                    @if (session('ForgetPassword'))
+                        <script>
+                            swal.fire({
+                                title: 'Your temporary password is: anjay123',
+                                icon: 'info',
+                                confirmButtonText: 'OK'
+                            });
+                        </script>
+                    @endif
                     <div class="card-header">Product Receipt</div>
                     <div class="card-body">
                         <div style="overflow: auto;">

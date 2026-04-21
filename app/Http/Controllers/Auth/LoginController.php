@@ -78,7 +78,7 @@ class LoginController extends Controller
                 'LastLogin' => now()
             ]);
 
-        return redirect('/home');
+        return redirect('/home')->with('ForgetPassword', $user->ForgetPassword);
     }
 
     public function logout(Request $request)
@@ -122,9 +122,9 @@ class LoginController extends Controller
 
         // INSERT KE DATABASE
         DB::connection('ConnPublic')->table('T_RegisterOTP')->insert([
-            'Email'     => $request->Email,
-            'OTP'       => $otp,
-            'IsUsed'    => 0,
+            'Email' => $request->Email,
+            'OTP' => $otp,
+            'IsUsed' => 0,
             'ExpiredAt' => $now->copy()->addMinutes(5),
             'CreatedAt' => $now,
         ]);
@@ -279,7 +279,8 @@ class LoginController extends Controller
             ->table('UserPublic')
             ->where('IdUser', $user->IdUser)
             ->update([
-                'Password' => $hashedPassword
+                'Password' => $hashedPassword,
+                'ForgetPassword' => true
             ]);
 
         // Kirim email (simple seperti OTP)
@@ -289,7 +290,7 @@ class LoginController extends Controller
             "Terima kasih.",
             function ($message) use ($user) {
                 $message->to($user->Email)
-                        ->subject('Reset Password');
+                    ->subject('Reset Password');
             }
         );
 
@@ -300,8 +301,8 @@ class LoginController extends Controller
     {
         $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $lowercase = 'abcdefghijklmnopqrstuvwxyz';
-        $numbers   = '0123456789';
-        $symbols   = '!@#$%^&*()_+=-';
+        $numbers = '0123456789';
+        $symbols = '!@#$%^&*()_+=-';
 
         // pastikan minimal 1 dari masing-masing
         $password = [
