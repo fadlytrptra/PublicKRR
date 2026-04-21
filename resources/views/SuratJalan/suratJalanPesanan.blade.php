@@ -1,15 +1,29 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-@section('content')
+    <title>Product Receipt</title>
 
-<link href="{{ asset('css/suratJalanPesanan.css') }}" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<div class="container-fluid">
+    <!-- DataTables -->
+    <link href="https://cdn.datatables.net/2.3.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="{{ asset('css/suratJalanPesanan.css') }}" rel="stylesheet">
+</head>
+<body>
+
+<div class="container-fluid mt-3">
     <div class="row justify-content-center">
         <div class="col-11">
             <div class="card">
 
-                <div class="card-header">Product Receipt</div>
+                <div class="card-header fw-bold">Product Receipt</div>
 
                 <div class="card-body">
 
@@ -18,12 +32,17 @@
 
                         <!-- LEFT -->
                         <div>
-                            <div style="font-size:18px"><strong>Nomor PO</strong> : <span id="noPo">-</span></div>
-                            <div style="font-size:18px"><strong>Tanggal Kirim</strong> : <span id="tglKirim">-</span></div>
+                            <div style="font-size:18px">
+                                <strong>Nomor PO</strong> : <span id="noPo">-</span>
+                            </div>
+                            <div style="font-size:18px">
+                                <strong>Tanggal Kirim</strong> : <span id="tglKirim">-</span>
+                            </div>
                         </div>
 
                         <!-- RIGHT -->
                         <div style="min-width:250px">
+
                             @if(!isset($otp) || !$otp)
 
                                 <button id="btnOpenOtp" class="btn btn-primary w-100 mb-2">
@@ -49,29 +68,32 @@
                                 </div>
                             @endif
 
-                            <div id="approvalInfo" class="mt-2" style="{{ isset($otp) && $otp ? '' : 'display:none;' }}">
+                            <!-- APPROVAL INFO -->
+                            <div id="approvalInfo"
+                                 class="mt-2"
+                                 style="{{ isset($otp) && $otp ? '' : 'display:none;' }}">
+
                                 <div id="rowStatus" style="display:none;">
                                     <strong id="labelStatus">Status:</strong>
                                     <span id="statusApproval"></span>
                                 </div>
 
-                               <div id="rowApprovedBy">
+                                <div>
                                     <strong id="labelApprovedBy">Approved By:</strong>
                                     <span id="approvedEmail"></span>
                                 </div>
 
-                                <div id="rowApprovedAt">
+                                <div>
                                     <strong id="labelApprovedAt">Approved At:</strong>
                                     <span id="approvedAt"></span>
                                 </div>
 
-                                <!-- Resend Email -->
                                 <button id="btnResendEmail"
                                     class="btn w-100 mt-2 fw-bold">
                                     Resend Email
                                 </button>
                             </div>
-                            <br>
+
                         </div>
                     </div>
 
@@ -122,7 +144,9 @@
                 <div id="stepQty" style="display:none;">
                     <p><strong>Berapa jumlah barang yang sudah sesuai?</strong></p>
 
-                    <input type="number" id="qtyInput" class="form-control mb-2" placeholder="Masukkan jumlah">
+                    <input type="number" id="qtyInput"
+                           class="form-control mb-2"
+                           placeholder="Masukkan jumlah">
 
                     <button id="btnSubmitQty" class="btn btn-primary w-100">
                         Submit
@@ -145,6 +169,18 @@
     window.otpData = @json($otp ?? null);
 </script>
 
+<!-- jQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+<!-- Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.7/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- Custom JS -->
 <script src="{{ asset('js/suratJalanPesanan.js') }}"></script>
 
-@endsection
+</body>
+</html>
