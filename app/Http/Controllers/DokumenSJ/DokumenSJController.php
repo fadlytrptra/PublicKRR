@@ -34,20 +34,28 @@ class DokumenSJController extends Controller
             ->table('T_KirimSuratJalan as sj')
             ->join('CustomerUserPublic as cup', 'cup.IDCust', '=', 'sj.IDCust')
             ->where('cup.IdUser', $user->IdUser)
+
             ->select(
                 'sj.IDPengiriman',
-                'sj.TglKirim',
-                'sj.NamaCust'
+                DB::raw('MAX(sj.TglKirim) as TglKirim'),
+                DB::raw('MAX(sj.NamaCust) as NamaCust')
             )
-            ->groupBy(
-                'sj.IDPengiriman',
-                'sj.TglKirim',
-                'sj.NamaCust'
-            )
-            ->orderBy('sj.TglKirim', 'desc')
-            ->get();
 
-            $list->transform(function ($item) {
+            ->groupBy('sj.IDPengiriman')
+
+            ->havingRaw("
+                COUNT(*) = SUM(
+                    CASE
+                        WHEN sj.ACCCustomer = 1
+                            AND sj.QtyTemp IS NULL
+                        THEN 1
+                        ELSE 0
+                    END
+                )
+            ")
+            ->orderByDesc('TglKirim')
+            ->get()
+            ->map(function ($item) {
                 $item->encrypted_id = encrypt($item->IDPengiriman);
                 return $item;
             });

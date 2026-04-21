@@ -158,6 +158,7 @@ class SuratJalanPesananController extends Controller
         ]);
     }
 
+    //list surat jalan
     public function listData()
     {
         $user = session('user');
@@ -180,19 +181,31 @@ class SuratJalanPesananController extends Controller
         }
 
         $data = DB::connection('ConnPublic')
-            ->table('T_KirimSuratJalan')
-            ->whereIn('IDCust', $idCustList)
+            ->table('T_KirimSuratJalan as sj')
+            ->whereIn('sj.IDCust', $idCustList)
+
             ->select(
-                'IDPengiriman',
-                'No_PO',
-                DB::raw('CONVERT(date, TglKirim) as TglKirim'),
-                DB::raw('MIN(NamaType) as NamaType')
+                'sj.IDPengiriman',
+                'sj.No_PO',
+                DB::raw('CONVERT(date, MAX(sj.TglKirim)) as TglKirim'),
+                DB::raw('MIN(sj.NamaType) as NamaType')
             )
+
             ->groupBy(
-                'IDPengiriman',
-                'No_PO',
-                DB::raw('CONVERT(date, TglKirim)')
+                'sj.IDPengiriman',
+                'sj.No_PO'
             )
+
+            // ✅ FILTER: masih ada yang belum ACC / pasca kirim
+            ->havingRaw("
+                SUM(CASE
+                    WHEN sj.ACCCUSTOMER IS NULL
+                        OR (sj.ACCCUSTOMER = 0 AND sj.QtyTemp IS NOT NULL)
+                    THEN 1 ELSE 0 END
+                ) > 0
+            ")
+
+            ->orderByDesc('TglKirim')
             ->get();
 
         return response()->json([
