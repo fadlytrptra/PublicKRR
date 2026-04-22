@@ -404,7 +404,7 @@ class SuratJalanPesananController extends Controller
                 $encrypter->encryptString((string) $data->IDPengiriman)
             );
 
-            $link = url('/DokumenSJ/' . $encrypted);
+            $link = url('/DokumenSJ/view/' . $encrypted);
 
             $qrImage = QrCode::format('svg')
                 ->size(150)

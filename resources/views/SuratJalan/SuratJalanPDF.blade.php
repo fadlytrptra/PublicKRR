@@ -137,7 +137,7 @@
 
                                 <tr>
                                     <td style="font-size:15px; text-align: center">
-                                        PT Warehouse Kerta Rajasa Raya
+                                        Warehouse PT. Kerta Rajasa Raya
                                     </td>
                                     <td style="font-size:15px; text-align: center">
                                         {{ $items->NamaSupir ?? '-' }}
