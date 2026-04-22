@@ -1,4 +1,4 @@
-@extends('layouts.appVerifikasi')
+@extends('layouts.app')
 
 @section('content')
 
