@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.appVerifikasi')
 
 @section('content')
 
@@ -164,10 +164,16 @@ $(document).on('click', '.btn-detail', function () {
 
             // TABLE
             res.data.forEach(item => {
+                let qty = item.Qty ?? 0;
+                let formattedQty = Number(qty).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+
                 rows += `
                     <tr>
                         <td>${item.NamaType ?? '-'}</td>
-                        <td>${item.Qty ?? 0}</td>
+                        <td>${formattedQty}</td>
                         <td>${item.SatJual ?? '-'}</td>
                     </tr>
                 `;

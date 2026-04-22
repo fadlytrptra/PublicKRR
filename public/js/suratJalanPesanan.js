@@ -232,7 +232,7 @@ jQuery(function ($) {
 
         $btn.prop('disabled', true).html('Verifying...');
 
-        // ⏱ AUTO ENABLE setelah 3 detik (apapun hasilnya)
+        //  AUTO ENABLE setelah 3 detik (apapun hasilnya)
         setTimeout(() => {
             $btn.prop('disabled', false).html('Verify OTP');
         }, 3000);
@@ -315,72 +315,97 @@ jQuery(function ($) {
 
     // SUBMIT QTY
     $('#btnSubmitQty').click(function () {
+        let qty = parseFloat($('#qtyInput').val());
 
-    let qty = parseFloat($('#qtyInput').val());
+        if (!qty || qty < 0) {
+            alert('Jumlah Quantity tidak boleh minus');
+            return;
+        }
 
-    if (!qty || qty <= 0) {
-        alert('Qty harus diisi dengan benar');
-        return;
-    }
+        let rowData = table.row(0).data();
 
-    // VALIDASI QTY INPUT VS QTY JUAL
-    let rowData = table.row(0).data();
+        if (!rowData) {
+            alert('Data tabel belum siap');
+            return;
+        }
 
-    if (!rowData) {
-        alert('Data tabel belum siap');
-        return;
-    }
+        let qtyJual = parseFloat(rowData.QtyJual);
+        let maxQty = qtyJual * 2;
 
-    let qtyJual = parseFloat(rowData.QtyJual);
+        // VALIDASI MAX 2x
+        if (qty > maxQty) {
+            alert(`Quantity barang sesuai tidak boleh melebihi 2x Quantity Jual (${maxQty})`);
+            return;
+        }
 
-    if (qty > qtyJual) {
-        alert(`Qty tidak boleh melebihi Qty Jual (${qtyJual})`);
-        return;
-    }
+        let isSesuai = (qty === qtyJual) ? 1 : 0;
 
-    $('#btnSubmitQty').prop('disabled', true).text('Processing...');
+        $('#btnSubmitQty').prop('disabled', true).text('Processing...');
+
         $.post('/SuratJalan/confirm-approval', {
             id_surat_jalan: window.idSuratJalan,
-            is_sesuai: 0,
+            is_sesuai: isSesuai,
             qty_temp: qty,
             email: $('#emailSelect').val()
         })
         .done(function () {
-            alert('Data disimpan sebagai PASCA KIRIM');
 
             $('#modalKonfirmasi').modal('hide');
 
             $('#btnOpenOtp').hide();
             $('#otpSection').hide();
-
             $('#approvalInfo').show();
 
-            $('#rowStatus').show();
-            $('#statusApproval').text('Ditolak');
-
-            $('#labelApprovedBy').text('Email:');
-            $('#labelApprovedAt').text('Tanggal:');
-
             let email = $('#emailSelect').val();
-
             $('#approvedEmail').text(email);
             $('#approvedAt').text(formatDateTime(new Date()));
 
-            $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
-                .removeClass('text-success')
-                .addClass('text-danger');
+            if (isSesuai === 1) {
+                // APPROVE
+                alert('Approved & Email berhasil dikirim');
 
-            $('#btnResendEmail')
-                .prop('disabled', true)
-                .removeClass('btn-primary')
-                .addClass('btn-secondary')
-                .text('Pasca Kirim');
+                $('#rowStatus').hide();
+
+                $('#labelApprovedBy').text('Approved By:');
+                $('#labelApprovedAt').text('Approved At:');
+
+                $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
+                    .removeClass('text-danger')
+                    .addClass('text-success');
+
+                $('#btnResendEmail')
+                    .prop('disabled', false)
+                    .removeClass('btn-secondary')
+                    .addClass('btn-primary')
+                    .text('Resend Email');
+
+            } else {
+                // PASCA KIRIM
+                alert('Data disimpan sebagai PASCA KIRIM');
+
+                $('#rowStatus').show();
+                $('#statusApproval').text('Ditolak');
+
+                $('#labelApprovedBy').text('Email:');
+                $('#labelApprovedAt').text('Tanggal:');
+
+                $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
+                    .removeClass('text-success')
+                    .addClass('text-danger');
+
+                $('#btnResendEmail')
+                    .prop('disabled', true)
+                    .removeClass('btn-primary')
+                    .addClass('btn-secondary')
+                    .text('Pasca Kirim');
+            }
+
         })
         .fail(function (xhr) {
-            console.log(xhr.responseJSON);
             alert(xhr.responseJSON?.error ?? 'Terjadi kesalahan');
             $('#btnSubmitQty').prop('disabled', false).text('Submit');
         });
+
     });
 
     $('#btnResendEmail').click(function () {
