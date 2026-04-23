@@ -261,14 +261,24 @@ class SuratJalanPesananController extends Controller
         $lastOtp = DB::table('T_SuratJalanOTP')
             ->where('IdSuratJalan', $idSuratJalan)
             ->where('Email', $request->email)
+            ->where('IsUsed', 0)
+            ->where('ExpiredAt', '>', $now)
             ->latest('CreatedAt')
             ->first();
 
-        if ($lastOtp && $now->diffInMinutes($lastOtp->CreatedAt) < 5) {
+        if ($lastOtp) {
             return response()->json([
                 'error' => 'OTP sudah dikirim, tunggu 5 menit'
             ], 400);
         }
+
+        DB::table('T_SuratJalanOTP')
+            ->where('IdSuratJalan', $idSuratJalan)
+            ->where('Email', $request->email)
+            ->where('IsUsed', 0)
+            ->update([
+                'ExpiredAt' => $now
+            ]);
 
         DB::table('T_SuratJalanOTP')->insert([
             'IdSuratJalan' => $idSuratJalan,
@@ -319,6 +329,7 @@ class SuratJalanPesananController extends Controller
                 ->where('OTP', $request->otp)
                 ->where('IsUsed', 0)
                 ->where('ExpiredAt', '>=', $now)
+                ->orderByDesc('CreatedAt')
                 ->lockForUpdate()
                 ->first();
 
@@ -334,7 +345,8 @@ class SuratJalanPesananController extends Controller
 
             return response()->json([
                 'status' => 'OTP_VALID',
-                'id_surat_jalan' => $idSuratJalan
+                'id_surat_jalan' => $idSuratJalan,
+                'otp_id' => $otp->Id
             ]);
         } catch (\Exception $e) {
 
@@ -356,7 +368,8 @@ class SuratJalanPesananController extends Controller
             'id_surat_jalan' => 'required',
             'is_sesuai' => 'required|boolean',
             'qty_temp' => 'nullable|integer|min:1',
-            'email' => 'required|email'
+            'email' => 'required|email',
+            'otp_id' => 'required|integer'
         ]);
 
         $now = Carbon::now('Asia/Jakarta');
@@ -416,15 +429,15 @@ class SuratJalanPesananController extends Controller
             // ==============
             if ((int)$request->is_sesuai === 1) {
 
-                // ✅ ACC
+                // ACC
                 $update = [
                     'ACCCustomer' => 1,
                     'GbrACCCustomer' => $qrBase64
                 ];
 
                 // update OTP (dengan ApprovedAt)
-                DB::table('T_SuratJalanOTP')
-                    ->where('IdSuratJalan', $request->id_surat_jalan)
+                 DB::table('T_SuratJalanOTP')
+                    ->where('Id', $request->otp_id)
                     ->where('IsUsed', 0)
                     ->update([
                         'IsUsed' => 1,
@@ -438,15 +451,14 @@ class SuratJalanPesananController extends Controller
                 ];
 
                 // update OTP TANPA ApprovedAt
-                DB::table('T_SuratJalanOTP')
-                    ->where('IdSuratJalan', $request->id_surat_jalan)
+                 DB::table('T_SuratJalanOTP')
+                    ->where('Id', $request->otp_id)
                     ->where('IsUsed', 0)
                     ->update([
                         'IsUsed' => 1
                     ]);
             }
 
-            // eksekusi update (tetap satu pintu, tidak ubah flow)
             DB::connection('ConnPublic')
                 ->table('T_KirimSuratJalan')
                 ->where('IdSuratJalan', $request->id_surat_jalan)
@@ -455,13 +467,13 @@ class SuratJalanPesananController extends Controller
             // ===========
             // UPDATE OTP
             // ===========
-            DB::table('T_SuratJalanOTP')
-                ->where('IdSuratJalan', $request->id_surat_jalan)
-                ->where('IsUsed', 0)
-                ->update([
-                    'IsUsed' => 1,
-                    'ApprovedAt' => $now
-                ]);
+        //    DB::table('T_SuratJalanOTP')
+        //         ->where('Id', $request->otp_id)
+        //         ->where('IsUsed', 0)
+        //         ->update([
+        //             'IsUsed' => 1,
+        //             'ApprovedAt' => $now
+        //         ]);
 
             DB::commit();
         } catch (\Exception $e) {
@@ -590,7 +602,7 @@ class SuratJalanPesananController extends Controller
             throw new \Exception('Data Surat Jalan tidak ditemukan');
         }
 
-        // Helper universal
+        // format base64
         $formatBase64Image = function ($base64) {
             if (empty($base64)) return null;
 

@@ -281,6 +281,7 @@ jQuery(function ($) {
         .done(function (res) {
 
             window.idSuratJalan = res.id_surat_jalan;
+            window.otpId = res.otp_id;
 
             $('#otpSection').hide();
 
@@ -303,6 +304,7 @@ jQuery(function ($) {
 
         $.post('/SuratJalan/confirm-approval', {
             id_surat_jalan: window.idSuratJalan,
+            otp_id: window.otpId,
             is_sesuai: 1,
             email: $('#emailSelect').val()
         })
@@ -389,8 +391,9 @@ jQuery(function ($) {
 
         $('#btnSubmitQty').prop('disabled', true).text('Processing...');
 
-        $.post('/SuratJalan/confirm-approval', {
+       $.post('/SuratJalan/confirm-approval', {
             id_surat_jalan: window.idSuratJalan,
+            otp_id: window.otpId,
             is_sesuai: isSesuai,
             qty_temp: qty,
             email: $('#emailSelect').val()
