@@ -1,21 +1,31 @@
-<!DOCTYPE html>
-<html>
+
 <head>
-    <meta charset="utf-8">
-    <title>Document Verified</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{-- Title--}}
+    <title>Public KRR</title>
 
-    {{-- Bootstrap optional --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    {{-- Logo --}}
+    <link rel="icon" type="image/png" href="{{ asset('images/KRR.png') }}">
+
+    <link href="{{ asset('css/DokumenSJ.css') }}" rel="stylesheet">
 </head>
-<body class="bg-light">
 
-<div class="container py-4">
+<body>
+
+<div class="container">
+
+    @if(!isset($header))
+        <div class="alert alert-danger text-center">
+            Data tidak ditemukan
+        </div>
+        @php return; @endphp
+    @endif
 
     {{-- HEADER --}}
     <div class="text-center mb-4">
-        <h4 class="fw-bold d-flex justify-content-center align-items-center gap-2">
+        <h4 class="fw-bold verified-title">
             Document Verified
             <span class="d-flex align-items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
@@ -26,7 +36,9 @@
                 </svg>
             </span>
         </h4>
+
         <p>No Surat Jalan : <b>{{ $header->IDPengiriman }}</b></p>
+
         <p>
             Tanggal :
             {{ \Carbon\Carbon::parse($header->TglKirim)->format('d-m-Y') }}
@@ -36,27 +48,57 @@
     {{-- INFO --}}
     <div class="card mb-4 shadow-sm border-0">
         <div class="card-body">
-            <p><strong>Transporter :</strong> {{ $header->NamaExpeditor ?? '-' }}</p>
-            <p><strong>No Truk :</strong> {{ $header->TrukNopol ?? '-' }}</p>
 
-            <p class="mb-0"><strong>Atas Permintaan :</strong></p>
-            <p class="fw-bold">{{ $header->NamaCust ?? '-' }}</p>
-            <p>{{ $header->AlamatCustomer ?? '-' }}</p>
+            <p>
+                <strong>Transporter :</strong>
+                {{ $header->NamaExpeditor ?? '-' }}
+            </p>
+
+            <p>
+                <strong>No Truk :</strong>
+                {{ $header->TrukNopol ?? '-' }}
+            </p>
+
+            <p class="mb-0">
+                <strong>Atas Permintaan :</strong>
+            </p>
+
+            <p class="fw-bold">
+                {{ $header->NamaCust ?? '-' }}
+            </p>
+
+            <p>
+                {{ $header->AlamatCustomer ?? '-' }}
+            </p>
 
             <hr>
 
-            <p><strong>No PO :</strong> {{ $header->No_PO ?? '-' }}</p>
+            <p>
+                <strong>No PO :</strong>
+                {{ $header->No_PO ?? '-' }}
+            </p>
 
-            <p class="mb-0">Dikirim Kepada :</p>
-            <p class="fw-bold">{{ $header->NamaCust ?? '-' }}</p>
-            <p>{{ $header->AlamatKirimDO ?? '-' }}</p>
+            <p class="mb-0">
+                Dikirim Kepada :
+            </p>
+
+            <p class="fw-bold">
+                {{ $header->NamaCust ?? '-' }}
+            </p>
+
+            <p>
+                {{ $header->AlamatKirimDO ?? '-' }}
+            </p>
+
         </div>
     </div>
 
     {{-- TABLE --}}
     <div class="card shadow-sm border-0">
         <div class="card-body p-0">
+
             <table class="table table-bordered mb-0">
+
                 <thead class="table-light text-center">
                     <tr>
                         <th>NO</th>
@@ -67,23 +109,41 @@
                 </thead>
 
                 <tbody>
+
                     @forelse($data as $i => $item)
                     <tr>
-                        <td class="text-center">{{ $i + 1 }}</td>
-                        <td class="text-center">{{ $item->NamaType ?? '-' }}</td>
-                        <td class="text-center">{{ number_format($item->QtyJual ?? 0) }}</td>
-                        <td class="text-center">{{ $item->SatJual ?? '-' }}</td>
+                        <td class="text-center">
+                            {{ $i + 1 }}
+                        </td>
+
+                        <td class="text-center">
+                            {{ $item->NamaType ?? '-' }}
+                        </td>
+
+                        <td class="text-center">
+                            {{ number_format($item->QtyJual ?? 0) }}
+                        </td>
+
+                        <td class="text-center">
+                            {{ $item->SatJual ?? '-' }}
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="text-center">Tidak ada data</td>
+                        <td colspan="4" class="text-center">
+                            Tidak ada data
+                        </td>
                     </tr>
                     @endforelse
+
                 </tbody>
+
             </table>
+
         </div>
     </div>
 
+    {{-- FOOTER INFO --}}
     <div class="card mt-4 shadow-sm border-0">
         <div class="card-body">
 
@@ -91,9 +151,11 @@
             <p class="fw-bold mb-1">
                 Dikeluarkan Oleh <i>Logistic Manager</i>
             </p>
+
             <p class="fw-bold mb-0">
                 {{ $header->NamaExpeditor ?? 'BELUM ADA EXPEDITOR' }}
             </p>
+
             <p class="fw-bold">
                 {{ \Carbon\Carbon::parse($header->TglKirim)->format('d-m-Y') }}
             </p>
@@ -102,8 +164,10 @@
 
             {{-- DIKIRIM --}}
             <p class="fw-bold mb-1">
-                <i>Dikirim Oleh</i> {{ $header->PengirimNama ?? 'BELUM DIKIRIM' }}
+                <i>Dikirim Oleh</i>
+                {{ $header->PengirimNama ?? 'BELUM DIKIRIM' }}
             </p>
+
             <p class="fw-bold">
                 {{ $header->TglPengirim ?? '-' }}
             </p>
@@ -112,8 +176,10 @@
 
             {{-- DITERIMA --}}
             <p class="fw-bold mb-1">
-                <i>Diterima Oleh</i> {{ $header->NamaCust ?? 'BELUM DITERIMA' }}
+                <i>Diterima Oleh</i>
+                {{ $header->NamaCust ?? 'BELUM DITERIMA' }}
             </p>
+
             <p class="fw-bold">
                 {{ $header->TglApp ?? '-' }}
             </p>
@@ -124,4 +190,4 @@
 </div>
 
 </body>
-</html>
+
