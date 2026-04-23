@@ -537,7 +537,7 @@ class SuratJalanPesananController extends Controller
             ], 404);
         }
 
-        // tidak bisa resend email ketika pasca kirim
+        // hanya bisa resend setelah ACC
         if ((int)$data->ACCCustomer !== 1) {
             return response()->json([
                 'success' => false,
@@ -545,13 +545,32 @@ class SuratJalanPesananController extends Controller
             ], 400);
         }
 
+        DB::beginTransaction();
 
         try {
+
+            $resendCount = ((int)$data->ResendSJCount) + 1;
+
+            DB::connection('ConnPublic')
+                ->table('T_KirimSuratJalan')
+                ->where('IDPengiriman', $request->id_pengiriman)
+                ->update([
+                    'ResendSJCount' => $resendCount,
+                    'LastResendSJAt' => now()
+                ]);
+
             $this->sendSuratJalanEmail(
                 $request->id_pengiriman,
-                $emails
+                $emails,
+                $resendCount
             );
+
+            DB::commit();
+
         } catch (\Exception $e) {
+
+            DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -560,11 +579,11 @@ class SuratJalanPesananController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Email berhasil dikirim ke ' . implode(', ', $emails)
+            'message' => 'Email resend ke-' . $resendCount . ' berhasil dikirim ke ' . implode(', ', $emails)
         ]);
     }
 
-    public function sendSuratJalanEmail($idPengiriman, array $emails)
+    public function sendSuratJalanEmail($idPengiriman, array $emails, int $resendCount = 0)
     {
         $items = DB::connection('ConnPublic')
             ->table('T_KirimSuratJalan')
@@ -585,6 +604,7 @@ class SuratJalanPesananController extends Controller
             if ($binary === false) return null;
 
             $mime = 'image/png';
+
             if (substr($binary, 0, 2) === "\xFF\xD8") {
                 $mime = 'image/jpeg';
             }
@@ -595,17 +615,14 @@ class SuratJalanPesananController extends Controller
         $barcodeGudang = $formatBase64Image($items->GbrACCGudang);
         $barcodeSupir  = $formatBase64Image($items->GbrACCSupir);
 
-        // Customer
         $ttCustomer = $formatBase64Image($items->GbrACCCustomer);
 
-        //nama customer
         $namaCustomer = DB::connection('ConnPublic')
             ->table('CustomerUserPublic as cup')
             ->join('UserPublic as up', 'cup.IdUser', '=', 'up.IdUser')
             ->where('cup.IDCust', $items->IDCust)
             ->value('up.NamaUser') ?? '-';
 
-        // Pengirim (supir / satpam)
         $namaPengirim = null;
         $ttdPengirim = null;
 
@@ -621,21 +638,36 @@ class SuratJalanPesananController extends Controller
             'items' => $items,
             'namaPengirim' => $namaPengirim,
             'ttdPengirim' => $ttdPengirim,
-
-            // semua ttd
             'barcodeGudang' => $barcodeGudang,
             'barcodeSupir' => $barcodeSupir,
             'ttCustomer' => $ttCustomer,
             'namaCustomer' => $namaCustomer,
         ])->setPaper('A4', 'portrait');
 
-        Mail::mailer('MailSales')->send([], [], function ($message) use ($emails, $idPengiriman, $pdf) {
-            $message->to($emails)
-                ->subject("Surat Jalan {$idPengiriman}")
-                ->html("
-                    Berikut adalah Surat Jalan dengan nomor <b>{$idPengiriman}</b>.<br>
+        // Subject email
+        $subject = "Surat Jalan {$idPengiriman}";
+
+        if ($resendCount > 0) {
+            $subject .= " - RESEND KE-{$resendCount}";
+        }
+
+        Mail::mailer('MailSales')->send([], [], function ($message) use ($emails, $idPengiriman, $pdf, $subject, $resendCount) {
+
+            $body = "
+                Berikut adalah Surat Jalan dengan nomor <b>{$idPengiriman}</b>.<br>
+                Silakan cek dokumen terlampir.
+            ";
+
+            if ($resendCount > 0) {
+                $body = "
+                    Berikut adalah Resend ke-{$resendCount} dengan Surat Jalan nomor <b>{$idPengiriman}</b>.<br>
                     Silakan cek dokumen terlampir.
-                ")
+                ";
+            }
+
+            $message->to($emails)
+                ->subject($subject)
+                ->html($body)
                 ->attachData(
                     $pdf->output(),
                     "Surat Jalan {$idPengiriman}.pdf",
