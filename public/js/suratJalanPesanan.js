@@ -157,6 +157,42 @@ jQuery(function ($) {
 
 //#region Event Listener
 
+        // =============================
+        // LIMIT INPUT QTY
+        // =============================
+        $('#qtyInput').on('input', function () {
+
+            let rowData = table.row(0).data();
+
+            if (!rowData) return;
+
+            let qtyJual = parseFloat(rowData.QtyJual);
+
+            if (isNaN(qtyJual)) return;
+
+            let maxQty = qtyJual * 2;
+
+            // digit maksimum berdasarkan maxQty
+            let maxDigits = Math.floor(maxQty).toString().length;
+
+            let value = $(this).val();
+
+            // hanya angka
+            value = value.replace(/\D/g, '');
+
+            // limit digit
+            if (value.length > maxDigits) {
+                value = value.substring(0, maxDigits);
+            }
+
+            // limit nilai maksimum
+            if (parseInt(value || 0) > maxQty) {
+                value = maxQty.toString();
+            }
+
+            $(this).val(value);
+        });
+
     // =============================
     // OTP FLOW
     // =============================
@@ -331,6 +367,17 @@ jQuery(function ($) {
 
         let qtyJual = parseFloat(rowData.QtyJual);
         let maxQty = qtyJual * 2;
+
+        // batas digit berdasarkan maxQty
+        let maxDigits = Math.floor(maxQty).toString().length;
+
+        let inputValue = $('#qtyInput').val().trim();
+        let numericOnly = inputValue.replace('.', '').replace(',', '');
+
+        if (numericOnly.length > maxDigits) {
+            alert(`Jumlah digit maksimal ${maxDigits} digit`);
+            return;
+        }
 
         // VALIDASI MAX 2x
         if (qty > maxQty) {

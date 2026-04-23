@@ -58,7 +58,12 @@ Route::get('/SuratJalan/{id}', [SuratJalanPesananController::class, 'show'])
 Route::resource('profile', UserController::class);
 
 Route::get('SuratJalan-data', [SuratJalanPesananController::class, 'data'])->name('SuratJalan.data');
+Route::get('SuratJalan/get-emails/{id_pengiriman}', [SuratJalanPesananController::class, 'getEmails']);
+Route::post('SuratJalan/send-otp', [SuratJalanPesananController::class, 'sendOtp']);
 Route::resource('DokumenSJ', DokumenSJController::class)->except(['show']);
+Route::post('SuratJalan/verify-otp', [SuratJalanPesananController::class, 'verifyOtp']);
+Route::post('SuratJalan/confirm-approval', [SuratJalanPesananController::class, 'confirmApproval']);
+Route::post('SuratJalan/resend-email', [SuratJalanPesananController::class, 'resendEmail']);
 
 Route::middleware(['check.login'])->group(function () {
     Route::get('/home', function () {
@@ -67,11 +72,6 @@ Route::middleware(['check.login'])->group(function () {
 
     Route::get('SuratJalan/list-data', [SuratJalanPesananController::class, 'listData'])->name('SuratJalan.listData');
     Route::get('/SuratJalan/detail-modal/{id}', [SuratJalanPesananController::class, 'detailModalSJ']);
-    Route::get('SuratJalan/get-emails/{id_pengiriman}', [SuratJalanPesananController::class, 'getEmails']);
-    Route::post('SuratJalan/send-otp', [SuratJalanPesananController::class, 'sendOtp']);
-    Route::post('SuratJalan/verify-otp', [SuratJalanPesananController::class, 'verifyOtp']);
-    Route::post('SuratJalan/confirm-approval', [SuratJalanPesananController::class, 'confirmApproval']);
-    Route::post('SuratJalan/resend-email', [SuratJalanPesananController::class, 'resendEmail']);
     Route::resource('SuratJalan', SuratJalanPesananController::class)->except(['show']);
 
 });
