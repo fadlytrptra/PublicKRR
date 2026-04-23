@@ -25,6 +25,8 @@
                 <td class="text-center">{{ $item->NamaCust }}</td>
                 <td class="text-center">
                    <a href="{{ route('DokumenSJ.show', $item->encrypted_id) }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         class="btn btn-sm btn-success">
                             Lihat Dokumen
                     </a>

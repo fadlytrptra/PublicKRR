@@ -1,14 +1,17 @@
-@extends('layouts.app')
-@section('content')
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Document Verified</title>
 
-<div class="container">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    @if(!isset($header))
-        <div class="alert alert-danger text-center">
-            Data tidak ditemukan
-        </div>
-        @return
-    @endif
+    {{-- Bootstrap optional --}}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container py-4">
 
     {{-- HEADER --}}
     <div class="text-center mb-4">
@@ -120,4 +123,5 @@
 
 </div>
 
-@endsection
+</body>
+</html>
