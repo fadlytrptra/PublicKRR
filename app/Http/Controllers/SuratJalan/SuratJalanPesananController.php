@@ -196,7 +196,7 @@ class SuratJalanPesananController extends Controller
                 'sj.No_PO'
             )
 
-            // ✅ FILTER: masih ada yang belum ACC / pasca kirim
+            // FILTER: belum ACC / pasca kirim
             ->havingRaw("
                 SUM(CASE
                     WHEN sj.ACCCUSTOMER IS NULL
@@ -336,7 +336,6 @@ class SuratJalanPesananController extends Controller
                 'status' => 'OTP_VALID',
                 'id_surat_jalan' => $idSuratJalan
             ]);
-
         } catch (\Exception $e) {
 
             DB::rollBack();
@@ -404,8 +403,8 @@ class SuratJalanPesananController extends Controller
                 $encrypter->encryptString((string) $data->IDPengiriman)
             );
 
-            $link = url('/DokumenSJ/view/' . $encrypted);
-
+            // $link = url('/DokumenSJ/view/' . $encrypted);
+            $link = "http://192.168.100.67:8000/DokumenSJ/view/$encrypted";
             $qrImage = QrCode::format('svg')
                 ->size(150)
                 ->generate($link);
@@ -431,7 +430,6 @@ class SuratJalanPesananController extends Controller
                         'IsUsed' => 1,
                         'ApprovedAt' => $now
                     ]);
-
             } else {
                 // PASCA KIRIM
                 $update = [
@@ -466,7 +464,6 @@ class SuratJalanPesananController extends Controller
                 ]);
 
             DB::commit();
-
         } catch (\Exception $e) {
 
             DB::rollBack();
@@ -566,7 +563,6 @@ class SuratJalanPesananController extends Controller
             );
 
             DB::commit();
-
         } catch (\Exception $e) {
 
             DB::rollBack();
