@@ -54,9 +54,6 @@ Route::get('/SuratJalan/{id}', [SuratJalanPesananController::class, 'show'])
     ->where('id', '[A-Za-z0-9%]+')
     ->name('SuratJalan.show');
 
-
-Route::resource('profile', UserController::class);
-
 Route::get('SuratJalan-data', [SuratJalanPesananController::class, 'data'])->name('SuratJalan.data');
 Route::get('SuratJalan/get-emails/{id_pengiriman}', [SuratJalanPesananController::class, 'getEmails']);
 Route::post('SuratJalan/send-otp', [SuratJalanPesananController::class, 'sendOtp']);
@@ -70,6 +67,7 @@ Route::middleware(['check.login'])->group(function () {
         return view('home');
     })->name('home');
 
+    Route::resource('profile', UserController::class);
     Route::get('SuratJalan/list-data', [SuratJalanPesananController::class, 'listData'])->name('SuratJalan.listData');
     Route::get('/SuratJalan/detail-modal/{id}', [SuratJalanPesananController::class, 'detailModalSJ']);
     Route::resource('SuratJalan', SuratJalanPesananController::class)->except(['show']);

@@ -11,29 +11,11 @@ use Illuminate\Contracts\Encryption\DecryptException;
 
 class DokumenSJController extends Controller
 {
-
-    public function getUser()
-    {
-        $user = session('user');
-
-        if (!$user) {
-            abort(403, 'Unauthorized');
-        }
-
-        return $user;
-    }
-
-    /**
-     * LIST DATA
-     */
     public function index()
     {
-        $user = $this->getUser();
-
         $list = DB::connection('ConnPublic')
             ->table('T_KirimSuratJalan as sj')
             ->join('CustomerUserPublic as cup', 'cup.IDCust', '=', 'sj.IDCust')
-            ->where('cup.IdUser', $user->IdUser)
 
             ->select(
                 'sj.IDPengiriman',
@@ -56,7 +38,14 @@ class DokumenSJController extends Controller
             ->orderByDesc('TglKirim')
             ->get()
             ->map(function ($item) {
-                $item->encrypted_id = encrypt($item->IDPengiriman);
+                $key = env('QR_SHARED_SECRET');
+                $cipher = 'AES-256-CBC';
+                $encrypter = new Encrypter($key, $cipher);
+
+                $item->encrypted_id = urlencode(
+                    $encrypter->encryptString((string) $item->IDPengiriman)
+                );
+
                 return $item;
             });
 
@@ -68,11 +57,17 @@ class DokumenSJController extends Controller
      */
     public function show($id)
     {
-        $user = $this->getUser();
-
         try {
-            $idPengiriman = decrypt(urldecode($id));
-        } catch (\Exception $e) {
+            $key = env('QR_SHARED_SECRET');
+            $cipher = 'AES-256-CBC';
+
+            $encrypter = new Encrypter($key, $cipher);
+
+            $idPengiriman = $encrypter->decryptString(
+                urldecode($id)
+            );
+
+        } catch (DecryptException $e) {
             abort(404);
         }
 
@@ -84,7 +79,6 @@ class DokumenSJController extends Controller
                      ->whereNotNull('otp.ApprovedAt');
             })
             ->where('sj.IDPengiriman', $idPengiriman)
-            ->where('cup.IdUser', $user->IdUser)
             ->select([
                 'sj.NamaType',
                 'sj.Ket',
