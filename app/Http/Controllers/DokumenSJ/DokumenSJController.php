@@ -13,9 +13,13 @@ class DokumenSJController extends Controller
 {
     public function index()
     {
+        $user = session('user');
+
         $list = DB::connection('ConnPublic')
             ->table('T_KirimSuratJalan as sj')
             ->join('CustomerUserPublic as cup', 'cup.IDCust', '=', 'sj.IDCust')
+
+            ->where('cup.IdUser', $user->IdUser)
 
             ->select(
                 'sj.IDPengiriman',
@@ -26,15 +30,16 @@ class DokumenSJController extends Controller
             ->groupBy('sj.IDPengiriman')
 
             ->havingRaw("
-                COUNT(*) = SUM(
+                SUM(
                     CASE
-                        WHEN sj.ACCCustomer = 1
-                            AND sj.QtyTemp IS NULL
+                        WHEN sj.ACCCUSTOMER = 1
+                            OR (sj.ACCCUSTOMER = 0 AND sj.QtyTemp IS NOT NULL)
                         THEN 1
                         ELSE 0
                     END
-                )
+                ) > 0
             ")
+
             ->orderByDesc('TglKirim')
             ->get()
             ->map(function ($item) {

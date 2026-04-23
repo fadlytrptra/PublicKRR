@@ -196,11 +196,10 @@ class SuratJalanPesananController extends Controller
                 'sj.No_PO'
             )
 
-            // FILTER: belum ACC / pasca kirim
+            // belum ACC
             ->havingRaw("
                 SUM(CASE
                     WHEN sj.ACCCUSTOMER IS NULL
-                        OR (sj.ACCCUSTOMER = 0 AND sj.QtyTemp IS NOT NULL)
                     THEN 1 ELSE 0 END
                 ) > 0
             ")
