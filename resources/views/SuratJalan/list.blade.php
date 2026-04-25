@@ -18,7 +18,7 @@
 
 <div class="container">
     <div class="card">
-        <div class="card-header">List Surat Jalan</div>
+        <div class="card-header">Surat Jalan Belum Verifikasi</div>
 
         <div class="card-body">
             <table id="tableList" class="table table-striped">
@@ -161,6 +161,28 @@ $(document).on('click', '.btn-detail', function () {
 
             let first = res.data[0];
             let rows = '';
+            const formatSatuan = (satuan) => {
+            const satuanMap = {
+                'TABUNG': 'TABUNG',
+                'SET': 'PAKET',
+                'KGM': 'KILOGRAM',
+                'RP': 'RP',
+                'BALL': 'BALL',
+                'LBR': 'LEMBAR',
+                'PC': 'POTONG',
+                'YARDS': 'YARD',
+                'MTR²': 'METER PERSEGI',
+                'ROLL': 'GULUNGAN',
+                'DRUM': 'KAPSUL',
+                'LJR': 'LONJOR',
+                'MTR': 'METER',
+                'UNIT': 'UNIT'
+            };
+
+            if (!satuan) return '-';
+
+            return satuanMap[satuan.trim()] ?? satuan;
+        };
 
             // TABLE
             res.data.forEach(item => {
@@ -170,11 +192,13 @@ $(document).on('click', '.btn-detail', function () {
                     maximumFractionDigits: 2
                 });
 
+                let satJual = formatSatuan(item.SatJual);
+
                 rows += `
                     <tr>
                         <td>${item.NamaType ?? '-'}</td>
                         <td>${formattedQty}</td>
-                        <td>${item.SatJual ?? '-'}</td>
+                        <td>${satJual ?? '-'}</td>
                     </tr>
                 `;
             });

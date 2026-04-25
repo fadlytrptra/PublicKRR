@@ -46,7 +46,31 @@ jQuery(function ($) {
                     });
                 }
             },
-            { data: 'SatJual' },
+            {
+                data: 'SatJual',
+                render: function (data, type, row) {
+                    if (!data) return '-';
+
+                    const formatSatuan = {
+                        'TABUNG': 'TABUNG',
+                        'SET': 'PAKET',
+                        'KGM': 'KILOGRAM',
+                        'RP': 'RP',
+                        'BALL': 'BALL',
+                        'LBR': 'LEMBAR',
+                        'PC': 'POTONG',
+                        'YARDS': 'YARD',
+                        'MTR²': 'METER PERSEGI',
+                        'ROLL': 'GULUNGAN',
+                        'DRUM': 'KAPSUL',
+                        'LJR': 'LONJOR',
+                        'MTR': 'METER',
+                        'UNIT': 'UNIT'
+                    };
+
+                    return formatSatuan[data.trim()] ?? data;
+                }
+            },
             { data: 'NamaCust' },
             { data: 'SuratPesanan' },
             { data: 'NamaExpeditor' },
@@ -161,36 +185,37 @@ jQuery(function ($) {
         // LIMIT INPUT QTY
         // =============================
         $('#qtyInput').on('input', function () {
-
             let rowData = table.row(0).data();
-
             if (!rowData) return;
 
             let qtyJual = parseFloat(rowData.QtyJual);
-
             if (isNaN(qtyJual)) return;
 
             let maxQty = qtyJual * 2;
-
-            // digit maksimum berdasarkan maxQty
             let maxDigits = Math.floor(maxQty).toString().length;
 
             let value = $(this).val();
 
-            // hanya angka
+            // ambil angka saja
             value = value.replace(/\D/g, '');
 
-            // limit digit
+            // batas digit
             if (value.length > maxDigits) {
                 value = value.substring(0, maxDigits);
             }
 
-            // limit nilai maksimum
-            if (parseInt(value || 0) > maxQty) {
-                value = maxQty.toString();
+            // convert ke number
+            let numericValue = parseInt(value || 0);
+
+            // maksimum 2x qty jual
+            if (numericValue > maxQty) {
+                numericValue = maxQty;
             }
 
-            $(this).val(value);
+            // format ribuan
+            let formattedValue = numericValue.toLocaleString('en-US');
+
+            $(this).val(numericValue === 0 ? '' : formattedValue);
         });
 
     // =============================
@@ -283,6 +308,9 @@ jQuery(function ($) {
             window.idSuratJalan = res.id_surat_jalan;
             window.otpId = res.otp_id;
 
+            // clear otp input
+            $('#otpInput').val('');
+
             $('#otpSection').hide();
 
             $('#stepKonfirmasi').show();
@@ -353,7 +381,7 @@ jQuery(function ($) {
 
     // SUBMIT QTY
     $('#btnSubmitQty').click(function () {
-        let qty = parseFloat($('#qtyInput').val());
+        let qty = parseFloat($('#qtyInput').val().replace(/,/g, ''));
 
         if (!qty || qty < 0) {
             alert('Jumlah Quantity tidak boleh minus');
@@ -455,7 +483,6 @@ jQuery(function ($) {
             alert(xhr.responseJSON?.error ?? 'Terjadi kesalahan');
             $('#btnSubmitQty').prop('disabled', false).text('Submit');
         });
-
     });
 
     $('#btnResendEmail').click(function () {
@@ -487,9 +514,8 @@ jQuery(function ($) {
         .always(function () {
             $('#btnResendEmail').prop('disabled', false).text('Resend Email');
         });
-
     });
-//#endregion
+    //#endregion
 
 
 });

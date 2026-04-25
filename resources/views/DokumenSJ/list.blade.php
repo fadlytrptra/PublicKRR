@@ -3,7 +3,7 @@
 @section('content')
 
 <div class="container">
-    <h4 class="mb-4">Daftar Surat Jalan</h4>
+    <h4 class="mb-4">Surat Jalan Sudah Verifikasi</h4>
 
     <table class="table table-bordered">
         <thead class="table-light text-center">

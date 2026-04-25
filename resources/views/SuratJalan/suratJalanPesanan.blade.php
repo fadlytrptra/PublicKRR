@@ -146,7 +146,7 @@
                 <div id="stepQty" style="display:none;">
                     <p><strong>Berapa jumlah barang yang sudah sesuai?</strong></p>
 
-                    <input type="number" id="qtyInput"
+                    <input type="text" id="qtyInput"
                            class="form-control mb-2"
                            placeholder="Masukkan jumlah">
 

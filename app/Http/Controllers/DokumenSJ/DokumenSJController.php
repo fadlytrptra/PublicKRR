@@ -140,7 +140,33 @@ class DokumenSJController extends Controller
             ? Carbon::parse($header->TglApp)->format('d-m-Y H:i:s')
             : '-';
 
+        foreach ($data as $item) {
+            $item->SatJual = $this->formatSatuan($item->SatJual);
+        }
+
         return view('DokumenSJ.index', compact('header', 'data'));
+    }
+
+    public function formatSatuan($satuan)
+    {
+        $map = [
+            'TABUNG' => 'TABUNG',
+            'SET' => 'PAKET',
+            'KGM' => 'KILOGRAM',
+            'RP' => 'RP',
+            'BALL' => 'BALL',
+            'LBR' => 'LEMBAR',
+            'PC' => 'POTONG',
+            'YARDS' => 'YARD',
+            'MTR²' => 'METER PERSEGI',
+            'ROLL' => 'GULUNGAN',
+            'DRUM' => 'KAPSUL',
+            'LJR' => 'LONJOR',
+            'MTR' => 'METER',
+            'UNIT' => 'UNIT',
+        ];
+
+        return $map[trim($satuan)] ?? $satuan;
     }
 
     public function create() {

@@ -31,7 +31,9 @@ class LoginController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return back()->withErrors([
+                'error' => 'User / Password tidak ditemukan'
+            ])->withInput();
         }
 
         $user = DB::connection('ConnPublic')
