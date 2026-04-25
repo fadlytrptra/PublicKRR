@@ -26,7 +26,7 @@
                     <div class="row">
 
                         <div class="col-md-4">
-                            <label>Search</label>
+                            <label>Cari</label>
                             <input type="text" id="searchText"
                                 class="form-control"
                                 placeholder="Nomor PO / Nama Barang">
@@ -42,12 +42,12 @@
                             <input type="date" id="dateTo" class="form-control">
                         </div>
 
-                        <div class="col-md-2 d-flex align-items-end">
+                        <div class="col-md-2 d-flex align-items-end gap-2">
                             <button id="btnFilter" class="btn btn-success w-100">
                                 Cari
                             </button>
                             <button id="btnReset" class="btn btn-warning w-100">
-                                Ulang
+                                Muat Ulang
                             </button>
                         </div>
 
