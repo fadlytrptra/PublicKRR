@@ -42,13 +42,17 @@
                             <input type="date" id="dateTo" class="form-control">
                         </div>
 
-                        <div class="col-md-2 d-flex align-items-end gap-2">
-                            <button id="btnFilter" class="btn btn-success w-100">
-                                Cari
-                            </button>
-                            <button id="btnReset" class="btn btn-warning w-100">
-                                Muat Ulang
-                            </button>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <div class="d-flex w-100 gap-2">
+
+                                <button type="submit" class="btn btn-primary flex-fill">
+                                    Cari
+                                </button>
+
+                                <button id="btnReset" class="btn btn-warning w-100">
+                                    Muat Ulang
+                                </button>
+                            </div>
                         </div>
 
                     </div>

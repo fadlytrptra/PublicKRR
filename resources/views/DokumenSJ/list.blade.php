@@ -36,13 +36,19 @@
                                value="{{ request('date_to') }}">
                     </div>
 
-                    <div class="col-md-2 d-flex align-items-end gap-2">
-                        <button type="submit" class="btn btn-success w-100">
-                            Cari
-                        </button>
-                        <a href="{{ route('DokumenSJ.index') }}" class="btn btn-warning w-100">
-                           Muat Ulang
-                        </a>
+                   <div class="col-md-2 d-flex align-items-end">
+                        <div class="d-flex w-100 gap-2">
+
+                            <button type="submit" class="btn btn-success flex-fill">
+                                Cari
+                            </button>
+
+                            <a href="{{ route('DokumenSJ.index') }}"
+                            class="btn btn-warning flex-fill d-flex align-items-center justify-content-center text-nowrap">
+                                Muat Ulang
+                            </a>
+
+                        </div>
                     </div>
                 </div>
             </form>
