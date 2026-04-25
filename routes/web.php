@@ -25,6 +25,11 @@ $redirectIfAuthenticated = function () {
 Route::get('/', $redirectIfAuthenticated);
 Route::get('/logout', $redirectIfAuthenticated);
 
+Route::get('/refresh-csrf', function () {
+    session()->regenerateToken();
+    return response()->json(['csrf_token' => csrf_token()]);
+});
+
 #region Auth
 //Route::get('/', [LoginController::class, 'index'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
@@ -57,6 +62,7 @@ Route::get('/SuratJalan/{id}', [SuratJalanPesananController::class, 'show'])
 Route::get('SuratJalan-data', [SuratJalanPesananController::class, 'data'])->name('SuratJalan.data');
 Route::get('SuratJalan/get-emails/{id_pengiriman}', [SuratJalanPesananController::class, 'getEmails']);
 Route::post('SuratJalan/send-otp', [SuratJalanPesananController::class, 'sendOtp']);
+Route::get('/dokumen-sj/search', [DokumenSJController::class, 'search'])->name('DokumenSJ.search');
 Route::resource('DokumenSJ', DokumenSJController::class)->except(['show']);
 Route::post('SuratJalan/verify-otp', [SuratJalanPesananController::class, 'verifyOtp']);
 Route::post('SuratJalan/confirm-approval', [SuratJalanPesananController::class, 'confirmApproval']);
