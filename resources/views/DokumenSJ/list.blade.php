@@ -12,7 +12,7 @@
                 <div class="row">
 
                     <div class="col-md-4">
-                        <label>Search</label>
+                        <label>Cari</label>
                         <input type="text"
                                name="search"
                                class="form-control"
@@ -21,7 +21,7 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label>Tanggal Dari</label>
+                        <label>Tanggal Awal</label>
                         <input type="date"
                                name="date_from"
                                class="form-control"
@@ -29,7 +29,7 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label>Tanggal Sampai</label>
+                        <label>Tanggal Akhir</label>
                         <input type="date"
                                name="date_to"
                                class="form-control"
@@ -38,10 +38,10 @@
 
                     <div class="col-md-2 d-flex align-items-end">
                         <button type="submit" class="btn btn-success w-100">
-                            Search
+                            Cari
                         </button>
                         <a href="{{ route('DokumenSJ.index') }}" class="btn btn-warning w-100">
-                            Reset
+                            Ulang
                         </a>
                     </div>
                 </div>

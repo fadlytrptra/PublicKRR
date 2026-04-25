@@ -33,21 +33,21 @@
                         </div>
 
                         <div class="col-md-3">
-                            <label>Tanggal Dari</label>
+                            <label>Tanggal Awal</label>
                             <input type="date" id="dateFrom" class="form-control">
                         </div>
 
                         <div class="col-md-3">
-                            <label>Tanggal Sampai</label>
+                            <label>Tanggal Akhir</label>
                             <input type="date" id="dateTo" class="form-control">
                         </div>
 
                         <div class="col-md-2 d-flex align-items-end">
                             <button id="btnFilter" class="btn btn-success w-100">
-                                Search
+                                Cari
                             </button>
                             <button id="btnReset" class="btn btn-warning w-100">
-                                Reset
+                                Ulang
                             </button>
                         </div>
 
@@ -60,7 +60,7 @@
                         <th>Nomor PO</th>
                         <th>Tanggal Kirim</th>
                         <th>Nama Barang</th>
-                        <th>Action</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
             </table>
@@ -160,7 +160,7 @@
 </div>
 
 <script>
-    //list
+//list
 let table = $('#tableList').DataTable({
     ajax: {
         url: '/SuratJalan/list-data',
@@ -172,6 +172,9 @@ let table = $('#tableList').DataTable({
     },
 
     searching: false,
+    language: {
+        lengthMenu: "_MENU_ baris per halaman"
+    },
 
     columns: [
         { data: 'No_PO', width: '200px' },
@@ -196,7 +199,7 @@ let table = $('#tableList').DataTable({
             render: function (data) {
                 return `
                     <button class="btn btn-primary btn-sm btn-detail" data-id="${data}">
-                        View
+                        Lihat
                     </button>
                 `;
             }
