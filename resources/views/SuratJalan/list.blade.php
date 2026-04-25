@@ -18,9 +18,42 @@
 
 <div class="container">
     <div class="card">
-        <div class="card-header">Surat Jalan Belum Verifikasi</div>
+        <div class="card-header">List Surat Jalan Belum Verifikasi</div>
 
         <div class="card-body">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <label>Search</label>
+                            <input type="text" id="searchText"
+                                class="form-control"
+                                placeholder="Nomor PO / Nama Barang">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Tanggal Dari</label>
+                            <input type="date" id="dateFrom" class="form-control">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Tanggal Sampai</label>
+                            <input type="date" id="dateTo" class="form-control">
+                        </div>
+
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button id="btnFilter" class="btn btn-success w-100">
+                                Search
+                            </button>
+                            <button id="btnReset" class="btn btn-warning w-100">
+                                Reset
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
             <table id="tableList" class="table table-striped">
                 <thead>
                     <tr>
@@ -127,11 +160,36 @@
 </div>
 
 <script>
-$('#tableList').DataTable({
-    ajax: '/SuratJalan/list-data',
+    //list
+let table = $('#tableList').DataTable({
+    ajax: {
+        url: '/SuratJalan/list-data',
+        data: function (d) {
+            d.search = $('#searchText').val();
+            d.date_from = $('#dateFrom').val();
+            d.date_to = $('#dateTo').val();
+        }
+    },
+
+    searching: false,
+
     columns: [
         { data: 'No_PO', width: '200px' },
-        { data: 'TglKirim', className: 'text-start' },
+        {
+            data: 'TglKirim',
+            className: 'text-start',
+            render: function (data) {
+                if (!data) return '-';
+
+                let date = new Date(data);
+
+                let day = String(date.getDate()).padStart(2, '0');
+                let month = String(date.getMonth() + 1).padStart(2, '0');
+                let year = date.getFullYear();
+
+                return `${day}-${month}-${year}`;
+            }
+        },
         { data: 'NamaType' },
         {
             data: 'IDPengiriman',
@@ -146,6 +204,26 @@ $('#tableList').DataTable({
     ]
 });
 
+$('#btnFilter').on('click', function () {
+    table.ajax.reload();
+});
+
+$('#searchText').on('keypress', function(e){
+    if(e.which === 13){
+        table.ajax.reload();
+    }
+});
+
+$('#btnReset').on('click', function () {
+
+    $('#searchText').val('');
+    $('#dateFrom').val('');
+    $('#dateTo').val('');
+
+    table.ajax.reload();
+});
+
+// detail
 $(document).on('click', '.btn-detail', function () {
     let id = $(this).data('id');
 
@@ -164,7 +242,7 @@ $(document).on('click', '.btn-detail', function () {
             const formatSatuan = (satuan) => {
             const satuanMap = {
                 'TABUNG': 'TABUNG',
-                'SET': 'PAKET',
+                'SET': 'SET',
                 'KGM': 'KILOGRAM',
                 'RP': 'RP',
                 'BALL': 'BALL',
@@ -172,8 +250,8 @@ $(document).on('click', '.btn-detail', function () {
                 'PC': 'POTONG',
                 'YARDS': 'YARD',
                 'MTR²': 'METER PERSEGI',
-                'ROLL': 'GULUNGAN',
-                'DRUM': 'KAPSUL',
+                'ROLL': 'ROLL',
+                'DRUM': 'DRUM',
                 'LJR': 'LONJOR',
                 'MTR': 'METER',
                 'UNIT': 'UNIT'
@@ -203,7 +281,16 @@ $(document).on('click', '.btn-detail', function () {
                 `;
             });
 
-            let tgl = first.TglKirim ? first.TglKirim.split(' ')[0] : '-';
+            let tgl = '-';
+            if (first.TglKirim) {
+                let date = new Date(first.TglKirim);
+
+                let day = String(date.getDate()).padStart(2, '0');
+                let month = String(date.getMonth() + 1).padStart(2, '0');
+                let year = date.getFullYear();
+
+                tgl = `${day}-${month}-${year}`;
+            }
 
             $('#detailBody').html(rows);
 

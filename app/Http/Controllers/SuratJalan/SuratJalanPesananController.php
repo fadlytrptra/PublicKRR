@@ -159,7 +159,7 @@ class SuratJalanPesananController extends Controller
     }
 
     //list surat jalan
-    public function listData()
+    public function listData(Request $request)
     {
         $user = session('user');
 
@@ -180,23 +180,41 @@ class SuratJalanPesananController extends Controller
             ]);
         }
 
-        $data = DB::connection('ConnPublic')
+        $query = DB::connection('ConnPublic')
             ->table('T_KirimSuratJalan as sj')
-            ->whereIn('sj.IDCust', $idCustList)
+            ->whereIn('sj.IDCust', $idCustList);
 
+        // SEARCH
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('sj.No_PO', 'like', '%' . $search . '%')
+                ->orWhere('sj.NamaType', 'like', '%' . $search . '%');
+            });
+        }
+
+        // RANGE TANGGAL
+        if ($request->filled('date_from')) {
+            $query->whereDate('sj.TglKirim', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('sj.TglKirim', '<=', $request->date_to);
+        }
+
+        $data = $query
             ->select(
                 'sj.IDPengiriman',
                 'sj.No_PO',
                 DB::raw('CONVERT(date, MAX(sj.TglKirim)) as TglKirim'),
                 DB::raw('MIN(sj.NamaType) as NamaType')
             )
-
             ->groupBy(
                 'sj.IDPengiriman',
                 'sj.No_PO'
             )
 
-            // belum ACC
             ->havingRaw("
                 SUM(CASE
                     WHEN sj.ACCCUSTOMER IS NULL
@@ -204,7 +222,7 @@ class SuratJalanPesananController extends Controller
                 ) > 0
             ")
 
-            ->orderByDesc('TglKirim')
+            ->orderByDesc(DB::raw('MAX(sj.TglKirim)'))
             ->get();
 
         return response()->json([

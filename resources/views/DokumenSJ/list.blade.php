@@ -3,8 +3,53 @@
 @section('content')
 
 <div class="container">
-    <h4 class="mb-4">Surat Jalan Sudah Verifikasi</h4>
+    <h4 class="mb-4">List Surat Jalan Sudah Verifikasi</h4>
 
+    <!-- FILTER -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="GET" action="{{ route('DokumenSJ.search') }}">
+                <div class="row">
+
+                    <div class="col-md-4">
+                        <label>Search</label>
+                        <input type="text"
+                               name="search"
+                               class="form-control"
+                               placeholder="No Surat Jalan / Nama Perusahaan"
+                               value="{{ request('search') }}">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Tanggal Dari</label>
+                        <input type="date"
+                               name="date_from"
+                               class="form-control"
+                               value="{{ request('date_from') }}">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Tanggal Sampai</label>
+                        <input type="date"
+                               name="date_to"
+                               class="form-control"
+                               value="{{ request('date_to') }}">
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-success w-100">
+                            Search
+                        </button>
+                        <a href="{{ route('DokumenSJ.index') }}" class="btn btn-warning w-100">
+                            Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TABLE -->
     <table class="table table-bordered">
         <thead class="table-light text-center">
             <tr>
@@ -21,14 +66,16 @@
             <tr>
                 <td class="text-center">{{ $i + 1 }}</td>
                 <td class="text-center">{{ $item->IDPengiriman }}</td>
-                <td class="text-center">{{ \Carbon\Carbon::parse($item->TglKirim)->format('d-m-Y') }}</td>
+                <td class="text-center">
+                    {{ \Carbon\Carbon::parse($item->TglKirim)->format('d-m-Y') }}
+                </td>
                 <td class="text-center">{{ $item->NamaCust }}</td>
                 <td class="text-center">
-                   <a href="{{ route('DokumenSJ.show', $item->encrypted_id) }}"
+                    <a href="{{ route('DokumenSJ.show', $item->encrypted_id) }}"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="btn btn-sm btn-success">
-                            Lihat Dokumen
+                        Lihat Dokumen
                     </a>
                 </td>
             </tr>

@@ -53,7 +53,7 @@ jQuery(function ($) {
 
                     const formatSatuan = {
                         'TABUNG': 'TABUNG',
-                        'SET': 'PAKET',
+                        'SET': 'SET',
                         'KGM': 'KILOGRAM',
                         'RP': 'RP',
                         'BALL': 'BALL',
@@ -61,8 +61,8 @@ jQuery(function ($) {
                         'PC': 'POTONG',
                         'YARDS': 'YARD',
                         'MTR²': 'METER PERSEGI',
-                        'ROLL': 'GULUNGAN',
-                        'DRUM': 'KAPSUL',
+                        'ROLL': 'ROLL',
+                        'DRUM': 'DRUM',
                         'LJR': 'LONJOR',
                         'MTR': 'METER',
                         'UNIT': 'UNIT'

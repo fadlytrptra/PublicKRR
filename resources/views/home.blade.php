@@ -90,10 +90,10 @@
                         <div style="overflow: auto;">
                             {{-- <h1>silahkan scan qr barcode dari kami</h1> --}}
                             <a href="{{ route('SuratJalan.index') }}" class="btn btn-primary">
-                                Surat Jalan Belum Verifikasi
+                                List Surat Jalan Belum Verifikasi
                             </a>
                             <a href="{{ route('DokumenSJ.index') }}" class="btn btn-success ms-2">
-                                Surat Jalan Sudah Verifikasi
+                                List Surat Jalan Sudah Verifikasi
                             </a>
                         </div>
                     </div>

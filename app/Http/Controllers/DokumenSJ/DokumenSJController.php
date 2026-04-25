@@ -151,7 +151,7 @@ class DokumenSJController extends Controller
     {
         $map = [
             'TABUNG' => 'TABUNG',
-            'SET' => 'PAKET',
+            'SET' => 'SET',
             'KGM' => 'KILOGRAM',
             'RP' => 'RP',
             'BALL' => 'BALL',
@@ -159,14 +159,76 @@ class DokumenSJController extends Controller
             'PC' => 'POTONG',
             'YARDS' => 'YARD',
             'MTR²' => 'METER PERSEGI',
-            'ROLL' => 'GULUNGAN',
-            'DRUM' => 'KAPSUL',
+            'ROLL' => 'ROLL',
+            'DRUM' => 'DRUM',
             'LJR' => 'LONJOR',
             'MTR' => 'METER',
             'UNIT' => 'UNIT',
         ];
 
         return $map[trim($satuan)] ?? $satuan;
+    }
+
+    public function search(Request $request)
+    {
+        $user = session('user');
+
+        $query = DB::connection('ConnPublic')
+            ->table('T_KirimSuratJalan as sj')
+            ->join('CustomerUserPublic as cup', 'cup.IDCust', '=', 'sj.IDCust')
+            ->where('cup.IdUser', $user->IdUser);
+
+        // SEARCH
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('sj.IDPengiriman', 'like', '%' . $search . '%')
+                ->orWhere('sj.NamaCust', 'like', '%' . $search . '%');
+            });
+        }
+
+        // RANGE TANGGAL
+        if ($request->filled('date_from')) {
+            $query->whereDate('sj.TglKirim', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('sj.TglKirim', '<=', $request->date_to);
+        }
+
+        $list = $query
+            ->select(
+                'sj.IDPengiriman',
+                DB::raw('MAX(sj.TglKirim) as TglKirim'),
+                DB::raw('MAX(sj.NamaCust) as NamaCust')
+            )
+            ->groupBy('sj.IDPengiriman')
+            ->havingRaw("
+                SUM(
+                    CASE
+                        WHEN sj.ACCCUSTOMER = 1
+                            OR (sj.ACCCUSTOMER = 0 AND sj.QtyTemp IS NOT NULL)
+                        THEN 1
+                        ELSE 0
+                    END
+                ) > 0
+            ")
+            ->orderByDesc('TglKirim')
+            ->get()
+            ->map(function ($item) {
+                $key = env('QR_SHARED_SECRET');
+                $cipher = 'AES-256-CBC';
+                $encrypter = new Encrypter($key, $cipher);
+
+                $item->encrypted_id = urlencode(
+                    $encrypter->encryptString((string) $item->IDPengiriman)
+                );
+
+                return $item;
+            });
+
+        return view('DokumenSJ.list', compact('list'));
     }
 
     public function create() {
