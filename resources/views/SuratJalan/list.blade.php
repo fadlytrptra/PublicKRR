@@ -45,7 +45,7 @@
                         <div class="col-md-2 d-flex align-items-end">
                             <div class="d-flex w-100 gap-2">
 
-                                <button type="submit" class="btn btn-primary flex-fill">
+                                <button id="btnFilter" class="btn btn-primary flex-fill">
                                     Cari
                                 </button>
 
