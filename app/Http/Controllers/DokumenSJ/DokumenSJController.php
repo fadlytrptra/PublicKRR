@@ -67,11 +67,16 @@ class DokumenSJController extends Controller
             $cipher = 'AES-256-CBC';
 
             $encrypter = new Encrypter($key, $cipher);
-
-            $idPengiriman = $encrypter->decryptString(
+            $hasilDecrypt = $encrypter->decryptString(
                 urldecode($id)
             );
 
+            if (str_contains($hasilDecrypt, 'jenisAcc')) {
+                $idPengiriman = str_pad(explode('=', explode('&', $hasilDecrypt)[0])[1], 10, 0, STR_PAD_LEFT);
+                $jenisACC = explode('=', explode('&', $hasilDecrypt)[1])[1];
+            } else {
+                $idPengiriman = $hasilDecrypt;
+            }
         } catch (DecryptException $e) {
             abort(404);
         }
@@ -81,7 +86,7 @@ class DokumenSJController extends Controller
             ->join('CustomerUserPublic as cup', 'cup.IDCust', '=', 'sj.IDCust')
             ->leftJoin('T_SuratJalanOTP as otp', function ($join) {
                 $join->on('otp.IdSuratJalan', '=', 'sj.IdSuratJalan')
-                     ->whereNotNull('otp.ApprovedAt');
+                    ->whereNotNull('otp.ApprovedAt');
             })
             ->where('sj.IDPengiriman', $idPengiriman)
             ->select([
@@ -144,7 +149,7 @@ class DokumenSJController extends Controller
             $item->SatJual = $this->formatSatuan($item->SatJual);
         }
 
-        return view('DokumenSJ.index', compact('header', 'data'));
+        return view('DokumenSJ.index', compact('header', 'data', 'jenisACC'));
     }
 
     public function formatSatuan($satuan)
@@ -184,7 +189,7 @@ class DokumenSJController extends Controller
 
             $query->where(function ($q) use ($search) {
                 $q->where('sj.IDPengiriman', 'like', '%' . $search . '%')
-                ->orWhere('sj.NamaCust', 'like', '%' . $search . '%');
+                    ->orWhere('sj.NamaCust', 'like', '%' . $search . '%');
             });
         }
 
@@ -231,19 +236,24 @@ class DokumenSJController extends Controller
         return view('DokumenSJ.list', compact('list'));
     }
 
-    public function create() {
+    public function create()
+    {
 
     }
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
 
     }
-    public function edit($id) {
+    public function edit($id)
+    {
 
     }
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
 
     }
-    public function destroy($id) {
+    public function destroy($id)
+    {
 
     }
 }

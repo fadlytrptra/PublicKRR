@@ -148,6 +148,11 @@
         <div class="card-body">
 
             {{-- DIKELUARKAN --}}
+            @if ($jenisAcc == '')
+
+            @else
+
+            @endif
             <p class="fw-bold mb-1">
                 Dikeluarkan Oleh <i>Logistic Manager</i>
             </p>
