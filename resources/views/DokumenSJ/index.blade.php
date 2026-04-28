@@ -147,47 +147,90 @@
     <div class="card mt-4 shadow-sm border-0">
         <div class="card-body">
 
-            {{-- DIKELUARKAN --}}
-            @if ($jenisAcc == '')
+            {{-- GUDANG --}}
+            @if ($jenisACC == 'gudang')
 
-            @else
+                <p class="fw-bold mb-1">
+                    Dikeluarkan Oleh <i>Logistic Manager</i>
+                </p>
+
+                <p class="fw-bold mb-0">
+                    {{ $header->NamaExpeditor ?? 'BELUM ADA EXPEDITOR' }}
+                </p>
+
+                <p class="fw-bold">
+                    {{ \Carbon\Carbon::parse($header->TglKirim)->format('d-m-Y') }}
+                </p>
+
+            {{-- SUPIR --}}
+            @elseif ($jenisACC == 'supir')
+
+                {{-- DIKELUARKAN --}}
+                <p class="fw-bold mb-1">
+                    Dikeluarkan Oleh <i>Logistic Manager</i>
+                </p>
+
+                <p class="fw-bold mb-0">
+                    {{ $header->NamaExpeditor ?? 'BELUM ADA EXPEDITOR' }}
+                </p>
+
+                <p class="fw-bold">
+                    {{ \Carbon\Carbon::parse($header->TglKirim)->format('d-m-Y') }}
+                </p>
+
+                <br>
+
+                {{-- DIKIRIM --}}
+                <p class="fw-bold mb-1">
+                    <i>Dikirim Oleh</i>
+                    {{ $header->PengirimNama ?? 'BELUM DIKIRIM' }}
+                </p>
+
+                <p class="fw-bold">
+                    {{ $header->TglPengirim ?? '-' }}
+                </p>
+
+            {{-- CUSTOMER --}}
+            @elseif ($jenisACC == 'customer')
+
+                {{-- DIKELUARKAN --}}
+                <p class="fw-bold mb-1">
+                    Dikeluarkan Oleh <i>Logistic Manager</i>
+                </p>
+
+                <p class="fw-bold mb-0">
+                    {{ $header->NamaExpeditor ?? 'BELUM ADA EXPEDITOR' }}
+                </p>
+
+                <p class="fw-bold">
+                    {{ \Carbon\Carbon::parse($header->TglKirim)->format('d-m-Y') }}
+                </p>
+
+                <br>
+
+                {{-- DIKIRIM --}}
+                <p class="fw-bold mb-1">
+                    <i>Dikirim Oleh</i>
+                    {{ $header->PengirimNama ?? 'BELUM DIKIRIM' }}
+                </p>
+
+                <p class="fw-bold">
+                    {{ $header->TglPengirim ?? '-' }}
+                </p>
+
+                <br>
+
+                {{-- DITERIMA --}}
+                <p class="fw-bold mb-1">
+                    <i>Diterima Oleh</i>
+                    {{ $header->NamaCust ?? 'BELUM DITERIMA' }}
+                </p>
+
+                <p class="fw-bold">
+                    {{ $header->TglApp ?? '-' }}
+                </p>
 
             @endif
-            <p class="fw-bold mb-1">
-                Dikeluarkan Oleh <i>Logistic Manager</i>
-            </p>
-
-            <p class="fw-bold mb-0">
-                {{ $header->NamaExpeditor ?? 'BELUM ADA EXPEDITOR' }}
-            </p>
-
-            <p class="fw-bold">
-                {{ \Carbon\Carbon::parse($header->TglKirim)->format('d-m-Y') }}
-            </p>
-
-            <br>
-
-            {{-- DIKIRIM --}}
-            <p class="fw-bold mb-1">
-                <i>Dikirim Oleh</i>
-                {{ $header->PengirimNama ?? 'BELUM DIKIRIM' }}
-            </p>
-
-            <p class="fw-bold">
-                {{ $header->TglPengirim ?? '-' }}
-            </p>
-
-            <br>
-
-            {{-- DITERIMA --}}
-            <p class="fw-bold mb-1">
-                <i>Diterima Oleh</i>
-                {{ $header->NamaCust ?? 'BELUM DITERIMA' }}
-            </p>
-
-            <p class="fw-bold">
-                {{ $header->TglApp ?? '-' }}
-            </p>
 
         </div>
     </div>
