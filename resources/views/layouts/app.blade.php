@@ -4,9 +4,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}"> <!-- CSRF Token -->
+    {{-- <meta name="csrf-token" content="{{ csrf_token() }}"> <!-- CSRF Token --> --}}
 
     <link rel="icon" href="{{ asset('/images/krr.png') }}" type="image/gif" sizes="17x15">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <title style="font-size: 20px">{{ config('app.name', 'Laravel') }}</title>
     <!-- Scripts -->
     <!-- JQuery -->
@@ -23,9 +24,11 @@
     <link href="https://cdn.datatables.net/2.3.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <!--Sweet Alert-->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js/RDZ.js')}}"></script>
 </head>
 
 <body>
+    @if(!request()->is('/'))
     <nav class="navbar navbar-light bg-white shadow sticky-top px-4 py-3">
         <div>
             <a href="{{ url('/home') }}" class="text-decoration-none text-dark fw-bold">
@@ -61,6 +64,7 @@
             @endif
         </div>
     </nav>
+    @endif
 
     <div class="w-100">
         @if(session('success'))

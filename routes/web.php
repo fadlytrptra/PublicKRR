@@ -25,9 +25,12 @@ $redirectIfAuthenticated = function () {
 Route::get('/', $redirectIfAuthenticated);
 Route::get('/logout', $redirectIfAuthenticated);
 
-Route::get('/refresh-csrf', function () {
+Route::post('/refresh-csrf', function () {
     session()->regenerateToken();
-    return response()->json(['csrf_token' => csrf_token()]);
+
+    return response()->json([
+        'success' => true
+    ]);
 });
 
 #region Auth
