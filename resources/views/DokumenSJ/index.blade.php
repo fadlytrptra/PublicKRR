@@ -148,7 +148,7 @@
         <div class="card-body">
 
             {{-- GUDANG --}}
-            @if ($jenisACC == 'gudang')
+            @if ($jenisACC == 'Manager')
 
                 <p class="fw-bold mb-1">
                     Dikeluarkan Oleh <i>Logistic Manager</i>
@@ -163,7 +163,7 @@
                 </p>
 
             {{-- SUPIR --}}
-            @elseif ($jenisACC == 'supir')
+            @elseif ($jenisACC == 'Supir' || $jenisACC == 'Satpam')
 
                 {{-- DIKELUARKAN --}}
                 <p class="fw-bold mb-1">
@@ -191,7 +191,7 @@
                 </p>
 
             {{-- CUSTOMER --}}
-            @elseif ($jenisACC == 'customer')
+            @elseif ($jenisACC == '')
 
                 {{-- DIKELUARKAN --}}
                 <p class="fw-bold mb-1">

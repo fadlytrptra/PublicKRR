@@ -62,6 +62,7 @@ class DokumenSJController extends Controller
      */
     public function show($id)
     {
+        $jenisACC = '';
         try {
             $key = env('QR_SHARED_SECRET');
             $cipher = 'AES-256-CBC';
