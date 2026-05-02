@@ -57,9 +57,6 @@ class DokumenSJController extends Controller
         return view('DokumenSJ.list', compact('list'));
     }
 
-    /**
-     * DETAIL DOKUMEN
-     */
     public function show($id)
     {
         $jenisACC = '';
@@ -84,7 +81,11 @@ class DokumenSJController extends Controller
 
         $data = DB::connection('ConnPublic')
             ->table('T_KirimSuratJalan as sj')
-            ->join('CustomerUserPublic as cup', 'cup.IDCust', '=', 'sj.IDCust')
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('CustomerUserPublic as cup')
+                    ->whereColumn('cup.IDCust', 'sj.IDCust');
+            })
             ->leftJoin('T_SuratJalanOTP as otp', function ($join) {
                 $join->on('otp.IdSuratJalan', '=', 'sj.IdSuratJalan')
                     ->whereNotNull('otp.ApprovedAt');

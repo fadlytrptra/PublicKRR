@@ -70,6 +70,7 @@ Route::resource('DokumenSJ', DokumenSJController::class)->except(['show']);
 Route::post('SuratJalan/verify-otp', [SuratJalanPesananController::class, 'verifyOtp']);
 Route::post('SuratJalan/confirm-approval', [SuratJalanPesananController::class, 'confirmApproval']);
 Route::post('SuratJalan/resend-email', [SuratJalanPesananController::class, 'resendEmail']);
+// Route::get('/preview-surat-jalan/{id}', [SuratJalanPesananController::class, 'previewSuratJalan']);
 
 Route::middleware(['check.login'])->group(function () {
     Route::get('/home', function () {

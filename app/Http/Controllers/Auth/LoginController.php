@@ -19,7 +19,7 @@ class LoginController extends Controller
         if (Auth::guest()) {
             return view('auth.login');
         } else {
-            return redirect('/home');
+            return redirect()->route('SuratJalan.index');
         }
     }
 
@@ -86,7 +86,7 @@ class LoginController extends Controller
             'ForgetPassword' => $user->ForgetPassword
         ]);
 
-        return redirect('/home');
+        return redirect()->route('SuratJalan.index');
     }
 
     public function logout(Request $request)

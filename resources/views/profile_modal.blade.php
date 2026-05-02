@@ -39,7 +39,7 @@ $npwpCustomers = DB::connection('ConnPublic')
                     @method('PUT')
 
                     <div class="modal-header">
-                        <h5 class="modal-title">Edit Profile</h5>
+                        <h5 class="modal-title">Informasi User</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
 
@@ -53,8 +53,8 @@ $npwpCustomers = DB::connection('ConnPublic')
 
                         <div class="mb-3">
                             <label>Nama</label>
-                            <input type="text" name="NamaUser" class="form-control"
-                                value="{{ old('NamaUser', $user->NamaUser) }}">
+                            <input type="text" name="NamaUser" class="form-control bg-secondary-subtle"
+                                value="{{ old('NamaUser', $user->NamaUser) }}" readonly>
                             <div class="invalid-feedback">Nama wajib diisi</div>
                         </div>
 
@@ -72,19 +72,19 @@ $npwpCustomers = DB::connection('ConnPublic')
 
                         <div class="mb-3">
                             <label>No HP</label>
-                            <input type="text" name="NoHP" class="form-control"
-                                value="{{ old('NoHP', $user->NoHP) }}">
+                            <input type="text" name="NoHP" class="form-control bg-secondary-subtle"
+                                value="{{ old('NoHP', $user->NoHP) }}" readonly>
                             <div class="invalid-feedback">No HP wajib diisi</div>
                         </div>
 
                         <div class="mb-3">
                             <label>NPWP User</label>
-                            <input type="text" name="NPWP" class="form-control"
-                                value="{{ old('NPWP', $user->NPWP) }}">
+                            <input type="text" name="NPWP" class="form-control bg-secondary-subtle"
+                                value="{{ old('NPWP', $user->NPWP) }}" readonly>
                             <div class="invalid-feedback">NPWP wajib diisi</div>
                         </div>
 
-                       <div class="mb-3">
+                       {{-- <div class="mb-3">
                             <label>NPWP Perusahaan yang terhubung dengan User</label>
 
                            @if($npwpCustomers->count())
@@ -96,7 +96,7 @@ $npwpCustomers = DB::connection('ConnPublic')
                                     Tidak ada NPWP customer
                                 </div>
                             @endif
-                        </div>
+                        </div> --}}
 
                         <div class="mb-3">
                             <label>Password (kosongkan jika tidak diubah)</label>

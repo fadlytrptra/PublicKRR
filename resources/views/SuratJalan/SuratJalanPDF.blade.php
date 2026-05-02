@@ -100,87 +100,16 @@
         </tr>
     </table>
     <div style="width: 98%;border: 1px solid black;margin-top: 10px;padding: 0.85%;">
-        <h5>Syarat Penyerahan:</h5>
-        <p>Dikirim ke: {{ $items->AlamatKirimCustomer ?? $items->AlamatKirimDO }}</p>
+        <h5>Alamat Kirim:</h5>
+        <p>{{ $items->AlamatKirimCustomer ?? $items->AlamatKirimDO }}</p>
+    </div>
+    <div style="width: 98%;border: 1px solid black;margin-top: 10px;padding: 0.85%;">
+        <h5>Keterangan:</h5>
+        <p>{{ !empty(trim($items->Ket ?? '')) ? $items->Ket : '-' }}</p>
     </div>
     <table style="width:100%; margin-top:10px;" cellpadding="0" cellspacing="0">
         <tr>
 
-            <!-- LEFT COLUMN -->
-            <td style="width:45%; vertical-align:top; padding-right:10px;">
-
-                <!-- SIGNATURE TABLE -->
-                <table style="width:100%; text-align:center; border-bottom:1px solid black; border-collapse:collapse;">
-                    <tr>
-                        <td style="font-weight:bold;">
-                            PENGIRIM,
-                        </td>
-                    </tr>
-
-                    <!-- Signature Area (2 kolom) -->
-                    <tr>
-                        <td>
-                            <table style="width:100%;">
-                                <tr>
-                                    <td style="width:50%; height:90px; text-align:center; vertical-align:bottom;">
-                                        @if ($barcodeGudang)
-                                            <img src="{{ $barcodeGudang }}" style="max-height:70px;">
-                                        @endif
-                                    </td>
-
-                                    <td style="width:50%; height:90px; text-align:center; vertical-align:bottom;">
-                                        @if ($barcodeSupir)
-                                            <img src="{{ $barcodeSupir }}" style="max-height:70px;">
-                                        @endif
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td style="font-size:15px; text-align: center">
-                                        Warehouse PT. Kerta Rajasa Raya
-                                    </td>
-                                    <td style="font-size:15px; text-align: center">
-                                        {{ $items->NamaSupir ?? '-' }}
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-
-                </table>
-
-                <!-- COPY INFO TABLE -->
-                <table style="width:100%; font-size:12px; margin-top:10px;">
-                    <tr>
-                        <td>Lembar ke 1,2,3</td>
-                        <td>=</td>
-                        <td>Untuk Pembeli</td>
-                    </tr>
-                    <tr>
-                        <td>Lembar ke 4</td>
-                        <td>=</td>
-                        <td>Untuk Bagian Piutang</td>
-                    </tr>
-                    <tr>
-                        <td>Lembar ke 5</td>
-                        <td>=</td>
-                        <td>Untuk Gudang</td>
-                    </tr>
-                    <tr>
-                        <td>Lembar ke 6</td>
-                        <td>=</td>
-                        <td>Untuk Adm. Kantor</td>
-                    </tr>
-                    <tr>
-                        <td>Lembar ke 7</td>
-                        <td>=</td>
-                        <td>Untuk Satpam</td>
-                    </tr>
-                </table>
-
-            </td>
-
-            <!-- RIGHT COLUMN -->
             <td style="width:55%; vertical-align:top; padding-left:10px;">
 
                 <table
@@ -193,9 +122,9 @@
                     </tr>
 
                    <tr>
-                        <td style="height:110px; text-align:center; vertical-align:bottom; padding-bottom: 20px">
+                        <td style="height:110px; text-align:center; vertical-align:bottom; padding-top: 15px; padding-bottom: 10px">
                             @if ($ttCustomer)
-                                <img src="{{ $ttCustomer }}" style="max-height:85px;">
+                                <img src="{{ $ttCustomer }}" style="max-height:110px;">
                             @endif
                         </td>
                     </tr>

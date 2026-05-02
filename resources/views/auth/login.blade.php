@@ -46,15 +46,20 @@
                 @enderror
 
                 {{-- PASSWORD --}}
-                <div class="input-group mb-3">
+                <div class="input-group mb-3 password-wrapper">
                     <div class="icon">
                         <span class="material-icons">lock</span>
                     </div>
 
                     <input type="password"
+                        id="password"
                         name="Password"
                         placeholder="Password"
                         class="@error('Password') input-error @enderror">
+
+                    <div class="toggle-password" onclick="togglePassword()">
+                        <span class="material-icons" id="eyeIcon">visibility</span>
+                    </div>
                 </div>
 
                 @error('Password')
@@ -161,6 +166,19 @@
             }
         });
     });
+
+    function togglePassword() {
+        const password = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        if (password.type === 'password') {
+            password.type = 'text';
+            eyeIcon.textContent = 'visibility_off';
+        } else {
+            password.type = 'password';
+            eyeIcon.textContent = 'visibility';
+        }
+    }
 </script>
 
 @endsection
