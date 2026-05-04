@@ -78,7 +78,7 @@ $npwpCustomers = DB::connection('ConnPublic')
                         </div>
 
                         <div class="mb-3">
-                            <label>NPWP User</label>
+                            <label>NPWP Perusahaan</label>
                             <input type="text" name="NPWP" class="form-control bg-secondary-subtle"
                                 value="{{ old('NPWP', $user->NPWP) }}" readonly>
                             <div class="invalid-feedback">NPWP wajib diisi</div>

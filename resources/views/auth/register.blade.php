@@ -117,7 +117,7 @@
                 <div class="error">{{ $message }}</div>
             @enderror
 
-            <label>Alamat Perusahaan</label>
+            <label>Alamat Perusahaan (Sesuai NPWP)</label>
             <textarea name="AlamatPerusahaan">{{ old('AlamatPerusahaan', $data['AlamatPerusahaan'] ?? '') }}</textarea>
             @error('AlamatPerusahaan')
                 <div class="error">{{ $message }}</div>
