@@ -127,6 +127,7 @@
             <input type="text" name="NoHP" id="nohp"
                 inputmode="numeric"
                 maxlength="15"
+                placeholder="Contoh: 6281569387455"
                 required
                 value="{{ old('NoHP', $data['NoHP'] ?? '') }}">
 
@@ -183,8 +184,12 @@
 
         @if(session('showOtp'))
             <hr>
-
             <h3>Verifikasi OTP</h3>
+
+            {{--
+            <p style="color: #555; margin-bottom: 10px;">
+                OTP telah dikirim ke nomor HP yang didaftarkan.
+            </p> --}}
 
             @if(session('success'))
                 <div style="color: green;">
@@ -194,7 +199,6 @@
 
             <form method="POST" action="/verify-otp">
                 @csrf
-
                 <input type="hidden" name="email" value="{{ session('email') }}">
 
                 <label>Masukkan OTP</label>

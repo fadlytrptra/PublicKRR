@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -110,6 +111,7 @@ class LoginController extends Controller
             'NamaUser' => 'required',
             'NamaPerusahaan' => 'required',
             'AlamatPerusahaan' => 'required',
+            'NoHP' => ['required', 'regex:/^628[0-9]{8,13}$/'],
             'Password' => [
                 'required',
                 'min:8',
@@ -118,7 +120,8 @@ class LoginController extends Controller
                 'regex:/[^A-Za-z0-9]/'
             ]
         ], [
-            'Password.*' => 'Password harus minimal 8 karakter, mengandung huruf besar, huruf kecil, dan spesial karakter'
+            'Password.*' => 'Password harus minimal 8 karakter, mengandung huruf besar, huruf kecil, dan spesial karakter',
+            'NoHP.regex' => 'Nomor HP harus menggunakan format 628xxxxxxxxxx'
         ]);
 
         if ($validator->fails()) {
@@ -128,6 +131,13 @@ class LoginController extends Controller
         $now = Carbon::now('Asia/Jakarta');
         $otp = rand(100000, 999999);
 
+        DB::connection('ConnPublic')->table('T_RegisterOTP')
+            ->where('Email', $request->Email)
+            ->where('IsUsed', 0)
+            ->update([
+                'IsUsed' => 1
+        ]);
+
         // INSERT KE DATABASE
         DB::connection('ConnPublic')->table('T_RegisterOTP')->insert([
             'Email' => $request->Email,
@@ -135,6 +145,7 @@ class LoginController extends Controller
             'IsUsed' => 0,
             'ExpiredAt' => $now->copy()->addMinutes(5),
             'CreatedAt' => $now,
+            'Phone' => $nohp,
         ]);
 
         // SESSION (untuk simpan data sementara)
@@ -147,24 +158,50 @@ class LoginController extends Controller
                 'NoHP' => $nohp,
                 'NPWP' => $npwp,
                 'Password' => Hash::make($request->Password),
-                'raw_password' => $request->Password,
             ],
             'register_otp' => $otp,
             'register_expired' => $now->copy()->addMinutes(5),
         ]);
 
-        // KIRIM EMAIL
-        Mail::mailer('MailSales')->raw(
-            "Kode OTP verifikasi akun Anda: $otp",
-            function ($message) use ($request) {
-                $message->to($request->Email)
-                    ->from(env('MAILSALES_FROM_ADDRESS'), env('MAILSALES_FROM_NAME'))
-                    ->subject('OTP Verifikasi Akun');
-            }
-        );
+        //KIRIM EMAIL
+        // Mail::mailer('MailSales')->raw(
+        //     "Kode OTP verifikasi akun Anda: $otp",
+        //     function ($message) use ($request) {
+        //         $message->to($request->Email)
+        //             ->from(env('MAILSALES_FROM_ADDRESS'), env('MAILSALES_FROM_NAME'))
+        //             ->subject('OTP Verifikasi Akun');
+        //     }
+        // );
+
+        $response = Http::withHeaders([
+            'Authorization' => 'App ' . env('SMSVIRO_API_KEY'),
+            'Content-Type' => 'application/json',
+        ])->post('https://api.smsviro.com/restapi/sms/1/text/single', [
+
+            'from' => env('SMSVIRO_SENDER_ID'),
+            'to' => $nohp,
+            'text' => "Kode OTP verifikasi akun Anda: $otp"
+
+        ]);
+
+        // pengecekan
+        $dataResponse = $response->json();
+        $allowedStatus = ['PENDING', 'ACCEPTED', 'DELIVERED'];
+        if (
+            !$response->successful() ||
+            !isset($dataResponse['messages'][0]['status']['groupName']) ||
+            !in_array($dataResponse['messages'][0]['status']['groupName'], $allowedStatus)
+        ) {
+
+            \Log::error($response->body());
+
+            return back()->withErrors([
+                'error' => 'Gagal mengirim OTP SMS'
+            ])->withInput();
+        }
 
         return back()
-            ->with('success', 'OTP telah dikirim ke ' . $request->Email)
+            ->with('success', 'OTP telah dikirim ke ' . $nohp)
             ->with('showOtp', true)
             ->with('email', $request->Email)
             ->withInput();
