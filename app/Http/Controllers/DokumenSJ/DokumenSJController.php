@@ -124,7 +124,7 @@ class DokumenSJController extends Controller
             ->get();
 
         if ($data->isEmpty()) {
-            abort(404, 'Data tidak ditemukan atau tidak memiliki akses');
+            abort(404, 'Data tidak ditemukan');
         }
 
         $header = $data->first();
