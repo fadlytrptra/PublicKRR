@@ -6,10 +6,11 @@
         body {
             font-family: Arial;
             background-color: #f5f5f5;
+            margin: 0;
         }
         .container {
             width: 400px;
-            margin: 50px auto;
+            margin: 15px auto;
             background: #fff;
             padding: 25px;
             border-radius: 8px;
@@ -76,13 +77,39 @@
             color: #000;
         }
 
+        .header-logo {
+            width: 400px;
+
+            margin: 50px auto 5px auto;
+            padding-right: 30px;
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .logo-krr {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+        }
     </style>
 </head>
 <body>
+     <div class="header-logo">
+        <img src="{{ asset('images/KRR.png') }}"
+            alt="KRR Logo"
+            class="logo-krr">
+
+        <span>Kerta Rajasa Raya</span>
+    </div>
+
     <div class="container">
         <h2>Register</h2>
 
-        {{-- ERROR GLOBAL --}}
         @if ($errors->has('error'))
             <div class="error">
                 {{ $errors->first('error') }}
