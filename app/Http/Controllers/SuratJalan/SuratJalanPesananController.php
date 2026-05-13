@@ -434,7 +434,7 @@ class SuratJalanPesananController extends Controller
             );
 
             // $link = url('/DokumenSJ/view/' . $encrypted);
-            $link = "http://192.168.100.67:8000/DokumenSJ/view/$encrypted";
+            $link = "https://mykrr.co.id/DokumenSJ/view/$encrypted";
             $qrImage = QrCode::format('svg')
                 ->size(150)
                 ->generate($link);
