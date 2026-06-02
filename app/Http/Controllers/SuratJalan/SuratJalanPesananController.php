@@ -287,12 +287,6 @@ class SuratJalanPesananController extends Controller
         }
         $lastOtp = DB::table('T_SuratJalanOTP')
             ->where('IdSuratJalan', $idSuratJalan)
-            ->when($request->email, function ($q) use ($request) {
-                $q->where('Email', $request->email);
-            })
-            ->when($phone, function ($q) use ($phone) {
-                $q->where('Phone', $phone);
-            })
             ->where('IsUsed', 0)
             ->where('ExpiredAt', '>', $now)
             ->latest('CreatedAt')
@@ -306,10 +300,6 @@ class SuratJalanPesananController extends Controller
 
         DB::table('T_SuratJalanOTP')
             ->where('IdSuratJalan', $idSuratJalan)
-            ->when($request->email, function ($q) use ($request) {
-                $q->where('Email', $request->email);})
-            ->when($phone, function ($q) use ($phone) {
-                $q->where('Phone', $phone);})
             ->where('IsUsed', 0)
             ->update([
                 'ExpiredAt' => $now
@@ -648,26 +638,8 @@ class SuratJalanPesananController extends Controller
     public function resendEmail(Request $request)
     {
         $request->validate([
-            'id_pengiriman' => 'required',
-            'email' => 'required'
+            'id_pengiriman' => 'required'
         ]);
-
-        $emails = array_map('trim', explode(',', $request->email));
-
-        $invalidEmails = [];
-
-        foreach ($emails as $email) {
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $invalidEmails[] = $email;
-            }
-        }
-
-        if (!empty($invalidEmails)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Email tidak valid: ' . implode(', ', $invalidEmails)
-            ]);
-        }
 
         $data = DB::connection('ConnPublic')
             ->table('T_KirimSuratJalan')
@@ -689,15 +661,43 @@ class SuratJalanPesananController extends Controller
             ], 400);
         }
 
+        // ambil email customer dari database
+        $emails = DB::connection('ConnPublic')
+            ->table('CustomerUserPublic as c')
+            ->join(
+                'UserPublic as u',
+                'c.IdUser',
+                '=',
+                'u.IdUser'
+            )
+            ->where('c.IDCust', $data->IDCust)
+            ->whereNotNull('u.Email')
+            ->where('u.Email', '!=', '')
+            ->pluck('u.Email')
+            ->unique()
+            ->values()
+            ->toArray();
+
+        if (empty($emails)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email customer tidak ditemukan'
+            ], 404);
+        }
+
         DB::beginTransaction();
 
         try {
 
-            $resendCount = ((int)$data->ResendSJCount) + 1;
+            $resendCount =
+                ((int)$data->ResendSJCount) + 1;
 
             DB::connection('ConnPublic')
                 ->table('T_KirimSuratJalan')
-                ->where('IDPengiriman', $request->id_pengiriman)
+                ->where(
+                    'IDPengiriman',
+                    $request->id_pengiriman
+                )
                 ->update([
                     'ResendSJCount' => $resendCount,
                     'LastResendSJAt' => now()
@@ -710,19 +710,28 @@ class SuratJalanPesananController extends Controller
             );
 
             DB::commit();
+
         } catch (\Exception $e) {
 
             DB::rollBack();
 
+            Log::error('RESEND EMAIL ERROR', [
+                'message' => $e->getMessage()
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
-            ]);
+            ], 500);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Email resend ke-' . $resendCount . ' berhasil dikirim ke ' . implode(', ', $emails)
+            'message' =>
+                'Email resend ke-' .
+                $resendCount .
+                ' berhasil dikirim ke ' .
+                implode(', ', $emails)
         ]);
     }
 

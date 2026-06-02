@@ -566,28 +566,23 @@ jQuery(function ($) {
     });
 
     $('#btnResendEmail').click(function () {
-
-        let email = $('#approvedEmail').text().trim();
-        if (email === 'PASCA KIRIM' || email === '-') {
-            alert('Tidak bisa resend email (status Pasca Kirim)');
-            return;
-        }
         let idPengiriman = window.appData?.idPengiriman;
 
-        if (!email) {
-            alert('Email approval tidak ditemukan');
+        if (!idPengiriman) {
+            alert('ID Pengiriman tidak ditemukan');
             return;
         }
 
         $('#btnResendEmail').prop('disabled', true).text('Sending...');
 
         $.post('/SuratJalan/resend-email', {
-            id_pengiriman: idPengiriman,
-            email: email
+            id_pengiriman: idPengiriman
         })
+
         .done(function (res) {
             alert(res.message || 'Email berhasil dikirim');
         })
+
         .fail(function (xhr) {
             alert(xhr.responseJSON?.message ?? 'Gagal kirim email');
         })
