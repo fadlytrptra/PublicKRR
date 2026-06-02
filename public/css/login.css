@@ -35,6 +35,7 @@ body {
     font-weight: bold;
     border-bottom: 1px solid #ddd;
     background: #f7f7f7;
+    font-size: 18px;
 }
 
 .card-body {
