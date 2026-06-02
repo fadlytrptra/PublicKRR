@@ -8,7 +8,7 @@
 
     <link rel="icon" href="{{ asset('/images/krr.png') }}" type="image/gif" sizes="17x15">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <title style="font-size: 20px">{{ config('app.name', 'Laravel') }}</title>
+    <title style="font-size: 20px">Kerta Rajasa Raya</title>
     <!-- Scripts -->
     <!-- JQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
@@ -24,50 +24,50 @@
     <link href="https://cdn.datatables.net/2.3.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <!--Sweet Alert-->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="{{ asset('js/RDZ.js')}}"></script>
+    <script src="{{ asset('js/RDZ.js') }}"></script>
 </head>
 
 <body>
-    @if(!request()->is('/'))
-    <nav class="navbar navbar-light bg-white shadow sticky-top px-4 py-3">
-        <div>
-            <a href="{{ url('/home') }}" class="text-decoration-none text-dark fw-bold">
-                Home
-            </a>
-        </div>
-
-        <div class="ms-auto d-flex align-items-center gap-2">
-            @if(session('user'))
-                <a href="#"
-                data-bs-toggle="modal"
-                data-bs-target="#profileModal"
-                class="d-flex align-items-center gap-1 text-decoration-none text-dark">
-
-                    <!-- ICON -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                        fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5m0-8c1.65 0 3 1.35 3 3s-1.35 3-3 3-3-1.35-3-3 1.35-3 3-3M4 22h16c.55 0 1-.45 1-1v-1c0-3.86-3.14-7-7-7h-4c-3.86 0-7 3.14-7 7v1c0 .55.45 1 1 1m6-7h4c2.76 0 5 2.24 5 5H5c0-2.76 2.24-5 5-5"></path>
-                    </svg>
-
-                    <!-- NAMA -->
-                    <span>{{ session('user')->NamaUser }}</span>
+    @if (!request()->is('/'))
+        <nav class="navbar navbar-light bg-white shadow sticky-top px-4 py-3">
+            <div>
+                <a href="{{ url('/home') }}" class="text-decoration-none text-dark fw-bold">
+                    Home
                 </a>
+            </div>
 
-                |
+            <div class="ms-auto d-flex align-items-center gap-2">
+                @if (session('user'))
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#profileModal"
+                        class="d-flex align-items-center gap-1 text-decoration-none text-dark">
 
-                <form action="{{ url('/logout') }}" method="POST" class="m-0">
-                    @csrf
-                    <button type="submit" class="no-border nav_font">
-                        Logout
-                    </button>
-                </form>
-            @endif
-        </div>
-    </nav>
+                        <!-- ICON -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                            viewBox="0 0 24 24">
+                            <path
+                                d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5m0-8c1.65 0 3 1.35 3 3s-1.35 3-3 3-3-1.35-3-3 1.35-3 3-3M4 22h16c.55 0 1-.45 1-1v-1c0-3.86-3.14-7-7-7h-4c-3.86 0-7 3.14-7 7v1c0 .55.45 1 1 1m6-7h4c2.76 0 5 2.24 5 5H5c0-2.76 2.24-5 5-5">
+                            </path>
+                        </svg>
+
+                        <!-- NAMA -->
+                        <span>{{ session('user')->NamaUser }}</span>
+                    </a>
+
+                    |
+
+                    <form action="{{ url('/logout') }}" method="POST" class="m-0">
+                        @csrf
+                        <button type="submit" class="no-border nav_font">
+                            Logout
+                        </button>
+                    </form>
+                @endif
+            </div>
+        </nav>
     @endif
 
     <div class="w-100">
-        @if(session('success'))
+        @if (session('success'))
             <div class="alert alert-success rounded-0 text-start">
                 {{ session('success') }}
             </div>
@@ -79,11 +79,11 @@
         @yield('content')
     </main>
 
-    @if($errors->any())
-    <script>
-        var modal = new bootstrap.Modal(document.getElementById('profileModal'));
-        modal.show();
-    </script>
+    @if ($errors->any())
+        <script>
+            var modal = new bootstrap.Modal(document.getElementById('profileModal'));
+            modal.show();
+        </script>
     @endif
 </body>
 
