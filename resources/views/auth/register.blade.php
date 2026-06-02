@@ -206,6 +206,32 @@
                 @enderror
             </div>
 
+            {{--Pilih Metode untuk otp--}}
+            <label>Metode Verifikasi OTP: </label>
+                <div style="margin-bottom: 15px;">
+                    <div style="display:flex; gap:20px; margin-top:8px;">
+                        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                            <input type="radio"
+                                name="otp_method"
+                                value="email"
+                                {{ old('otp_method', 'email') == 'email' ? 'checked' : '' }}>
+                            Email
+                        </label>
+
+                        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                            <input type="radio"
+                                name="otp_method"
+                                value="sms"
+                                {{ old('otp_method') == 'sms' ? 'checked' : '' }}>
+                            SMS
+                        </label>
+                    </div>
+                    @error('otp_method')
+                        <div class="error">{{ $message }}</div>
+                    @enderror
+                </div>
+
+
             <button type="submit" class="register">Register</button>
         </form>
 

@@ -57,7 +57,7 @@ class LoginController extends Controller
         }
 
         // cek email verification
-        if (!$user->EmailVerification) {
+        if (!$user->AccountVerification) {
             return redirect('/register')
                 ->withErrors(['error' => 'Email belum diverifikasi'])
                 ->with('showOtp', true)
@@ -112,6 +112,7 @@ class LoginController extends Controller
             'NamaPerusahaan' => 'required',
             'AlamatPerusahaan' => 'required',
             'NoHP' => ['required', 'regex:/^628[0-9]{8,13}$/'],
+            'otp_method' => 'required|in:email,sms',
             'Password' => [
                 'required',
                 'min:8',
@@ -148,7 +149,6 @@ class LoginController extends Controller
             'Phone' => $nohp,
         ]);
 
-        // SESSION (untuk simpan data sementara)
         session([
             'register_data' => [
                 'Email' => $request->Email,
@@ -163,45 +163,61 @@ class LoginController extends Controller
             'register_expired' => $now->copy()->addMinutes(5),
         ]);
 
-        //KIRIM EMAIL
-        // Mail::mailer('MailSales')->raw(
-        //     "Kode OTP verifikasi akun Anda: $otp",
-        //     function ($message) use ($request) {
-        //         $message->to($request->Email)
-        //             ->from(env('MAILSALES_FROM_ADDRESS'), env('MAILSALES_FROM_NAME'))
-        //             ->subject('OTP Verifikasi Akun');
-        //     }
-        // );
+        // pilih metode kirim otp
+        if ($request->otp_method === 'email') {
+            Mail::mailer('MailSales')->raw(
+                "Kode OTP verifikasi akun Anda: $otp",
+                function ($message) use ($request) {
+                    $message->to($request->Email)
+                        ->from(
+                            env('MAILSALES_FROM_ADDRESS'),
+                            env('MAILSALES_FROM_NAME')
+                        )
+                        ->subject('OTP Verifikasi Akun');
+                }
+            );
 
-        $response = Http::withHeaders([
-            'Authorization' => 'App ' . env('SMSVIRO_API_KEY'),
-            'Content-Type' => 'application/json',
-        ])->post('https://api.smsviro.com/restapi/sms/1/text/single', [
+            $destination = $request->Email;
+            $method = 'Email';
 
-            'from' => env('SMSVIRO_SENDER_ID'),
-            'to' => $nohp,
-            'text' => "Kode OTP verifikasi akun Anda: $otp"
+        } else {
+            $response = Http::withHeaders([
+                'Authorization' => 'App ' . env('SMSVIRO_API_KEY'),
+                'Content-Type' => 'application/json',
+            ])->post(
+                'https://api.smsviro.com/restapi/sms/1/text/single',
+                [
+                    'from' => env('SMSVIRO_SENDER_ID'),
+                    'to' => $nohp,
+                    'text' => "Kode OTP verifikasi akun Anda: $otp"
+                ]
+            );
 
-        ]);
+            $dataResponse = $response->json();
+            $allowedStatus = ['PENDING', 'ACCEPTED', 'DELIVERED'];
 
-        // pengecekan
-        $dataResponse = $response->json();
-        $allowedStatus = ['PENDING', 'ACCEPTED', 'DELIVERED'];
-        if (
-            !$response->successful() ||
-            !isset($dataResponse['messages'][0]['status']['groupName']) ||
-            !in_array($dataResponse['messages'][0]['status']['groupName'], $allowedStatus)
-        ) {
+            if (
+                !$response->successful() ||
+                !isset($dataResponse['messages'][0]['status']['groupName']) ||
+                !in_array(
+                    $dataResponse['messages'][0]['status']['groupName'],
+                    $allowedStatus
+                )
+            ) {
 
-            \Log::error($response->body());
+                \Log::error($response->body());
 
-            return back()->withErrors([
-                'error' => 'Gagal mengirim OTP SMS'
-            ])->withInput();
+                return back()->withErrors([
+                    'error' => 'Gagal mengirim OTP SMS'
+                ])->withInput();
+            }
+
+            $destination = $nohp;
+            $method = 'SMS';
         }
 
         return back()
-            ->with('success', 'OTP telah dikirim ke ' . $nohp)
+            ->with('success', "OTP telah dikirim melalui {$method} ke {$destination}")
             ->with('showOtp', true)
             ->with('email', $request->Email)
             ->withInput();
@@ -272,7 +288,7 @@ class LoginController extends Controller
                 'RegistDate' => $now,
                 'Deactivated' => 0,
                 'Verification' => 0,
-                'EmailVerification' => $now
+                'AccountVerification' => $now
             ]);
 
         // UPDATE OTP

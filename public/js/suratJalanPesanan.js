@@ -87,7 +87,7 @@ jQuery(function ($) {
 
         $('#approvalInfo').show();
 
-        let email = otpData.Email;
+        let approvedBy = otpData.Email ?? otpData.Phone ?? '-';
         let approvedAt = otpData.ApprovedAt;
         let createdAt = otpData.CreatedAt;
 
@@ -98,7 +98,7 @@ jQuery(function ($) {
             $('#labelApprovedBy').text('Approved By:');
             $('#labelApprovedAt').text('Approved At:');
 
-            $('#approvedEmail').text(email);
+            $('#approvedEmail').text(approvedBy);
             $('#approvedAt').text(formatDateTime(approvedAt));
 
             $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
@@ -119,7 +119,7 @@ jQuery(function ($) {
             $('#labelApprovedBy').text('Email:');
             $('#labelApprovedAt').text('Tanggal:');
 
-            $('#approvedEmail').text(email);
+            $('#approvedEmail').text(approvedBy);
             $('#approvedAt').text(formatDateTime(createdAt));
 
             $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
@@ -223,64 +223,123 @@ jQuery(function ($) {
     // =============================
 
     // STEP 1: Load email
+    let contacts = [];
     $('#btnOpenOtp').click(function () {
-        $('#btnOpenOtp').prop('disabled', true).text('Loading...');
 
-        $.get('/SuratJalan/get-emails/' + idPengiriman)
+        $('#btnOpenOtp')
+            .prop('disabled', true)
+            .text('Loading...');
+
+        $.get('/SuratJalan/get-contacts/' + idPengiriman)
             .done(function (res) {
-                let html = '<option value="">-- pilih email --</option>';
+                contacts = res;
 
-                res.forEach(e => {
-                    html += `<option value="${e.Email}">${e.Email}</option>`;
-                });
+                $('#contactType').val('');
+                $('#contactSelect').html(
+                    '<option value="">-- Pilih Kontak --</option>'
+                );
 
-                $('#emailSelect').html(html);
                 $('#otpSection').slideDown();
-
             })
+
             .fail(function () {
-                alert('Gagal mengambil email');
+                alert('Gagal mengambil kontak');
             })
-            .always(function () {
-                $('#btnOpenOtp').prop('disabled', false).text('Konfirmasi Product Receipt');
-            });
 
+            .always(function () {
+                $('#btnOpenOtp')
+                    .prop('disabled', false)
+                    .text('Konfirmasi Product Receipt');
+            });
+    });
+
+    $('#contactType').change(function () {
+        let type = $(this).val();
+        let html =
+            '<option value="">-- Pilih Kontak --</option>';
+
+        contacts.forEach(item => {
+            if (type === 'email' && item.Email) {
+                html += `
+                    <option value="${item.Email}">
+                        ${item.NamaUser}
+                        - ${item.Email}
+                    </option>
+                `;
+            }
+
+            if (type === 'phone' && item.Phone) {
+                html += `
+                    <option value="${item.Phone}">
+                        ${item.NamaUser}
+                        - ${item.Phone}
+                    </option>
+                `;
+            }
+        });
+
+        $('#contactSelect').html(html);
     });
 
     // STEP 2: Kirim OTP
     $('#btnSendOtp').click(function () {
-        let email = $('#emailSelect').val();
+        let type = $('#contactType').val();
+        let value = $('#contactSelect').val();
 
-        if (!email) {
-            alert('Pilih email terlebih dahulu');
+        if (!type) {
+            alert('Pilih metode OTP');
             return;
         }
 
-        $('#btnSendOtp').prop('disabled', true).text('Mengirim...');
+        if (!value) {
+            alert('Pilih kontak terlebih dahulu');
+            return;
+        }
 
-        $.post('/SuratJalan/send-otp', {
+        $('#btnSendOtp')
+            .prop('disabled', true)
+            .text('Mengirim...');
+
+        let payload = {
             id_pengiriman: idPengiriman,
-            email: email
-        })
-        .done(function () {
-            alert('OTP dikirim ke ' + email);
-        })
-        .fail(function (xhr) {
-            alert(xhr.responseJSON?.error ?? 'Gagal kirim OTP');
-        })
-        .always(function () {
-            $('#btnSendOtp').prop('disabled', false).text('Kirim OTP');
-        });
+            otp_method: type // <-- TAMBAHKAN INI
+        };
 
+        if (type === 'email') {
+            payload.email = value;
+        } else {
+            payload.phone = value;
+        }
+
+        $.post('/SuratJalan/send-otp', payload)
+
+            .done(function () {
+                alert('OTP berhasil dikirim');
+            })
+
+            .fail(function (xhr) {
+                alert(
+                    xhr.responseJSON?.error ??
+                    xhr.responseJSON?.message ??
+                    'Gagal kirim OTP'
+                );
+            })
+
+            .always(function () {
+                $('#btnSendOtp')
+                    .prop('disabled', false)
+                    .text('Send OTP');
+            });
     });
 
     // STEP 3: Verify OTP
     $('#btnVerifyOtp').click(function () {
-        let email = $('#emailSelect').val();
+        let type = $('#contactType').val();
+        let value = $('#contactSelect').val();
         let otp = $('#otpInput').val();
 
-        if (!email) {
-            alert('Pilih email terlebih dahulu');
+        if (!value) {
+            alert('Pilih kontak terlebih dahulu');
             return;
         }
 
@@ -289,40 +348,55 @@ jQuery(function ($) {
             return;
         }
 
+        let payload = {
+            id_pengiriman: idPengiriman,
+            otp: otp
+        };
+
+        if (type === 'email') {
+            payload.email = value;
+        } else {
+            payload.phone = value;
+        }
+
         let $btn = $('#btnVerifyOtp');
 
-        $btn.prop('disabled', true).html('Verifying...');
+        $btn
+            .prop('disabled', true)
+            .html('Verifying...');
 
-        //  AUTO ENABLE setelah 3 detik (apapun hasilnya)
-        setTimeout(() => {
-            $btn.prop('disabled', false).html('Verify OTP');
-        }, 3000);
+        $.post('/SuratJalan/verify-otp', payload)
 
-        $.post('/SuratJalan/verify-otp', {
-            id_pengiriman: idPengiriman,
-            email: email,
-            otp: otp
-        })
-        .done(function (res) {
+            .done(function (res) {
 
-            window.idSuratJalan = res.id_surat_jalan;
-            window.otpId = res.otp_id;
+                window.idSuratJalan =
+                    res.id_surat_jalan;
 
-            // clear otp input
-            $('#otpInput').val('');
+                window.otpId =
+                    res.otp_id;
 
-            $('#otpSection').hide();
+                $('#otpInput').val('');
+                $('#otpSection').hide();
 
-            $('#stepKonfirmasi').show();
-            $('#stepQty').hide();
-            $('#qtyInput').val('');
+                $('#stepKonfirmasi').show();
+                $('#stepQty').hide();
+                $('#qtyInput').val('');
 
-            $('#modalKonfirmasi').modal('show');
+                $('#modalKonfirmasi').modal('show');
+            })
 
-        })
-        .fail(function (xhr) {
-            alert(xhr.responseJSON?.error ?? 'OTP tidak valid');
-        });
+            .fail(function (xhr) {
+                alert(
+                    xhr.responseJSON?.error ??
+                    'OTP tidak valid'
+                );
+            })
+
+            .always(function () {
+                $btn
+                    .prop('disabled', false)
+                    .html('Verify OTP');
+            });
     });
 
 
@@ -352,7 +426,12 @@ jQuery(function ($) {
             $('#labelApprovedAt').text('Approved At:');
 
 
-            $('#approvedEmail').text($('#emailSelect').val());
+            let type = $('#contactType').val();
+            let selectedText = $('#contactSelect option:selected').text();
+            let contactValue = $('#contactSelect').val();
+            $('#approvedEmail').text(contactValue);
+
+
             $('#approvedAt').text(formatDateTime(new Date()));
 
             $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
@@ -434,8 +513,9 @@ jQuery(function ($) {
             $('#otpSection').hide();
             $('#approvalInfo').show();
 
-            let email = $('#emailSelect').val();
-            $('#approvedEmail').text(email);
+            let selectedText = $('#contactSelect option:selected').text();
+            $('#approvedEmail').text(selectedText);
+
             $('#approvedAt').text(formatDateTime(new Date()));
 
             if (isSesuai === 1) {

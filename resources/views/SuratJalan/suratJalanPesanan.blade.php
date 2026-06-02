@@ -46,28 +46,44 @@
                         <div style="min-width:250px">
 
                             @if(!isset($otp) || !$otp)
-
-                                <button id="btnOpenOtp" class="btn btn-primary w-100 mb-2">
+                                <button id="btnOpenOtp"
+                                    class="btn btn-primary w-100 mb-2">
                                     Konfirmasi Product Receipt
                                 </button>
 
                                 <div id="otpSection" style="display:none;">
-                                    <select id="emailSelect" class="form-select mb-2">
-                                        <option value="">-- Pilih Email --</option>
+
+                                    <select id="contactType"
+                                        class="form-select mb-2">
+                                        <option value="">-- Pilih Metode OTP --</option>
+                                        <option value="email">Email</option>
+                                        <option value="phone">No HP</option>
                                     </select>
 
-                                    <button id="btnSendOtp" class="btn btn-warning w-100 mb-2">
+                                    <select id="contactSelect"
+                                        class="form-select mb-2">
+                                        <option value="">
+                                            -- Pilih Kontak --
+                                        </option>
+                                    </select>
+
+                                    <button id="btnSendOtp"
+                                        class="btn btn-warning w-100 mb-2">
                                         Send OTP
                                     </button>
 
-                                    <input type="text" id="otpInput"
+                                    <input type="text"
+                                        id="otpInput"
                                         class="form-control mb-2"
                                         placeholder="Masukkan OTP">
 
-                                    <button id="btnVerifyOtp" class="btn btn-success w-100">
+                                    <button id="btnVerifyOtp"
+                                        class="btn btn-success w-100">
                                         Verify OTP
                                     </button>
+
                                 </div>
+
                             @endif
 
                             <!-- APPROVAL INFO -->

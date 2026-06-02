@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Encryption\Encrypter;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -230,7 +231,7 @@ class SuratJalanPesananController extends Controller
         ]);
     }
 
-    public function getEmails($id_pengiriman)
+    public function getContacts($id_pengiriman)
     {
         $idCust = DB::connection('ConnPublic')
             ->table('T_KirimSuratJalan')
@@ -243,27 +244,36 @@ class SuratJalanPesananController extends Controller
             ], 404);
         }
 
-        $emails = DB::connection('ConnPublic')
+        $contacts = DB::connection('ConnPublic')
             ->table('CustomerUserPublic as c')
             ->join('UserPublic as u', 'c.IdUser', '=', 'u.IdUser')
             ->where('c.IDCust', $idCust)
-            ->select('u.Email', 'u.NamaUser')
+            ->select('u.Email', 'u.NoHP as Phone', 'u.NamaUser')
             ->distinct()
             ->get();
 
-        return response()->json($emails);
+        return response()->json($contacts);
     }
 
     public function sendOtp(Request $request)
     {
         $request->validate([
             'id_pengiriman' => 'required',
-            'email' => 'required|email'
+            'email' => 'nullable|email|required_without:phone',
+            'phone' => ['nullable', 'required_without:email', 'regex:/^628[0-9]{8,13}$/'],
+            'otp_method' => 'required|in:email,phone',
+        ], [
+            'phone.regex' =>
+                'Nomor HP harus menggunakan format 628xxxxxxxxxx',
+            'email.required_without' =>
+                'Email atau nomor HP wajib diisi',
+            'phone.required_without' =>
+                'Email atau nomor HP wajib diisi'
         ]);
 
         $otp = rand(100000, 999999);
         $now = Carbon::now('Asia/Jakarta');
-
+        $phone = $request->phone ? preg_replace('/[^0-9]/', '', $request->phone) : null;
 
         $idSuratJalan = DB::connection('ConnPublic')
             ->table('T_KirimSuratJalan')
@@ -277,7 +287,12 @@ class SuratJalanPesananController extends Controller
         }
         $lastOtp = DB::table('T_SuratJalanOTP')
             ->where('IdSuratJalan', $idSuratJalan)
-            ->where('Email', $request->email)
+            ->when($request->email, function ($q) use ($request) {
+                $q->where('Email', $request->email);
+            })
+            ->when($phone, function ($q) use ($phone) {
+                $q->where('Phone', $phone);
+            })
             ->where('IsUsed', 0)
             ->where('ExpiredAt', '>', $now)
             ->latest('CreatedAt')
@@ -291,7 +306,10 @@ class SuratJalanPesananController extends Controller
 
         DB::table('T_SuratJalanOTP')
             ->where('IdSuratJalan', $idSuratJalan)
-            ->where('Email', $request->email)
+            ->when($request->email, function ($q) use ($request) {
+                $q->where('Email', $request->email);})
+            ->when($phone, function ($q) use ($phone) {
+                $q->where('Phone', $phone);})
             ->where('IsUsed', 0)
             ->update([
                 'ExpiredAt' => $now
@@ -300,15 +318,60 @@ class SuratJalanPesananController extends Controller
         DB::table('T_SuratJalanOTP')->insert([
             'IdSuratJalan' => $idSuratJalan,
             'Email' => $request->email,
+            'Phone' => $phone,
             'OTP' => $otp,
+            'IsUsed' => 0,
             'ExpiredAt' => $now->copy()->addMinutes(5),
             'CreatedAt' => $now
         ]);
 
-        Mail::mailer('MailSales')->raw("Kode OTP Verifikasi Anda: $otp", function ($message) use ($request) {
-            $message->to($request->email)
-                ->subject('OTP Approval Surat Jalan');
-        });
+        if ($request->otp_method === 'email') {
+            // kirim email
+            Mail::mailer('MailSales')->raw(
+                "Kode OTP Approval Surat Jalan Anda: $otp",
+                function ($message) use ($request) {
+                    $message->to($request->email)
+                        ->subject('OTP Approval Surat Jalan');
+                }
+            );
+
+        } elseif ($request->otp_method === 'phone') {
+            // kirim sms
+            $response = Http::withHeaders([
+                'Authorization' => 'App ' . env('SMSVIRO_API_KEY'),
+                'Content-Type' => 'application/json',
+            ])->post(
+                'https://api.smsviro.com/restapi/sms/1/text/single',
+                [
+                    'from' => env('SMSVIRO_SENDER_ID'),
+                    'to' => $phone,
+                    'text' => "Kode OTP Approval Surat Jalan Anda: $otp"
+                ]
+            );
+
+            $dataResponse = $response->json();
+            $allowedStatus = [
+                'PENDING',
+                'ACCEPTED',
+                'DELIVERED'
+            ];
+
+            if (
+                !$response->successful() ||
+                !isset($dataResponse['messages'][0]['status']['groupName']) ||
+                !in_array(
+                    $dataResponse['messages'][0]['status']['groupName'],
+                    $allowedStatus
+                )
+            ) {
+
+                DB::rollBack();
+                Log::error('SMS Error: ' . $response->body());
+                return response()->json([
+                    'error' => 'Gagal mengirim OTP SMS'
+                ], 500);
+            }
+        }
 
         return response()->json([
             'status' => 'OTP sent'
@@ -319,13 +382,22 @@ class SuratJalanPesananController extends Controller
     {
         $request->validate([
             'id_pengiriman' => 'required',
-            'email' => 'required|email',
+            'email' => 'nullable|email|required_without:phone',
+            'phone' => ['nullable', 'required_without:email', 'regex:/^628[0-9]{8,13}$/'],
             'otp' => 'required|digits:6'
+        ], [
+            'phone.regex' =>
+                'Nomor HP harus menggunakan format 628xxxxxxxxxx',
+            'email.required_without' =>
+                'Email atau nomor HP wajib diisi',
+            'phone.required_without' =>
+                'Email atau nomor HP wajib diisi'
         ]);
 
         $now = Carbon::now('Asia/Jakarta');
 
         try {
+            $phone = $request->phone? preg_replace('/[^0-9]/', '', $request->phone) : null;
 
             $idSuratJalan = DB::connection('ConnPublic')
                 ->table('T_KirimSuratJalan')
@@ -342,7 +414,23 @@ class SuratJalanPesananController extends Controller
 
             $otp = DB::table('T_SuratJalanOTP')
                 ->where('IdSuratJalan', $idSuratJalan)
-                ->where('Email', $request->email)
+
+                // jika email dipilih
+                ->when(
+                    $request->filled('email'),
+                    function ($q) use ($request) {
+                        $q->where('Email', $request->email);
+                    }
+                )
+
+                // jika phone dipilih
+                ->when(
+                    $phone,
+                    function ($q) use ($phone) {
+                        $q->where('Phone', $phone);
+                    }
+                )
+
                 ->where('OTP', $request->otp)
                 ->where('IsUsed', 0)
                 ->where('ExpiredAt', '>=', $now)
@@ -362,9 +450,13 @@ class SuratJalanPesananController extends Controller
 
             return response()->json([
                 'status' => 'OTP_VALID',
+                'type' => $request->filled('email')
+                    ? 'email'
+                    : 'phone',
                 'id_surat_jalan' => $idSuratJalan,
                 'otp_id' => $otp->Id
             ]);
+
         } catch (\Exception $e) {
 
             DB::rollBack();
@@ -385,7 +477,6 @@ class SuratJalanPesananController extends Controller
             'id_surat_jalan' => 'required',
             'is_sesuai' => 'required|boolean',
             'qty_temp' => 'nullable|integer|min:1',
-            'email' => 'required|email',
             'otp_id' => 'required|integer'
         ]);
 
@@ -453,7 +544,7 @@ class SuratJalanPesananController extends Controller
                 ];
 
                 // update OTP (dengan ApprovedAt)
-                 DB::table('T_SuratJalanOTP')
+                DB::table('T_SuratJalanOTP')
                     ->where('Id', $request->otp_id)
                     ->where('IsUsed', 0)
                     ->update([
@@ -468,13 +559,27 @@ class SuratJalanPesananController extends Controller
                 ];
 
                 // update OTP TANPA ApprovedAt
-                 DB::table('T_SuratJalanOTP')
+                DB::table('T_SuratJalanOTP')
                     ->where('Id', $request->otp_id)
                     ->where('IsUsed', 0)
                     ->update([
                         'IsUsed' => 1
                     ]);
             }
+
+            //debug
+            $affected = DB::table('T_SuratJalanOTP')
+                ->where('Id', $request->otp_id)
+                ->where('IsUsed', 0)
+                ->update([
+                    'IsUsed' => 1,
+                    'ApprovedAt' => $now
+                ]);
+
+            Log::info([
+                'otp_id' => $request->otp_id,
+                'affected_rows' => $affected
+            ]);
 
             DB::connection('ConnPublic')
                 ->table('T_KirimSuratJalan')
@@ -509,12 +614,25 @@ class SuratJalanPesananController extends Controller
         // =====
         // EMAIL
         // =====
-        if ((int)$request->is_sesuai === 1) {
+       if ((int)$request->is_sesuai === 1) {
             try {
-                $this->sendSuratJalanEmail(
-                    $data->IDPengiriman,
-                    [$request->email]
-                );
+                $emails = DB::connection('ConnPublic')
+                    ->table('CustomerUserPublic as c')
+                    ->join('UserPublic as u', 'c.IdUser', '=', 'u.IdUser')
+                    ->where('c.IDCust', $data->IDCust)
+                    ->whereNotNull('u.Email')
+                    ->pluck('u.Email')
+                    ->unique()
+                    ->values()
+                    ->toArray();
+
+                if (!empty($emails)) {
+                    $this->sendSuratJalanEmail(
+                        $data->IDPengiriman,
+                        $emails
+                    );
+                }
+
             } catch (\Exception $e) {
                 Log::error('EMAIL ERROR', [
                     'message' => $e->getMessage()
@@ -699,69 +817,6 @@ class SuratJalanPesananController extends Controller
                 );
         });
     }
-
-    // public function previewSuratJalan($idPengiriman)
-    // {
-    //     $items = DB::connection('ConnPublic')
-    //         ->table('T_KirimSuratJalan')
-    //         ->where('IDPengiriman', $idPengiriman)
-    //         ->first();
-
-    //     if (!$items) {
-    //         abort(404, 'Data Surat Jalan tidak ditemukan');
-    //     }
-
-    //     // format base64
-    //     $formatBase64Image = function ($base64) {
-    //         if (empty($base64)) return null;
-
-    //         $clean = trim(str_replace(["\r", "\n"], '', $base64));
-    //         $binary = base64_decode($clean);
-
-    //         if ($binary === false) return null;
-
-    //         $mime = 'image/png';
-
-    //         if (substr($binary, 0, 2) === "\xFF\xD8") {
-    //             $mime = 'image/jpeg';
-    //         }
-
-    //         return "data:$mime;base64," . $clean;
-    //     };
-
-    //     $barcodeGudang = $formatBase64Image($items->GbrACCGudang);
-    //     $barcodeSupir  = $formatBase64Image($items->GbrACCSupir);
-    //     $ttCustomer    = $formatBase64Image($items->GbrACCCustomer);
-
-    //     $namaCustomer = DB::connection('ConnPublic')
-    //         ->table('CustomerUserPublic as cup')
-    //         ->join('UserPublic as up', 'cup.IdUser', '=', 'up.IdUser')
-    //         ->where('cup.IDCust', $items->IDCust)
-    //         ->value('up.NamaUser') ?? '-';
-
-    //     $namaPengirim = null;
-    //     $ttdPengirim = null;
-
-    //     if (!empty($items->NamaSupir) || !empty($items->GbrACCSupir)) {
-    //         $namaPengirim = $items->NamaSupir;
-    //         $ttdPengirim = $barcodeSupir;
-    //     } elseif (!empty($items->NamaSatpam) || !empty($items->GbrACCSatpam)) {
-    //         $namaPengirim = $items->NamaSatpam;
-    //         $ttdPengirim = $formatBase64Image($items->GbrACCSatpam);
-    //     }
-
-    //     $pdf = Pdf::loadView('SuratJalan.SuratJalanPDF', [
-    //         'items' => $items,
-    //         'namaPengirim' => $namaPengirim,
-    //         'ttdPengirim' => $ttdPengirim,
-    //         'barcodeGudang' => $barcodeGudang,
-    //         'barcodeSupir' => $barcodeSupir,
-    //         'ttCustomer' => $ttCustomer,
-    //         'namaCustomer' => $namaCustomer,
-    //     ])->setPaper('A4', 'portrait');
-
-    //     return $pdf->stream("Surat Jalan {$idPengiriman}.pdf");
-    // }
 
     public function edit($id)
     {

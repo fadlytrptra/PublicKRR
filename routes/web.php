@@ -63,7 +63,7 @@ Route::get('/SuratJalan/{id}', [SuratJalanPesananController::class, 'show'])
     ->name('SuratJalan.show');
 
 Route::get('SuratJalan-data', [SuratJalanPesananController::class, 'data'])->name('SuratJalan.data');
-Route::get('SuratJalan/get-emails/{id_pengiriman}', [SuratJalanPesananController::class, 'getEmails']);
+Route::get('SuratJalan/get-contacts/{id_pengiriman}', [SuratJalanPesananController::class, 'getContacts']);
 Route::post('SuratJalan/send-otp', [SuratJalanPesananController::class, 'sendOtp']);
 Route::get('/dokumen-sj/search', [DokumenSJController::class, 'search'])->name('DokumenSJ.search');
 Route::resource('DokumenSJ', DokumenSJController::class)->except(['show']);
