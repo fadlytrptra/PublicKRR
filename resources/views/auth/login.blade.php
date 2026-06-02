@@ -5,14 +5,15 @@
 <link rel="stylesheet" href="{{ asset('css/login.css') }}">
 
 <div class="container mt-5">
-    <div class="header-logo">
-        <img src="{{ asset('images/KRR.png') }}"
-            alt="KRR Logo"
-            class="logo-krr">
-
-        <span>Kerta Rajasa Raya</span>
-    </div>
     <div class="card">
+
+            <div class="header-logo">
+                <img src="{{ asset('images/KRR.png') }}"
+                    alt="KRR Logo"
+                    class="logo-krr">
+
+                <span>Kerta Rajasa Raya</span>
+            </div>
         <div class="card-header">Login</div>
 
         <div class="card-body">

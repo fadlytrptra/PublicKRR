@@ -78,15 +78,11 @@
         }
 
         .header-logo {
-            width: 400px;
-
-            margin: 50px auto 5px auto;
-            padding-right: 30px;
-
             display: flex;
             align-items: center;
             gap: 10px;
-
+            background-color: #d4d3d3
+            padding: 12px 15px 15px 10px;
             font-weight: bold;
             font-size: 20px;
         }
@@ -99,15 +95,14 @@
     </style>
 </head>
 <body>
-     <div class="header-logo">
-        <img src="{{ asset('images/KRR.png') }}"
-            alt="KRR Logo"
-            class="logo-krr">
-
-        <span>Kerta Rajasa Raya</span>
-    </div>
-
     <div class="container">
+        <div class="header-logo">
+            <img src="{{ asset('images/KRR.png') }}"
+                alt="KRR Logo"
+                class="logo-krr">
+            <span>Kerta Rajasa Raya</span>
+        </div>
+
         <h2>Register</h2>
 
         @if ($errors->has('error'))
@@ -211,17 +206,13 @@
                 <div style="margin-bottom: 15px;">
                     <div style="display:flex; gap:20px; margin-top:8px;">
                         <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-                            <input type="radio"
-                                name="otp_method"
-                                value="email"
+                            <input type="radio" name="otp_method" value="email"
                                 {{ old('otp_method', 'email') == 'email' ? 'checked' : '' }}>
                             Email
                         </label>
 
                         <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-                            <input type="radio"
-                                name="otp_method"
-                                value="sms"
+                            <input type="radio" name="otp_method" value="sms"
                                 {{ old('otp_method') == 'sms' ? 'checked' : '' }}>
                             SMS
                         </label>
