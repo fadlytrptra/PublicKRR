@@ -134,7 +134,7 @@ class LoginController extends Controller
         if (Cache::has($input)) {
             return back()->withErrors([
                 'error' =>
-                'Terlalu banyak request OTP. Coba lagi dalam 5 menit.'
+                'Anda sudah mengirim OTP. Coba lagi dalam 5 menit.'
             ])->withInput();
         }
 
@@ -166,7 +166,7 @@ class LoginController extends Controller
 
                 return back()->withErrors([
                     'error' =>
-                        "OTP sudah dikirim. Silakan tunggu {$remainingMinutes} menit sebelum request ulang."
+                        "OTP sudah dikirim. Silakan tunggu 5 menit sebelum request ulang."
                 ])->withInput();
             }
         }
@@ -261,6 +261,12 @@ class LoginController extends Controller
             $destination = $nohp;
             $method = 'SMS';
         }
+
+        Cache::put(
+            $input,
+            true,
+            now()->addMinutes(5)
+        );
 
         return back()
             ->with('success', "OTP telah dikirim melalui {$method} ke {$destination}")
