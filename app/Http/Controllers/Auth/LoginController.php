@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class LoginController extends Controller
@@ -129,15 +130,60 @@ class LoginController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        $now = Carbon::now('Asia/Jakarta');
-        $otp = rand(100000, 999999);
+        $input = 'register_otp_' . $request->ip();
+        if (Cache::has($input)) {
+            return back()->withErrors([
+                'error' =>
+                'Terlalu banyak request OTP. Coba lagi dalam 5 menit.'
+            ])->withInput();
+        }
 
-        DB::connection('ConnPublic')->table('T_RegisterOTP')
-            ->where('Email', $request->Email)
+        $now = Carbon::now('Asia/Jakarta');
+
+        // cek OTP aktif berdasarkan email atau phone
+        $existingOtp = DB::connection('ConnPublic')
+            ->table('T_RegisterOTP')
             ->where('IsUsed', 0)
+            ->where(function ($q) use ($request, $nohp) {
+                $q->where('Email', $request->Email)
+                ->orWhere('Phone', $nohp);
+            })
+            ->orderByDesc('CreatedAt')
+            ->first();
+
+        if ($existingOtp) {
+
+            $expiredAt = Carbon::parse(
+                $existingOtp->ExpiredAt,
+                'Asia/Jakarta'
+            );
+
+            // masih dalam cooldown
+            if ($now->lt($expiredAt)) {
+
+                $remainingSeconds = $now->diffInSeconds($expiredAt);
+                $remainingMinutes = ceil($remainingSeconds / 60);
+
+                return back()->withErrors([
+                    'error' =>
+                        "OTP sudah dikirim. Silakan tunggu {$remainingMinutes} menit sebelum request ulang."
+                ])->withInput();
+            }
+        }
+
+       $otp = rand(100000, 999999);
+
+        // invalidasi OTP lama email / phone
+        DB::connection('ConnPublic')
+            ->table('T_RegisterOTP')
+            ->where('IsUsed', 0)
+            ->where(function ($q) use ($request, $nohp) {
+                $q->where('Email', $request->Email)
+                ->orWhere('Phone', $nohp);
+            })
             ->update([
                 'IsUsed' => 1
-        ]);
+         ]);
 
         // INSERT KE DATABASE
         DB::connection('ConnPublic')->table('T_RegisterOTP')->insert([
