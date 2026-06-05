@@ -253,40 +253,40 @@
             @error('otp_method')
                 <div class="error">{{ $message }}</div>
             @enderror
+            @if (session('showOtp'))
+                <hr>
+                <h3>Verifikasi OTP</h3>
+
+                {{--
+            <p style="color: #555; margin-bottom: 10px;">
+                OTP telah dikirim ke nomor HP yang didaftarkan.
+            </p> --}}
+
+                @if (session('success'))
+                    <div style="color: green;">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                <form method="POST" action="/verify-otp">
+                    @csrf
+                    <input type="hidden" name="email" value="{{ session('email') }}">
+
+                    <label>Masukkan OTP</label>
+                    <input type="text" name="otp" placeholder="6 digit OTP">
+
+                    @error('otp')
+                        <div class="error">{{ $message }}</div>
+                    @enderror
+
+                    <button type="submit">Verifikasi</button>
+                </form>
+            @endif
     </div>
     <button type="submit" class="btn register">Register</button>
     <button class="btn-back" id="button_backToLogin">Kembali ke Login</button>
     </form>
 
-    @if (session('showOtp'))
-        <hr>
-        <h3>Verifikasi OTP</h3>
-
-        {{--
-            <p style="color: #555; margin-bottom: 10px;">
-                OTP telah dikirim ke nomor HP yang didaftarkan.
-            </p> --}}
-
-        @if (session('success'))
-            <div style="color: green;">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        <form method="POST" action="/verify-otp">
-            @csrf
-            <input type="hidden" name="email" value="{{ session('email') }}">
-
-            <label>Masukkan OTP</label>
-            <input type="text" name="otp" placeholder="6 digit OTP">
-
-            @error('otp')
-                <div class="error">{{ $message }}</div>
-            @enderror
-
-            <button type="submit">Verifikasi</button>
-        </form>
-    @endif
 
     </div>
 
