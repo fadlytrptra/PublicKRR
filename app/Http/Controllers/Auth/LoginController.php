@@ -426,6 +426,7 @@ class LoginController extends Controller
     {
         $request->validate([
             'email',
+            'param',
             'password' => [
                 'required',
                 'min:8',
@@ -438,12 +439,26 @@ class LoginController extends Controller
         ]);
 
         $email = $request->email;
+        $otpEncrypted = $request->param;
+        $key = env('QR_SHARED_SECRET');
+        $cipher = 'AES-256-CBC';
 
-        // $user = session('user');
+        $encrypter = new Encrypter($key, $cipher);
+        $otpDecrypted = $encrypter->decryptString(
+            urldecode($otpEncrypted)
+        );
+        // VALIDASI OTP KE DATABASE
+        $otpData = DB::connection('ConnPublic')->table('T_ForgotPasswordOTP')
+            ->where('Email', $email)
+            ->where('OTP', $otpDecrypted)
+            ->where('IsUsed', 0)
+            ->where('ExpiredAt', '>', now())
+            ->orderByDesc('CreatedAt')
+            ->first();
 
-        // if (!$user) {
-        //     return response()->json(['error' => 'Unauthorized'], 401);
-        // }
+        if (!$otpData) {
+            abort(410);
+        }
 
         if (!$email) {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -457,13 +472,13 @@ class LoginController extends Controller
                 'ForgetPassword' => false
             ]);
 
-        // update session juga
-        // $user->ForgetPassword = false;
-        // session(['user' => $user, 'ForgetPassword' => false]);
+        // UPDATE OTP
+        DB::connection('ConnPublic')->table('T_ForgotPasswordOTP')
+            ->where('Id', $otpData->Id)
+            ->update([
+                'IsUsed' => 1
+            ]);
 
-        // return response()->json([
-        //     'success' => true
-        // ]);
         return redirect('/')->with('success', 'Reset Password berhasil!');
     }
 
@@ -478,7 +493,6 @@ class LoginController extends Controller
         $otpDecrypted = $encrypter->decryptString(
             urldecode($otpEncrypted)
         );
-        $now = Carbon::now('Asia/Jakarta');
         // VALIDASI OTP KE DATABASE
         $otpData = DB::connection('ConnPublic')->table('T_ForgotPasswordOTP')
             ->where('Email', $email)
@@ -498,14 +512,7 @@ class LoginController extends Controller
             abort(410);
         }
 
-        // UPDATE OTP
-        DB::connection('ConnPublic')->table('T_ForgotPasswordOTP')
-            ->where('Id', $otpData->Id)
-            ->update([
-                'IsUsed' => 1
-            ]);
-
-        return view('auth.resetPassword', compact('otpDecrypted', 'email'));
+        return view('auth.resetPassword', compact('otpEncrypted', 'email'));
     }
 
     public function generateStrongPassword($length = 10)

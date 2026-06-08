@@ -109,21 +109,18 @@
             <img src="{{ asset('images/KRR.png') }}" alt="KRR Logo" class="logo-krr">
             <span>Kerta Rajasa Raya</span>
         </div> --}}
-
         <h2>Reset Password</h2>
-
         @if ($errors->has('error'))
             <div class="error">
                 {{ $errors->first('error') }}
             </div>
         @endif
-
         <form method="POST" action="{{ route('force.reset.password') }}" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="email" id="email" value="{{ $email }}">
+            <input type="hidden" name="param" id="param" value="{{ $otpEncrypted }}">
             <div class="password-wrapper">
                 <label>Password</label>
-
                 <div>
                     <input type="password" name="password" id="password"
                         value="{{ old('Password', $data['raw_password'] ?? '') }}">
@@ -139,7 +136,6 @@
                     </span>
                 </div>
             </div>
-
             @error('password')
                 <div class="error">{{ $message }}</div>
             @enderror
