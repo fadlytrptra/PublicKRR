@@ -39,6 +39,7 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::post('/forgot-password', [LoginController::class, 'forgotPassword']);
 Route::post('/force-reset-password', [LoginController::class, 'forceResetPassword'])->name('force.reset.password');
+Route::get('/resetPassword', [LoginController::class, 'resetPassword']);
 
 Route::get('/register', function () {
     if (!session('showOtp')) {

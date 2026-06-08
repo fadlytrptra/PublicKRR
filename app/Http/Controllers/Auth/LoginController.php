@@ -13,6 +13,9 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use Illuminate\Encryption\Encrypter;
+use Illuminate\Contracts\Encryption\DecryptException;
+use App\Mail\ResetPasswordMail;
 
 class LoginController extends Controller
 {
@@ -134,7 +137,7 @@ class LoginController extends Controller
         if (Cache::has($input)) {
             return back()->withErrors([
                 'error' =>
-                'Anda sudah mengirim OTP. Coba lagi dalam 5 menit.'
+                    'Anda sudah mengirim OTP. Coba lagi dalam 5 menit.'
             ])->withInput();
         }
 
@@ -146,7 +149,7 @@ class LoginController extends Controller
             ->where('IsUsed', 0)
             ->where(function ($q) use ($request, $nohp) {
                 $q->where('Email', $request->Email)
-                ->orWhere('Phone', $nohp);
+                    ->orWhere('Phone', $nohp);
             })
             ->orderByDesc('CreatedAt')
             ->first();
@@ -171,7 +174,7 @@ class LoginController extends Controller
             }
         }
 
-       $otp = rand(100000, 999999);
+        $otp = rand(100000, 999999);
 
         // invalidasi OTP lama email / phone
         DB::connection('ConnPublic')
@@ -179,11 +182,11 @@ class LoginController extends Controller
             ->where('IsUsed', 0)
             ->where(function ($q) use ($request, $nohp) {
                 $q->where('Email', $request->Email)
-                ->orWhere('Phone', $nohp);
+                    ->orWhere('Phone', $nohp);
             })
             ->update([
                 'IsUsed' => 1
-         ]);
+            ]);
 
         // INSERT KE DATABASE
         DB::connection('ConnPublic')->table('T_RegisterOTP')->insert([
@@ -231,13 +234,13 @@ class LoginController extends Controller
                 'Authorization' => 'App ' . env('SMSVIRO_API_KEY'),
                 'Content-Type' => 'application/json',
             ])->post(
-                'https://api.smsviro.com/restapi/sms/1/text/single',
-                [
-                    'from' => env('SMSVIRO_SENDER_ID'),
-                    'to' => $nohp,
-                    'text' => "Kode OTP verifikasi akun Anda: $otp"
-                ]
-            );
+                    'https://api.smsviro.com/restapi/sms/1/text/single',
+                    [
+                        'from' => env('SMSVIRO_SENDER_ID'),
+                        'to' => $nohp,
+                        'text' => "Kode OTP verifikasi akun Anda: $otp"
+                    ]
+                );
 
             $dataResponse = $response->json();
             $allowedStatus = ['PENDING', 'ACCEPTED', 'DELIVERED'];
@@ -362,57 +365,67 @@ class LoginController extends Controller
             'login' => 'required'
         ]);
 
+        $email = $request->login;
+
         $user = DB::connection('ConnPublic')
             ->table('UserPublic')
-            ->where(function ($query) use ($request) {
-                $query->where('Email', $request->login);
+            ->where(function ($query) use ($email) {
+                $query->where('Email', $email);
             })
             ->first();
 
         if (!$user) {
-            return back()->withErrors([
-                'forgot_error' => 'Email / Username tidak ditemukan'
-            ]);
+            // return back()->withErrors([
+            //     'forgot_error' => 'Email / Username tidak ditemukan'
+            // ]);
+            return back()->with('success', 'Link untuk reset password telah dikirim ke email Anda.');
         }
 
-        if (empty($user->Email)) {
-            return back()->withErrors([
-                'forgot_error' => 'Email / Username tidak ditemukan'
-            ]);
-        }
+        $now = Carbon::now('Asia/Jakarta');
+        $otp = rand(100000, 999999);
+        $key = env('QR_SHARED_SECRET');
+        $cipher = 'AES-256-CBC';
+        $encrypter = new Encrypter($key, $cipher);
+
+        $otpEncrypted = urlencode(
+            $encrypter->encryptString((string) $otp)
+        );
+        // dd($email);
+        // INSERT KE DATABASE
+        DB::connection('ConnPublic')->table('T_ForgotPasswordOTP')->insert([
+            'Email' => $email,
+            'OTP' => $otp,
+            'IsUsed' => 0,
+            'ExpiredAt' => $now->copy()->addMinutes(5),
+            'CreatedAt' => $now,
+            'Phone' => NULL,
+        ]);
 
         // Generate password baru
-        $newPassword = $this->generateStrongPassword();
+        // $newPassword = $this->generateStrongPassword();
 
         // Hash password
-        $hashedPassword = Hash::make($newPassword);
+        // $hashedPassword = Hash::make($newPassword);
 
         // Update ke DB
         DB::connection('ConnPublic')
             ->table('UserPublic')
             ->where('IdUser', $user->IdUser)
             ->update([
-                'Password' => $hashedPassword,
                 'ForgetPassword' => true
             ]);
 
-        // Kirim email (simple seperti OTP)
-        Mail::mailer('MailSales')->raw(
-            "Password Anda telah direset.\n" .
-            "Password baru Anda: {$newPassword}\n\n" .
-            "Terima kasih.",
-            function ($message) use ($user) {
-                $message->to($user->Email)
-                    ->subject('Reset Password');
-            }
-        );
-
-        return back()->with('success', 'Password baru telah dikirim ke email Anda.');
+        $link = url('resetPassword?email=' . $email . '&param=' . $otpEncrypted);
+        Mail::mailer('MailSales')
+            ->to($user->Email)
+            ->send(new ResetPasswordMail($user, $link));
+        return back()->with('success', 'Link untuk reset password telah dikirim ke email Anda.');
     }
 
     public function forceResetPassword(Request $request)
     {
         $request->validate([
+            'email',
             'password' => [
                 'required',
                 'min:8',
@@ -424,27 +437,75 @@ class LoginController extends Controller
             'password.*' => 'Password harus minimal 8 karakter, mengandung huruf besar, huruf kecil, dan spesial karakter'
         ]);
 
-        $user = session('user');
+        $email = $request->email;
 
-        if (!$user) {
+        // $user = session('user');
+
+        // if (!$user) {
+        //     return response()->json(['error' => 'Unauthorized'], 401);
+        // }
+
+        if (!$email) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
         DB::connection('ConnPublic')
             ->table('UserPublic')
-            ->where('IdUser', $user->IdUser)
+            ->where('Email', $email)
             ->update([
                 'Password' => Hash::make($request->password),
                 'ForgetPassword' => false
             ]);
 
         // update session juga
-        $user->ForgetPassword = false;
-        session(['user' => $user, 'ForgetPassword' => false]);
+        // $user->ForgetPassword = false;
+        // session(['user' => $user, 'ForgetPassword' => false]);
 
-        return response()->json([
-            'success' => true
-        ]);
+        // return response()->json([
+        //     'success' => true
+        // ]);
+        return redirect('/')->with('success', 'Reset Password berhasil!');
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $email = $request->email;
+        $otpEncrypted = $request->param;
+        $key = env('QR_SHARED_SECRET');
+        $cipher = 'AES-256-CBC';
+
+        $encrypter = new Encrypter($key, $cipher);
+        $otpDecrypted = $encrypter->decryptString(
+            urldecode($otpEncrypted)
+        );
+        $now = Carbon::now('Asia/Jakarta');
+        // VALIDASI OTP KE DATABASE
+        $otpData = DB::connection('ConnPublic')->table('T_ForgotPasswordOTP')
+            ->where('Email', $email)
+            ->where('OTP', $otpDecrypted)
+            ->where('IsUsed', 0)
+            ->where('ExpiredAt', '>', now())
+            ->orderByDesc('CreatedAt')
+            ->first();
+
+        if (!$otpData) {
+            abort(410);
+        }
+
+        $expiredAt = Carbon::parse($otpData->ExpiredAt);
+
+        if (now()->greaterThan($expiredAt)) {
+            abort(410);
+        }
+
+        // UPDATE OTP
+        DB::connection('ConnPublic')->table('T_ForgotPasswordOTP')
+            ->where('Id', $otpData->Id)
+            ->update([
+                'IsUsed' => 1
+            ]);
+
+        return view('auth.resetPassword', compact('otpDecrypted', 'email'));
     }
 
     public function generateStrongPassword($length = 10)
