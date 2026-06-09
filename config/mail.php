@@ -92,6 +92,21 @@ return [
                 'name' => env('MAILSALES_FROM_NAME'),
             ],
         ],
+
+        'MailNoReply' => [
+            'transport' => 'smtp',
+            'host' => env('MAILNOREPLY_HOST', 'smtp.mailgun.org'),
+            'port' => env('MAILNOREPLY_PORT', 587),
+            'encryption' => env('MAILNOREPLY_ENCRYPTION', 'tls'),
+            'username' => env('MAILNOREPLY_USERNAME'),
+            'password' => env('MAILNOREPLY_PASSWORD'),
+            'timeout' => null,
+            'auth_mode' => null,
+            'from' => [
+                'address' => env('MAILNOREPLY_FROM_ADDRESS'),
+                'name' => env('MAILNOREPLY_FROM_NAME'),
+            ],
+        ],
     ],
 
     /*

@@ -30,7 +30,8 @@
             <p>
                 Jika Anda tidak merasa melakukan permintaan ini, abaikan email ini dan tidak ada perubahan yang akan
                 dilakukan
-                pada akun Anda.
+                pada akun Anda. Link reset password ini hanya berlaku selama 60 menit. Setelah itu, Anda harus
+                mengajukan permintaan baru untuk mendapatkan link reset password yang baru.
             </p>
 
             <p>Terima kasih.</p>

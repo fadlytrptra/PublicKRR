@@ -378,7 +378,7 @@ class LoginController extends Controller
             // return back()->withErrors([
             //     'forgot_error' => 'Email / Username tidak ditemukan'
             // ]);
-            return back()->with('success', 'Link untuk reset password telah dikirim ke email Anda.');
+            return back()->with('success', 'Link untuk reset password telah dikirim ke email Anda. Silahkan cek inbox email Anda terlebih dahulu, jika tidak ditemukan silahkan cek spam atau junk email Anda.');
         }
 
         $now = Carbon::now('Asia/Jakarta');
@@ -396,7 +396,7 @@ class LoginController extends Controller
             'Email' => $email,
             'OTP' => $otp,
             'IsUsed' => 0,
-            'ExpiredAt' => $now->copy()->addMinutes(5),
+            'ExpiredAt' => $now->copy()->addMinutes(10),
             'CreatedAt' => $now,
             'Phone' => NULL,
         ]);
@@ -416,10 +416,10 @@ class LoginController extends Controller
             ]);
 
         $link = url('resetPassword?email=' . $email . '&param=' . $otpEncrypted);
-        Mail::mailer('MailSales')
+        Mail::mailer('MailNoReply')
             ->to($user->Email)
             ->send(new ResetPasswordMail($user, $link));
-        return back()->with('success', 'Link untuk reset password telah dikirim ke email Anda.');
+        return back()->with('success', 'Link untuk reset password telah dikirim ke email Anda. Silahkan cek inbox email Anda terlebih dahulu, jika tidak ditemukan silahkan cek spam atau junk email Anda.');
     }
 
     public function forceResetPassword(Request $request)
