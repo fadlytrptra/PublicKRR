@@ -414,12 +414,12 @@ class LoginController extends Controller
         // $hashedPassword = Hash::make($newPassword);
 
         // Update ke DB
-        DB::connection('ConnPublic')
-            ->table('UserPublic')
-            ->where('IdUser', $user->IdUser)
-            ->update([
-                'ForgetPassword' => true
-            ]);
+        // DB::connection('ConnPublic')
+        //     ->table('UserPublic')
+        //     ->where('IdUser', $user->IdUser)
+        //     ->update([
+        //         'ForgetPassword' => true
+        //     ]);
 
         $link = url('resetPassword?email=' . $email . '&param=' . $otpEncrypted);
         Mail::mailer('MailNoReply')
