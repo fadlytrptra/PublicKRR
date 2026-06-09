@@ -37,6 +37,7 @@ Route::post('/refresh-csrf', function () {
 //Route::get('/', [LoginController::class, 'index'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::get('/sessionexpired', 'App\Http\Controllers\Auth\LoginController@sessionexpired')->name('sessionexpired');
 Route::post('/forgot-password', [LoginController::class, 'forgotPassword']);
 Route::post('/force-reset-password', [LoginController::class, 'forceResetPassword'])->name('force.reset.password');
 Route::get('/resetPassword', [LoginController::class, 'resetPassword']);
@@ -77,6 +78,9 @@ Route::middleware(['check.login'])->group(function () {
     Route::get('/home', function () {
         return view('home');
     })->name('home');
+    Route::get('/heartbeat', function () {
+        return response()->json(['status' => 'ok']);
+    });
 
     Route::resource('profile', UserController::class);
     Route::get('SuratJalan/list-data', [SuratJalanPesananController::class, 'listData'])->name('SuratJalan.listData');

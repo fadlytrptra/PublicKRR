@@ -100,6 +100,12 @@ class LoginController extends Controller
         return redirect('/');
     }
 
+    public function sessionexpired()
+    {
+        session()->forget('user');
+        return redirect('/')->withErrors(['error' => 'Session Expired, Please Login Again!']);
+    }
+
     public function register(Request $request)
     {
         $npwp = preg_replace('/[^0-9]/', '', $request->NPWP);
