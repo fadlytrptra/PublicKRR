@@ -99,7 +99,6 @@ document.addEventListener("visibilitychange", () => {
         if (!isLeader) {
             tryBecomeLeader();
         }
-        console.log(isLeader)
 
         if (isLeader) {
             fetch("/heartbeat", {

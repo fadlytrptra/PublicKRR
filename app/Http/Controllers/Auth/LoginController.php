@@ -100,10 +100,25 @@ class LoginController extends Controller
         return redirect('/');
     }
 
-    public function sessionexpired()
+    public function sessionexpired(Request $request)
     {
+        $previousPath = parse_url(url()->previous(), PHP_URL_PATH);
+        // dd([
+        //     'current_url' => $request->fullUrl(),
+        //     'previous_url' => url()->previous(),
+        //     'home_url' => url('/'),
+        //     'referer' => $request->headers->get('referer'),
+        //     'all_headers' => $request->headers->all(),
+        //     url()->previous() == url('/'),
+        //     'previous_path' => $previousPath
+        // ]);
         session()->forget('user');
-        return redirect('/')->withErrors(['error' => 'Session Expired, Please Login Again!']);
+
+        if ($previousPath == '/' || $previousPath == '') {
+            return redirect('/');
+        } else{
+            return redirect('/')->withErrors(['error' => 'Session Expired, Please Login Again!']);
+        }
     }
 
     public function register(Request $request)

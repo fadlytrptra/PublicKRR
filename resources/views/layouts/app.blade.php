@@ -24,6 +24,7 @@
     <link href="https://cdn.datatables.net/2.3.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <!--Sweet Alert-->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!--Custom JS-->
     <script src="{{ asset('js/RDZ.js') }}"></script>
 </head>
 
@@ -76,7 +77,7 @@
 
 
     <main class="py-4">
-        @if (session('ForgetPassword'))
+        {{-- @if (session('ForgetPassword'))
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     Swal.fire({
@@ -158,7 +159,7 @@
                     });
                 });
             </script>
-        @endif
+        @endif --}}
         @yield('content')
     </main>
 
