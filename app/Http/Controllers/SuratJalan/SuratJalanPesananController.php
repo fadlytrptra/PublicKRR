@@ -317,7 +317,7 @@ class SuratJalanPesananController extends Controller
 
         if ($request->otp_method === 'email') {
             // kirim email
-            Mail::mailer('MailSales')->raw(
+            Mail::mailer('MailNoReply')->raw(
                 "Kode OTP Approval Surat Jalan Anda: $otp",
                 function ($message) use ($request) {
                     $message->to($request->email)

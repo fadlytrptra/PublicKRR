@@ -235,13 +235,13 @@ class LoginController extends Controller
 
         // pilih metode kirim otp
         if ($request->otp_method === 'email') {
-            Mail::mailer('MailSales')->raw(
+            Mail::mailer('MailNoReply')->raw(
                 "Kode OTP verifikasi akun Anda: $otp",
                 function ($message) use ($request) {
                     $message->to($request->Email)
                         ->from(
-                            env('MAILSALES_FROM_ADDRESS'),
-                            env('MAILSALES_FROM_NAME')
+                            env('MAILNOREPLY_FROM_ADDRESS'),
+                            env('MAILNOREPLY_FROM_NAME')
                         )
                         ->subject('OTP Verifikasi Akun');
                 }
