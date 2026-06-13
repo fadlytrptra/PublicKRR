@@ -186,18 +186,6 @@
                 @enderror
             </div>
 
-            {{-- <label>Tanda Tangan (TT Customer)</label>
-            <input type="file" name="TTCustomer" id="TTCustomer" accept="image/*">
-
-            @error('TTCustomer')
-                <div class="error">{{ $message }}</div>
-            @enderror
-
-            <div id="preview-container" style="margin-top:10px; display:none;">
-                <p>Preview Tanda Tangan:</p>
-                <img id="preview-image" src="" width="150" style="border:1px solid #ccc; padding:5px;">
-            </div> --}}
-
             <label for="NPWP">NPWP</label>
             <div>
                 <input type="text" name="NPWP" id="npwp" inputmode="numeric" maxlength="16" required
@@ -253,14 +241,29 @@
             @error('otp_method')
                 <div class="error">{{ $message }}</div>
             @enderror
-            @if (session('showOtp'))
-                <hr>
-                <h3>Verifikasi OTP</h3>
 
-                {{--
-            <p style="color: #555; margin-bottom: 10px;">
-                OTP telah dikirim ke nomor HP yang didaftarkan.
-            </p> --}}
+            {{-- BUTTON REGISTER --}}
+            <button type="submit"
+                    class="btn register">
+                Register
+            </button>
+
+            <button class="btn-back"
+                    id="button_backToLogin">
+                Kembali ke Login
+            </button>
+
+            </form>
+            </div>
+
+            {{-- OTP FORM TERPISAH --}}
+            @if (session('showOtp'))
+
+            <div class="container">
+
+                <hr>
+
+                <h3>Verifikasi OTP</h3>
 
                 @if (session('success'))
                     <div style="color: green;">
@@ -268,27 +271,40 @@
                     </div>
                 @endif
 
-                <form method="POST" action="/verify-otp">
-                    @csrf
-                    <input type="hidden" name="email" value="{{ session('email') }}">
+                <form method="POST"
+                    action="{{ url('/verify-otp') }}">
 
-                    <label>Masukkan OTP</label>
-                    <input type="text" name="otp" placeholder="6 digit OTP">
+                    @csrf
+
+                    <input type="hidden"
+                        name="email"
+                        value="{{ session('email') }}">
+
+                    <label>
+                        Masukkan OTP
+                    </label>
+
+                    <input type="text"
+                        name="otp"
+                        maxlength="6"
+                        placeholder="6 digit OTP">
 
                     @error('otp')
-                        <div class="error">{{ $message }}</div>
+                        <div class="error">
+                            {{ $message }}
+                        </div>
                     @enderror
 
-                    <button type="submit">Verifikasi</button>
+                    <button type="submit">
+                        Verifikasi
+                    </button>
+
                 </form>
+
+            </div>
+
             @endif
-    </div>
-    <button type="submit" class="btn register">Register</button>
-    <button class="btn-back" id="button_backToLogin">Kembali ke Login</button>
-    </form>
 
-
-    </div>
 
     <script>
         let inputFile = document.getElementById('TTCustomer');
@@ -353,26 +369,42 @@
             });
         }
 
-        let form = document.querySelector('form');
+        let registerForm = document.querySelector('form[action="/register"]');
+            if (registerForm) {
 
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                let npwp = document.getElementById('npwp')?.value || '';
-                let nohp = document.getElementById('nohp')?.value || '';
+                registerForm.addEventListener(
+                'submit',
+                function(e) {
 
-                if (npwp.length !== 16) {
-                    alert('NPWP harus 16 digit');
-                    e.preventDefault();
-                    return;
-                }
+                    let npwp =
+                    document.getElementById('npwp')
+                    ?.value || '';
 
-                if (nohp.length < 10) {
-                    alert('No HP tidak valid');
-                    e.preventDefault();
-                    return;
-                }
-            });
-        }
+                    let nohp =
+                    document.getElementById('nohp')
+                    ?.value || '';
+
+                    if (npwp.length !== 16) {
+
+                        alert(
+                            'NPWP harus 16 digit'
+                        );
+
+                        e.preventDefault();
+                        return;
+                    }
+
+                    if (nohp.length < 10) {
+
+                        alert(
+                            'No HP tidak valid'
+                        );
+
+                        e.preventDefault();
+                        return;
+                    }
+                });
+            }
 
         button_backToLogin.addEventListener('click', function(e) {
             e.preventDefault();
