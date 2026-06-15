@@ -192,7 +192,7 @@ class SuratJalanPesananController extends Controller
 
             $query->where(function ($q) use ($search) {
                 $q->where('sj.No_PO', 'like', '%' . $search . '%')
-                ->orWhere('sj.NamaType', 'like', '%' . $search . '%');
+                    ->orWhere('sj.NamaType', 'like', '%' . $search . '%');
             });
         }
 
@@ -326,7 +326,7 @@ class SuratJalanPesananController extends Controller
             //     }
             // );
             Mail::mailer('MailNoReply')
-                ->to($request->Email)
+                ->to($request->email)
                 ->send(new OTPMail($request->email, $otp, 'Approval Surat Jalan'));
 
         } elseif ($request->otp_method === 'phone') {
@@ -335,13 +335,13 @@ class SuratJalanPesananController extends Controller
                 'Authorization' => 'App ' . env('SMSVIRO_API_KEY'),
                 'Content-Type' => 'application/json',
             ])->post(
-                'https://api.smsviro.com/restapi/sms/1/text/single',
-                [
-                    'from' => env('SMSVIRO_SENDER_ID'),
-                    'to' => $phone,
-                    'text' => "Kode OTP Approval Surat Jalan Anda: $otp"
-                ]
-            );
+                    'https://api.smsviro.com/restapi/sms/1/text/single',
+                    [
+                        'from' => env('SMSVIRO_SENDER_ID'),
+                        'to' => $phone,
+                        'text' => "Kode OTP Approval Surat Jalan Anda: $otp"
+                    ]
+                );
 
             $dataResponse = $response->json();
             $allowedStatus = [
@@ -391,7 +391,7 @@ class SuratJalanPesananController extends Controller
         $now = Carbon::now('Asia/Jakarta');
 
         try {
-            $phone = $request->phone? preg_replace('/[^0-9]/', '', $request->phone) : null;
+            $phone = $request->phone ? preg_replace('/[^0-9]/', '', $request->phone) : null;
 
             $idSuratJalan = DB::connection('ConnPublic')
                 ->table('T_KirimSuratJalan')
@@ -490,7 +490,7 @@ class SuratJalanPesananController extends Controller
                 throw new \Exception('Data tidak ditemukan');
             }
 
-            if ((int)$data->ACCCustomer === 1) {
+            if ((int) $data->ACCCustomer === 1) {
                 DB::commit();
 
                 return response()->json([
@@ -499,7 +499,7 @@ class SuratJalanPesananController extends Controller
             }
 
             // validasi qty
-            if (!(int)$request->is_sesuai && !$request->qty_temp) {
+            if (!(int) $request->is_sesuai && !$request->qty_temp) {
                 throw new \Exception('Qty harus diisi');
             }
 
@@ -529,7 +529,7 @@ class SuratJalanPesananController extends Controller
             // ==============
             // UPDATE DATA
             // ==============
-            if ((int)$request->is_sesuai === 1) {
+            if ((int) $request->is_sesuai === 1) {
 
                 // ACC
                 $update = [
@@ -583,13 +583,13 @@ class SuratJalanPesananController extends Controller
             // ===========
             // UPDATE OTP
             // ===========
-        //    DB::table('T_SuratJalanOTP')
-        //         ->where('Id', $request->otp_id)
-        //         ->where('IsUsed', 0)
-        //         ->update([
-        //             'IsUsed' => 1,
-        //             'ApprovedAt' => $now
-        //         ]);
+            //    DB::table('T_SuratJalanOTP')
+            //         ->where('Id', $request->otp_id)
+            //         ->where('IsUsed', 0)
+            //         ->update([
+            //             'IsUsed' => 1,
+            //             'ApprovedAt' => $now
+            //         ]);
 
             DB::commit();
         } catch (\Exception $e) {
@@ -608,7 +608,7 @@ class SuratJalanPesananController extends Controller
         // =====
         // EMAIL
         // =====
-       if ((int)$request->is_sesuai === 1) {
+        if ((int) $request->is_sesuai === 1) {
             try {
                 $emails = DB::connection('ConnPublic')
                     ->table('CustomerUserPublic as c')
@@ -658,7 +658,7 @@ class SuratJalanPesananController extends Controller
         }
 
         // hanya bisa resend setelah ACC
-        if ((int)$data->ACCCustomer !== 1) {
+        if ((int) $data->ACCCustomer !== 1) {
             return response()->json([
                 'success' => false,
                 'message' => 'Tidak bisa resend email karena status PASCA KIRIM / belum ACC'
@@ -694,7 +694,7 @@ class SuratJalanPesananController extends Controller
         try {
 
             $resendCount =
-                ((int)$data->ResendSJCount) + 1;
+                ((int) $data->ResendSJCount) + 1;
 
             DB::connection('ConnPublic')
                 ->table('T_KirimSuratJalan')
@@ -752,12 +752,14 @@ class SuratJalanPesananController extends Controller
 
         // format base64
         $formatBase64Image = function ($base64) {
-            if (empty($base64)) return null;
+            if (empty($base64))
+                return null;
 
             $clean = trim(str_replace(["\r", "\n"], '', $base64));
             $binary = base64_decode($clean);
 
-            if ($binary === false) return null;
+            if ($binary === false)
+                return null;
 
             $mime = 'image/png';
 
@@ -769,7 +771,7 @@ class SuratJalanPesananController extends Controller
         };
 
         $barcodeGudang = $formatBase64Image($items->GbrACCGudang);
-        $barcodeSupir  = $formatBase64Image($items->GbrACCSupir);
+        $barcodeSupir = $formatBase64Image($items->GbrACCSupir);
         $ttCustomer = $formatBase64Image($items->GbrACCCustomer);
 
         $namaCustomer = DB::connection('ConnPublic')
