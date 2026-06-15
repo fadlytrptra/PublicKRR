@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Contracts\Encryption\DecryptException;
 use App\Mail\ResetPasswordMail;
+use App\Mail\OTPMail;
 
 class LoginController extends Controller
 {
@@ -116,7 +117,7 @@ class LoginController extends Controller
 
         if ($previousPath == '/' || $previousPath == '') {
             return redirect('/');
-        } else{
+        } else {
             return redirect('/')->withErrors(['error' => 'Session Expired, Please Login Again!']);
         }
     }
@@ -235,21 +236,23 @@ class LoginController extends Controller
 
         // pilih metode kirim otp
         if ($request->otp_method === 'email') {
-            Mail::mailer('MailNoReply')->raw(
-                "Kode OTP verifikasi akun Anda: $otp",
-                function ($message) use ($request) {
-                    $message->to($request->Email)
-                        ->from(
-                            env('MAILNOREPLY_FROM_ADDRESS'),
-                            env('MAILNOREPLY_FROM_NAME')
-                        )
-                        ->subject('OTP Verifikasi Akun');
-                }
-            );
+            // Mail::mailer('MailNoReply')->raw(
+            //     "Kode OTP verifikasi akun Anda: $otp",
+            //     function ($message) use ($request) {
+            //         $message->to($request->Email)
+            //             ->from(
+            //                 env('MAILNOREPLY_FROM_ADDRESS'),
+            //                 env('MAILNOREPLY_FROM_NAME')
+            //             )
+            //             ->subject('OTP Verifikasi Akun');
+            //     }
+            // );
+            Mail::mailer('MailNoReply')
+                ->to($request->Email)
+                ->send(new OTPMail($request->NamaUser, $otp, 'Registrasi User'));
 
             $destination = $request->Email;
             $method = 'Email';
-
         } else {
             $response = Http::withHeaders([
                 'Authorization' => 'App ' . env('SMSVIRO_API_KEY'),

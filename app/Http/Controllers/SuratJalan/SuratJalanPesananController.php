@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Contracts\Encryption\DecryptException;
+use App\Mail\OTPMail;
 
 
 class SuratJalanPesananController extends Controller
@@ -317,13 +318,16 @@ class SuratJalanPesananController extends Controller
 
         if ($request->otp_method === 'email') {
             // kirim email
-            Mail::mailer('MailNoReply')->raw(
-                "Kode OTP Approval Surat Jalan Anda: $otp",
-                function ($message) use ($request) {
-                    $message->to($request->email)
-                        ->subject('OTP Approval Surat Jalan');
-                }
-            );
+            // Mail::mailer('MailNoReply')->raw(
+            //     "Kode OTP Approval Surat Jalan Anda: $otp",
+            //     function ($message) use ($request) {
+            //         $message->to($request->email)
+            //             ->subject('OTP Approval Surat Jalan');
+            //     }
+            // );
+            Mail::mailer('MailNoReply')
+                ->to($request->Email)
+                ->send(new OTPMail($request->email, $otp, 'Approval Surat Jalan'));
 
         } elseif ($request->otp_method === 'phone') {
             // kirim sms

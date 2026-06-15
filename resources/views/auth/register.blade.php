@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <link rel="icon" href="{{ asset('/images/krr.png') }}" type="image/gif" sizes="17x15">
     <title>Register</title>
     <style>
         body {
@@ -243,67 +244,59 @@
             @enderror
 
             {{-- BUTTON REGISTER --}}
-            <button type="submit"
-                    class="btn register">
+            <button type="submit" class="btn register">
                 Register
             </button>
 
-            <button class="btn-back"
-                    id="button_backToLogin">
+            <button class="btn-back" id="button_backToLogin">
                 Kembali ke Login
             </button>
 
-            </form>
-            </div>
+        </form>
+    </div>
 
-            {{-- OTP FORM TERPISAH --}}
-            @if (session('showOtp'))
+    {{-- OTP FORM TERPISAH --}}
+    @if (session('showOtp'))
 
-            <div class="container">
+        <div class="container">
 
-                <hr>
+            <hr>
 
-                <h3>Verifikasi OTP</h3>
+            <h3>Verifikasi OTP</h3>
 
-                @if (session('success'))
-                    <div style="color: green;">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                <form method="POST"
-                    action="{{ url('/verify-otp') }}">
-
-                    @csrf
-
-                    <input type="hidden"
-                        name="email"
-                        value="{{ session('email') }}">
-
-                    <label>
-                        Masukkan OTP
-                    </label>
-
-                    <input type="text"
-                        name="otp"
-                        maxlength="6"
-                        placeholder="6 digit OTP">
-
-                    @error('otp')
-                        <div class="error">
-                            {{ $message }}
-                        </div>
-                    @enderror
-
-                    <button type="submit">
-                        Verifikasi
-                    </button>
-
-                </form>
-
-            </div>
-
+            @if (session('success'))
+                <div style="color: green;">
+                    {{ session('success') }}
+                </div>
             @endif
+
+            <form method="POST" action="{{ url('/verify-otp') }}">
+
+                @csrf
+
+                <input type="hidden" name="email" value="{{ session('email') }}">
+
+                <label>
+                    Masukkan OTP
+                </label>
+
+                <input type="text" name="otp" maxlength="6" placeholder="6 digit OTP">
+
+                @error('otp')
+                    <div class="error">
+                        {{ $message }}
+                    </div>
+                @enderror
+
+                <button type="submit">
+                    Verifikasi
+                </button>
+
+            </form>
+
+        </div>
+
+    @endif
 
 
     <script>
@@ -370,19 +363,19 @@
         }
 
         let registerForm = document.querySelector('form[action="/register"]');
-            if (registerForm) {
+        if (registerForm) {
 
-                registerForm.addEventListener(
+            registerForm.addEventListener(
                 'submit',
                 function(e) {
 
                     let npwp =
-                    document.getElementById('npwp')
-                    ?.value || '';
+                        document.getElementById('npwp')
+                        ?.value || '';
 
                     let nohp =
-                    document.getElementById('nohp')
-                    ?.value || '';
+                        document.getElementById('nohp')
+                        ?.value || '';
 
                     if (npwp.length !== 16) {
 
@@ -404,7 +397,7 @@
                         return;
                     }
                 });
-            }
+        }
 
         button_backToLogin.addEventListener('click', function(e) {
             e.preventDefault();
