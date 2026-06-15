@@ -78,6 +78,7 @@ class SuratJalanPesananController extends Controller
             ->leftJoin('UserPublic as u', 'cup.IdUser', '=', 'u.IdUser')
 
             ->where('sj.IDPengiriman', $id)
+            ->where('u.IdUser', session('user')->IdUser)
             ->select([
                 'sj.SuratPesanan',
                 'sj.TglKirim',
