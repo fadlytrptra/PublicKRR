@@ -154,13 +154,13 @@ class LoginController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        $input = 'register_otp_' . $request->ip();
-        if (Cache::has($input)) {
-            return back()->withErrors([
-                'error' =>
-                    'Anda sudah mengirim OTP. Coba lagi dalam 5 menit.'
-            ])->withInput();
-        }
+        // $input = 'register_otp_' . $request->ip();
+        // if (Cache::has($input)) {
+        //     return back()->withErrors([
+        //         'error' =>
+        //             'Anda sudah mengirim OTP. Coba lagi dalam 5 menit.'
+        //     ])->withInput();
+        // }
 
         $now = Carbon::now('Asia/Jakarta');
 
@@ -191,7 +191,7 @@ class LoginController extends Controller
                 return back()->withErrors([
                     'error' =>
                         "OTP sudah dikirim. Silakan tunggu 5 menit sebelum request ulang."
-                ])->withInput();
+                ])->withInput()->with('showOtp', true);
             }
         }
 
@@ -286,11 +286,11 @@ class LoginController extends Controller
             $method = 'SMS';
         }
 
-        Cache::put(
-            $input,
-            true,
-            now()->addMinutes(5)
-        );
+        // Cache::put(
+        //     $input,
+        //     true,
+        //     now()->addMinutes(5)
+        // );
 
         return back()
             ->with('success', "OTP telah dikirim melalui {$method} ke {$destination}")
