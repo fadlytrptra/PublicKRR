@@ -1,9 +1,8 @@
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    {{-- Title--}}
+    {{-- Title --}}
     <title>Public KRR</title>
 
     {{-- Logo --}}
@@ -14,228 +13,224 @@
 
 <body>
 
-<div class="container">
+    <div class="container">
 
-    @if(!isset($header))
-        <div class="alert alert-danger text-center">
-            Data tidak ditemukan
+        @if (!isset($header))
+            <div class="alert alert-danger text-center">
+                Data tidak ditemukan
+            </div>
+            @php return; @endphp
+        @endif
+
+        {{-- HEADER --}}
+        <div class="text-center mb-4">
+            <h4 class="fw-bold verified-title">
+                Document Verified
+                <span class="d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+                        <path fill="#28a745"
+                            d="M19 9.09V6c0-.55-.45-1-1-1h-3.09L12.7 2.79a.996.996 0 0 0-1.41 0L9.08 5H5.99c-.55 0-1 .45-1 1v3.09L2.78 11.3a.996.996 0 0 0 0 1.41l2.21 2.21v3.09c0 .55.45 1 1 1h3.09l2.21 2.21c.2.2.45.29.71.29s.51-.1.71-.29l2.21-2.21h3.09c.55 0 1-.45 1-1v-3.09l2.21-2.21a.996.996 0 0 0 0-1.41l-2.21-2.21z" />
+                        <path fill="#ffffff" d="m11 12.59-1.29-1.3-1.42 1.42 2.71 2.7 4.71-4.7-1.42-1.42z" />
+                    </svg>
+                </span>
+            </h4>
+
+            <p>No Surat Jalan : <b>{{ $header->IDPengiriman }}</b></p>
+
+            <p>
+                Tanggal :
+                {{ \Carbon\Carbon::parse($header->TglKirim)->format('d-m-Y') }}
+            </p>
         </div>
-        @php return; @endphp
-    @endif
 
-    {{-- HEADER --}}
-    <div class="text-center mb-4">
-        <h4 class="fw-bold verified-title">
-            Document Verified
-            <span class="d-flex align-items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
-                    <path fill="#28a745"
-                        d="M19 9.09V6c0-.55-.45-1-1-1h-3.09L12.7 2.79a.996.996 0 0 0-1.41 0L9.08 5H5.99c-.55 0-1 .45-1 1v3.09L2.78 11.3a.996.996 0 0 0 0 1.41l2.21 2.21v3.09c0 .55.45 1 1 1h3.09l2.21 2.21c.2.2.45.29.71.29s.51-.1.71-.29l2.21-2.21h3.09c.55 0 1-.45 1-1v-3.09l2.21-2.21a.996.996 0 0 0 0-1.41l-2.21-2.21z"/>
-                    <path fill="#ffffff"
-                        d="m11 12.59-1.29-1.3-1.42 1.42 2.71 2.7 4.71-4.7-1.42-1.42z"/>
-                </svg>
-            </span>
-        </h4>
+        {{-- INFO --}}
+        <div class="card mb-4 shadow-sm border-0">
+            <div class="card-body">
 
-        <p>No Surat Jalan : <b>{{ $header->IDPengiriman }}</b></p>
+                <p>
+                    <strong>Transporter :</strong>
+                    {{ $header->NamaExpeditor ?? '-' }}
+                </p>
 
-        <p>
-            Tanggal :
-            {{ \Carbon\Carbon::parse($header->TglKirim)->format('d-m-Y') }}
-        </p>
-    </div>
+                <p>
+                    <strong>No Truk :</strong>
+                    {{ $header->TrukNopol ?? '-' }}
+                </p>
 
-    {{-- INFO --}}
-    <div class="card mb-4 shadow-sm border-0">
-        <div class="card-body">
+                <p class="mb-0">
+                    <strong>Atas Permintaan :</strong>
+                </p>
 
-            <p>
-                <strong>Transporter :</strong>
-                {{ $header->NamaExpeditor ?? '-' }}
-            </p>
+                <p class="fw-bold">
+                    {{ $header->NamaCust ?? '-' }}
+                </p>
 
-            <p>
-                <strong>No Truk :</strong>
-                {{ $header->TrukNopol ?? '-' }}
-            </p>
+                <p>
+                    {{ $header->AlamatCustomer ?? '-' }}
+                </p>
 
-            <p class="mb-0">
-                <strong>Atas Permintaan :</strong>
-            </p>
+                <hr>
 
-            <p class="fw-bold">
-                {{ $header->NamaCust ?? '-' }}
-            </p>
+                <p>
+                    <strong>No PO :</strong>
+                    {{ $header->No_PO ?? '-' }}
+                </p>
 
-            <p>
-                {{ $header->AlamatCustomer ?? '-' }}
-            </p>
+                <p class="mb-0">
+                    Dikirim Kepada :
+                </p>
 
-            <hr>
+                <p class="fw-bold">
+                    {{ $header->NamaCust ?? '-' }}
+                </p>
 
-            <p>
-                <strong>No PO :</strong>
-                {{ $header->No_PO ?? '-' }}
-            </p>
+                <p>
+                    {{ $header->AlamatKirimDO ?? '-' }}
+                </p>
 
-            <p class="mb-0">
-                Dikirim Kepada :
-            </p>
-
-            <p class="fw-bold">
-                {{ $header->NamaCust ?? '-' }}
-            </p>
-
-            <p>
-                {{ $header->AlamatKirimDO ?? '-' }}
-            </p>
-
+            </div>
         </div>
-    </div>
 
-    {{-- TABLE --}}
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
+        {{-- TABLE --}}
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div style="overflow: auto">
+                    <table class="table table-bordered mb-0">
 
-            <table class="table table-bordered mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th>NO</th>
+                                <th>NAMA BARANG</th>
+                                <th>JUMLAH</th>
+                                <th>SATUAN</th>
+                            </tr>
+                        </thead>
 
-                <thead class="table-light text-center">
-                    <tr>
-                        <th>NO</th>
-                        <th>NAMA BARANG</th>
-                        <th>JUMLAH</th>
-                        <th>SATUAN</th>
-                    </tr>
-                </thead>
+                        <tbody>
 
-                <tbody>
+                            @forelse($data as $i => $item)
+                                <tr>
+                                    <td class="text-center">
+                                        {{ $i + 1 }}
+                                    </td>
 
-                    @forelse($data as $i => $item)
-                    <tr>
-                        <td class="text-center">
-                            {{ $i + 1 }}
-                        </td>
+                                    <td class="text-center">
+                                        {{ $item->NamaType ?? '-' }}
+                                    </td>
 
-                        <td class="text-center">
-                            {{ $item->NamaType ?? '-' }}
-                        </td>
+                                    <td class="text-center">
+                                        {{ number_format($item->QtyJual ?? 0) }}
+                                    </td>
 
-                        <td class="text-center">
-                            {{ number_format($item->QtyJual ?? 0) }}
-                        </td>
+                                    <td class="text-center">
+                                        {{ $item->SatJual ?? '-' }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-center">
+                                        Tidak ada data
+                                    </td>
+                                </tr>
+                            @endforelse
 
-                        <td class="text-center">
-                            {{ $item->SatJual ?? '-' }}
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="4" class="text-center">
-                            Tidak ada data
-                        </td>
-                    </tr>
-                    @endforelse
+                        </tbody>
 
-                </tbody>
+                    </table>
+                </div>
 
-            </table>
 
+            </div>
         </div>
-    </div>
 
-    {{-- FOOTER INFO --}}
-    <div class="card mt-4 shadow-sm border-0">
-        <div class="card-body">
+        {{-- FOOTER INFO --}}
+        <div class="card mt-4 shadow-sm border-0">
+            <div class="card-body">
 
-            {{-- GUDANG --}}
-            @if ($jenisACC == 'Manager')
+                {{-- GUDANG --}}
+                @if ($jenisACC == 'Manager')
+                    <p class="fw-bold mb-1">
+                        Dikeluarkan Oleh <i>Logistic Manager</i>
+                    </p>
 
-                <p class="fw-bold mb-1">
-                    Dikeluarkan Oleh <i>Logistic Manager</i>
-                </p>
+                    <p class="fw-bold mb-0">
+                        {{ $header->NamaExpeditor ?? 'BELUM ADA EXPEDITOR' }}
+                    </p>
 
-                <p class="fw-bold mb-0">
-                    {{ $header->NamaExpeditor ?? 'BELUM ADA EXPEDITOR' }}
-                </p>
+                    <p class="fw-bold">
+                        {{ \Carbon\Carbon::parse($header->TglKirim)->format('d-m-Y') }}
+                    </p>
 
-                <p class="fw-bold">
-                    {{ \Carbon\Carbon::parse($header->TglKirim)->format('d-m-Y') }}
-                </p>
+                    {{-- SUPIR --}}
+                @elseif ($jenisACC == 'Supir' || $jenisACC == 'Satpam')
+                    {{-- DIKELUARKAN --}}
+                    <p class="fw-bold mb-1">
+                        Dikeluarkan Oleh <i>Logistic Manager</i>
+                    </p>
 
-            {{-- SUPIR --}}
-            @elseif ($jenisACC == 'Supir' || $jenisACC == 'Satpam')
+                    <p class="fw-bold mb-0">
+                        {{ $header->NamaExpeditor ?? 'BELUM ADA EXPEDITOR' }}
+                    </p>
 
-                {{-- DIKELUARKAN --}}
-                <p class="fw-bold mb-1">
-                    Dikeluarkan Oleh <i>Logistic Manager</i>
-                </p>
+                    <p class="fw-bold">
+                        {{ \Carbon\Carbon::parse($header->TglKirim)->format('d-m-Y') }}
+                    </p>
 
-                <p class="fw-bold mb-0">
-                    {{ $header->NamaExpeditor ?? 'BELUM ADA EXPEDITOR' }}
-                </p>
+                    <br>
 
-                <p class="fw-bold">
-                    {{ \Carbon\Carbon::parse($header->TglKirim)->format('d-m-Y') }}
-                </p>
+                    {{-- DIKIRIM --}}
+                    <p class="fw-bold mb-1">
+                        <i>Dikirim Oleh</i>
+                        {{ $header->PengirimNama ?? 'BELUM DIKIRIM' }}
+                    </p>
 
-                <br>
+                    <p class="fw-bold">
+                        {{ $header->TglPengirim ?? '-' }}
+                    </p>
 
-                {{-- DIKIRIM --}}
-                <p class="fw-bold mb-1">
-                    <i>Dikirim Oleh</i>
-                    {{ $header->PengirimNama ?? 'BELUM DIKIRIM' }}
-                </p>
+                    {{-- CUSTOMER --}}
+                @elseif ($jenisACC == '')
+                    {{-- DIKELUARKAN --}}
+                    <p class="fw-bold mb-1">
+                        Dikeluarkan Oleh <i>Logistic Manager</i>
+                    </p>
 
-                <p class="fw-bold">
-                    {{ $header->TglPengirim ?? '-' }}
-                </p>
+                    <p class="fw-bold mb-0">
+                        {{ $header->NamaExpeditor ?? 'BELUM ADA EXPEDITOR' }}
+                    </p>
 
-            {{-- CUSTOMER --}}
-            @elseif ($jenisACC == '')
+                    <p class="fw-bold">
+                        {{ \Carbon\Carbon::parse($header->TglKirim)->format('d-m-Y') }}
+                    </p>
 
-                {{-- DIKELUARKAN --}}
-                <p class="fw-bold mb-1">
-                    Dikeluarkan Oleh <i>Logistic Manager</i>
-                </p>
+                    <br>
 
-                <p class="fw-bold mb-0">
-                    {{ $header->NamaExpeditor ?? 'BELUM ADA EXPEDITOR' }}
-                </p>
+                    {{-- DIKIRIM --}}
+                    <p class="fw-bold mb-1">
+                        <i>Dikirim Oleh</i>
+                        {{ $header->PengirimNama ?? 'BELUM DIKIRIM' }}
+                    </p>
 
-                <p class="fw-bold">
-                    {{ \Carbon\Carbon::parse($header->TglKirim)->format('d-m-Y') }}
-                </p>
+                    <p class="fw-bold">
+                        {{ $header->TglPengirim ?? '-' }}
+                    </p>
 
-                <br>
+                    <br>
 
-                {{-- DIKIRIM --}}
-                <p class="fw-bold mb-1">
-                    <i>Dikirim Oleh</i>
-                    {{ $header->PengirimNama ?? 'BELUM DIKIRIM' }}
-                </p>
+                    {{-- DITERIMA --}}
+                    <p class="fw-bold mb-1">
+                        <i>Diterima Oleh</i>
+                        {{ $header->NamaCust ?? 'BELUM DITERIMA' }}
+                    </p>
 
-                <p class="fw-bold">
-                    {{ $header->TglPengirim ?? '-' }}
-                </p>
+                    <p class="fw-bold">
+                        {{ $header->TglApp ?? '-' }}
+                    </p>
+                @endif
 
-                <br>
-
-                {{-- DITERIMA --}}
-                <p class="fw-bold mb-1">
-                    <i>Diterima Oleh</i>
-                    {{ $header->NamaCust ?? 'BELUM DITERIMA' }}
-                </p>
-
-                <p class="fw-bold">
-                    {{ $header->TglApp ?? '-' }}
-                </p>
-
-            @endif
-
+            </div>
         </div>
-    </div>
 
-</div>
+    </div>
 
 </body>
-
