@@ -33,10 +33,6 @@ Route::post('/refresh-csrf', function () {
     ]);
 });
 
-Route::get('/DokumenSJ/preview/{idPengiriman}', [
-    SuratJalanPesananController::class,
-    'previewPdf'
-]);
 
 #region Auth
 //Route::get('/', [LoginController::class, 'index'])->name('login');
