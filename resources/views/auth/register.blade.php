@@ -187,7 +187,7 @@
                 @enderror
             </div>
 
-            <label for="NPWP">NPWP</label>
+            <label for="NPWP">NPWP Perusahaan</label>
             <div>
                 <input type="text" name="NPWP" id="npwp" inputmode="numeric" maxlength="16" required
                     value="{{ old('NPWP', $data['NPWP'] ?? '') }}">

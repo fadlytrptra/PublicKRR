@@ -17,8 +17,11 @@
         max-height: 80px;
     }
 </style>
-<div style="width: 16cm;height: 20.5cm;border: 1px solid black;padding: 10px;box-sizing: border-box;"
-    contenteditable="true">
+<div style="width: 16cm;height: 20.5cm;border: 1px solid black;padding: 10px;box-sizing: border-box;" contenteditable="true">
+    <div style="position:absolute; top:250px; left:130px; z-index:-1;">
+            <img src="{{ public_path('images/unverified.png') }}"
+                style="width:350px; opacity:0.20;">
+    </div>
     <h2>PT. KERTA RAJASA RAYA</h2>
     <h4>JL RAYA TROPODO No. 1 WARU - SIDOARJO - INDONESIA</h4>
     <h4>TELP (031) 8669595 (HUNTING)</h4>
@@ -121,24 +124,17 @@
 
                 <table
                     style="width:100%; text-align:center; border-bottom:1px solid black; border-collapse:collapse; font-size:14px; font-weight:bold;">
-
                     <tr>
-                        <td colspan="2">
+                        <td>
                             TANDA TERIMA <br>
-                            BARANG TERSEBUT TELAH KAMI TERIMA DALAM KEADAAN CUKUP DAN BAIK
+                            BARANG TERSEBUT TELAH MASUK DALAM PASCA KIRIM
                         </td>
                     </tr>
 
                     <tr>
                         <td style="width:50%; height:120px; vertical-align:bottom; padding-top:15px;">
                             @if ($ttdPengirim)
-                                <img src="{{ $ttCustomer }}" style="max-height:110px;">
-                            @endif
-                        </td>
-
-                        <td style="width:50%; height:120px; vertical-align:bottom; padding-top:15px;">
-                            @if ($ttCustomer)
-                                <img src="{{ $ttCustomer }}" style="max-height:110px;">
+                                <img src="{{ $barcodeGudang }}" style="max-height:110px;">
                             @endif
                         </td>
                     </tr>
@@ -146,10 +142,6 @@
                     <tr>
                         <td style="font-size:15px; font-weight:normal; padding-bottom:15px;">
                             {{ $namaExpeditor ?? '-' }}
-                        </td>
-
-                        <td style="font-size:15px; font-weight:normal; padding-bottom:15px;">
-                            {{ $namaCustomer ?? '-' }}
                         </td>
                     </tr>
 

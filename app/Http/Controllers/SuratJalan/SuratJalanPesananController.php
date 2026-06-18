@@ -609,34 +609,32 @@ class SuratJalanPesananController extends Controller
         // =====
         // EMAIL
         // =====
-        if ((int) $request->is_sesuai === 1) {
-            try {
-                $emails = DB::connection('ConnPublic')
-                    ->table('CustomerUserPublic as c')
-                    ->join('UserPublic as u', 'c.IdUser', '=', 'u.IdUser')
-                    ->where('c.IDCust', $data->IDCust)
-                    ->whereNotNull('u.Email')
-                    ->pluck('u.Email')
-                    ->unique()
-                    ->values()
-                    ->toArray();
+        try {
+            $emails = DB::connection('ConnPublic')
+                ->table('CustomerUserPublic as c')
+                ->join('UserPublic as u', 'c.IdUser', '=', 'u.IdUser')
+                ->where('c.IDCust', $data->IDCust)
+                ->whereNotNull('u.Email')
+                ->pluck('u.Email')
+                ->unique()
+                ->values()
+                ->toArray();
 
-                if (!empty($emails)) {
-                    $this->sendSuratJalanEmail(
-                        $data->IDPengiriman,
-                        $emails
-                    );
-                }
-
-            } catch (\Exception $e) {
-                Log::error('EMAIL ERROR', [
-                    'message' => $e->getMessage()
-                ]);
+            if (!empty($emails)) {
+                $this->sendSuratJalanEmail(
+                    $data->IDPengiriman,
+                    $emails
+                );
             }
+
+        } catch (\Exception $e) {
+            Log::error('EMAIL ERROR', [
+                'message' => $e->getMessage()
+            ]);
         }
 
         return response()->json([
-            'status' => 'APPROVED'
+            'status' => 'TERKIRIM'
         ]);
     }
 
@@ -784,6 +782,8 @@ class SuratJalanPesananController extends Controller
         $namaPengirim = null;
         $ttdPengirim = null;
 
+        $namaExpeditor = $items->NamaExpeditor;
+
         if (!empty($items->NamaSupir) || !empty($items->GbrACCSupir)) {
             $namaPengirim = $items->NamaSupir;
             $ttdPengirim = $barcodeSupir;
@@ -792,7 +792,11 @@ class SuratJalanPesananController extends Controller
             $ttdPengirim = $formatBase64Image($items->GbrACCSatpam);
         }
 
-        $pdf = Pdf::loadView('SuratJalan.SuratJalanPDF', [
+        $template = ((int)$items->ACCCustomer === 1)
+            ? 'SuratJalan.SuratJalanPDF'
+            : 'SuratJalan.SuratJalanPascaPDF';
+
+        $pdf = Pdf::loadView($template, [
             'items' => $items,
             'namaPengirim' => $namaPengirim,
             'ttdPengirim' => $ttdPengirim,
@@ -800,6 +804,7 @@ class SuratJalanPesananController extends Controller
             'barcodeSupir' => $barcodeSupir,
             'ttCustomer' => $ttCustomer,
             'namaCustomer' => $namaCustomer,
+            'namaExpeditor' => $namaExpeditor,
         ])->setPaper('A4', 'portrait');
 
         // Subject email
@@ -832,6 +837,79 @@ class SuratJalanPesananController extends Controller
                     ['mime' => 'application/pdf']
                 );
         });
+    }
+
+    public function previewPdf(Request $request, $idPengiriman)
+    {
+        $items = DB::connection('ConnPublic')
+            ->table('T_KirimSuratJalan')
+            ->where('IDPengiriman', $idPengiriman)
+            ->first();
+
+        if (!$items) {
+            abort(404, 'Data Surat Jalan tidak ditemukan');
+        }
+
+        $formatBase64Image = function ($base64) {
+            if (empty($base64)) {
+                return null;
+            }
+
+            $clean = trim(str_replace(["\r", "\n"], '', $base64));
+            $binary = base64_decode($clean);
+
+            if ($binary === false) {
+                return null;
+            }
+
+            $mime = 'image/png';
+
+            if (substr($binary, 0, 2) === "\xFF\xD8") {
+                $mime = 'image/jpeg';
+            }
+
+            return "data:$mime;base64," . $clean;
+        };
+
+        $barcodeGudang = $formatBase64Image($items->GbrACCGudang);
+        $barcodeSupir = $formatBase64Image($items->GbrACCSupir);
+        $ttCustomer = $formatBase64Image($items->GbrACCCustomer);
+
+        $namaCustomer = DB::connection('ConnPublic')
+            ->table('CustomerUserPublic as cup')
+            ->join('UserPublic as up', 'cup.IdUser', '=', 'up.IdUser')
+            ->where('cup.IDCust', $items->IDCust)
+            ->value('up.NamaUser') ?? '-';
+
+        $namaExpeditor = $items->NamaExpeditor;
+
+        $namaPengirim = null;
+        $ttdPengirim = null;
+
+        if (!empty($items->NamaSupir) || !empty($items->GbrACCSupir)) {
+            $namaPengirim = $items->NamaSupir;
+            $ttdPengirim = $barcodeSupir;
+        } elseif (!empty($items->NamaSatpam) || !empty($items->GbrACCSatpam)) {
+            $namaPengirim = $items->NamaSatpam;
+            $ttdPengirim = $formatBase64Image($items->GbrACCSatpam);
+        }
+
+        $template = ((int)$items->ACCCustomer === 1)
+            ? 'SuratJalan.SuratJalanPDF'
+            : 'SuratJalan.SuratJalanPascaPDF';
+
+        $pdf = Pdf::loadView($template, [
+            'items' => $items,
+            'namaPengirim' => $namaPengirim,
+            'ttdPengirim' => $ttdPengirim,
+            'barcodeGudang' => $barcodeGudang,
+            'barcodeSupir' => $barcodeSupir,
+            'ttCustomer' => $ttCustomer,
+            'namaCustomer' => $namaCustomer,
+            'namaExpeditor' => $namaExpeditor,
+        ])->setPaper('A4', 'portrait');
+
+        return $pdf->stream("SuratJalan-{$idPengiriman}.pdf");
     }
 
     public function edit($id)

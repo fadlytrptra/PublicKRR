@@ -114,7 +114,7 @@ jQuery(function ($) {
         } else {
             // PASCA KIRIM
             $('#rowStatus').show();
-            $('#statusApproval').text('Ditolak');
+            $('#statusApproval').text('Requested');
 
             $('#labelApprovedBy').text('Email:');
             $('#labelApprovedAt').text('Tanggal:');
@@ -431,7 +431,6 @@ jQuery(function ($) {
             let contactValue = $('#contactSelect').val();
             $('#approvedEmail').text(contactValue);
 
-
             $('#approvedAt').text(formatDateTime(new Date()));
 
             $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
@@ -542,7 +541,7 @@ jQuery(function ($) {
                 alert('Data disimpan sebagai PASCA KIRIM');
 
                 $('#rowStatus').show();
-                $('#statusApproval').text('Ditolak');
+                $('#statusApproval').text('Requested');
 
                 $('#labelApprovedBy').text('Email:');
                 $('#labelApprovedAt').text('Tanggal:');
