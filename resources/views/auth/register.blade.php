@@ -224,9 +224,9 @@
             <div style="margin-bottom: 15px;">
                 <div style="display:flex; gap:20px; margin-top:8px;">
                     <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-                        <input type="radio" name="otp_method" value="email"
-                            {{ old('otp_method', 'email') == 'email' ? 'checked' : '' }}>
-                        Email
+                        <input type="radio" name="otp_method" value="whatsapp"
+                            {{ old('otp_method', 'whatsapp') == 'whatsapp' ? 'checked' : '' }}>
+                        WhatsApp
                     </label>
 
                     <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
@@ -274,7 +274,7 @@
 
                 @csrf
 
-                <input type="hidden" name="email" value="{{ session('email') }}">
+                <input type="hidden" name="whatsapp" value="{{ session('whatsapp') }}">
 
                 <label>
                     Masukkan OTP
@@ -291,11 +291,8 @@
                 <button type="submit">
                     Verifikasi
                 </button>
-
             </form>
-
         </div>
-
     @endif
 
 

@@ -138,7 +138,7 @@ class LoginController extends Controller
             'NamaPerusahaan' => 'required',
             'AlamatPerusahaan' => 'required',
             'NoHP' => ['required', 'regex:/^628[0-9]{8,13}$/'],
-            'otp_method' => 'required|in:email,sms',
+            'otp_method' => 'required|in:whatsapp,sms',
             'Password' => [
                 'required',
                 'min:8',
@@ -154,14 +154,6 @@ class LoginController extends Controller
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
-
-        // $input = 'register_otp_' . $request->ip();
-        // if (Cache::has($input)) {
-        //     return back()->withErrors([
-        //         'error' =>
-        //             'Anda sudah mengirim OTP. Coba lagi dalam 5 menit.'
-        //     ])->withInput();
-        // }
 
         $now = Carbon::now('Asia/Jakarta');
 
@@ -235,24 +227,51 @@ class LoginController extends Controller
         ]);
 
         // pilih metode kirim otp
-        if ($request->otp_method === 'email') {
-            // Mail::mailer('MailNoReply')->raw(
-            //     "Kode OTP verifikasi akun Anda: $otp",
-            //     function ($message) use ($request) {
-            //         $message->to($request->Email)
-            //             ->from(
-            //                 env('MAILNOREPLY_FROM_ADDRESS'),
-            //                 env('MAILNOREPLY_FROM_NAME')
-            //             )
-            //             ->subject('OTP Verifikasi Akun');
-            //     }
-            // );
-            Mail::mailer('MailNoReply')
-                ->to($request->Email)
-                ->send(new OTPMail($request->NamaUser, $otp, 'Registrasi User'));
+        // if ($request->otp_method === 'email') {
+        //     // Mail::mailer('MailNoReply')->raw(
+        //     //     "Kode OTP verifikasi akun Anda: $otp",
+        //     //     function ($message) use ($request) {
+        //     //         $message->to($request->Email)
+        //     //             ->from(
+        //     //                 env('MAILNOREPLY_FROM_ADDRESS'),
+        //     //                 env('MAILNOREPLY_FROM_NAME')
+        //     //             )
+        //     //             ->subject('OTP Verifikasi Akun');
+        //     //     }
+        //     // );
+        //     Mail::mailer('MailNoReply')
+        //         ->to($request->Email)
+        //         ->send(new OTPMail($request->NamaUser, $otp, 'Registrasi User'));
 
-            $destination = $request->Email;
-            $method = 'Email';
+        //     $destination = $request->Email;
+        //     $method = 'Email';
+        // }
+
+        if ($request->otp_method === 'whatsapp') {
+            $response = Http::withHeaders([
+                'Authorization' => env('WA_TOKEN')
+            ])->post('https://api.fonnte.com/send', [
+                'target' => $nohp,
+                'message' =>
+                    "*OTP VERIFIKASI AKUN*\n\n" .
+                    "Halo {$request->NamaUser},\n\n" .
+                    "Kode OTP Anda adalah:\n\n" .
+                    "*{$otp}*\n\n" .
+                    "OTP berlaku selama 5 menit.\n" .
+                    "Jangan berikan kode ini kepada siapapun.\n\n"
+            ]);
+
+            if (!$response->successful()) {
+                \Log::error('Fonnte Error: ' . $response->body());
+
+                return back()->withErrors([
+                    'error' => 'Gagal mengirim OTP WhatsApp'
+                ])->withInput();
+            }
+
+            $destination = $nohp;
+            $method = 'WhatsApp';
+
         } else {
             $response = Http::withHeaders([
                 'Authorization' => 'App ' . env('SMSVIRO_API_KEY'),
@@ -288,12 +307,6 @@ class LoginController extends Controller
             $destination = $nohp;
             $method = 'SMS';
         }
-
-        // Cache::put(
-        //     $input,
-        //     true,
-        //     now()->addMinutes(5)
-        // );
 
         return back()
             ->with('success', "OTP telah dikirim melalui {$method} ke {$destination}")

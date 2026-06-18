@@ -250,7 +250,7 @@ class SuratJalanPesananController extends Controller
             ->table('CustomerUserPublic as c')
             ->join('UserPublic as u', 'c.IdUser', '=', 'u.IdUser')
             ->where('c.IDCust', $idCust)
-            ->select('u.Email', 'u.NoHP as Phone', 'u.NamaUser')
+            ->select('u.NoHP as Phone', 'u.NamaUser')
             ->distinct()
             ->get();
 
@@ -263,7 +263,7 @@ class SuratJalanPesananController extends Controller
             'id_pengiriman' => 'required',
             'email' => 'nullable|email|required_without:phone',
             'phone' => ['nullable', 'required_without:email', 'regex:/^628[0-9]{8,13}$/'],
-            'otp_method' => 'required|in:email,phone',
+            'otp_method' => 'required|in:whatsapp,sms',
         ], [
             'phone.regex' =>
                 'Nomor HP harus menggunakan format 628xxxxxxxxxx',
@@ -317,20 +317,31 @@ class SuratJalanPesananController extends Controller
             'CreatedAt' => $now
         ]);
 
-        if ($request->otp_method === 'email') {
-            // kirim email
-            // Mail::mailer('MailNoReply')->raw(
-            //     "Kode OTP Approval Surat Jalan Anda: $otp",
-            //     function ($message) use ($request) {
-            //         $message->to($request->email)
-            //             ->subject('OTP Approval Surat Jalan');
-            //     }
-            // );
-            Mail::mailer('MailNoReply')
-                ->to($request->email)
-                ->send(new OTPMail($request->email, $otp, 'Approval Surat Jalan'));
+        // if ($request->otp_method === 'email') {
+        //     // kirim email
+        //     // Mail::mailer('MailNoReply')->raw(
+        //     //     "Kode OTP Approval Surat Jalan Anda: $otp",
+        //     //     function ($message) use ($request) {
+        //     //         $message->to($request->email)
+        //     //             ->subject('OTP Approval Surat Jalan');
+        //     //     }
+        //     // );
+        //     Mail::mailer('MailNoReply')
+        //         ->to($request->email)
+        //         ->send(new OTPMail($request->email, $otp, 'Approval Surat Jalan'));
 
-        } elseif ($request->otp_method === 'phone') {
+        if ($request->otp_method === 'whatsapp') {
+            $response = Http::withHeaders([
+                'Authorization' => env('WA_TOKEN')
+            ])->post('https://api.fonnte.com/send', [
+                'target' => $phone,
+                'message' =>
+                    "*OTP APPROVAL SURAT JALAN*\n\n" .
+                    "Kode OTP Anda:\n\n" .
+                    "*{$otp}*\n\n" .
+                    "OTP berlaku selama 5 menit."
+            ]);
+        } elseif ($request->otp_method === 'sms') {
             // kirim sms
             $response = Http::withHeaders([
                 'Authorization' => 'App ' . env('SMSVIRO_API_KEY'),
@@ -409,23 +420,7 @@ class SuratJalanPesananController extends Controller
 
             $otp = DB::table('T_SuratJalanOTP')
                 ->where('IdSuratJalan', $idSuratJalan)
-
-                // jika email dipilih
-                ->when(
-                    $request->filled('email'),
-                    function ($q) use ($request) {
-                        $q->where('Email', $request->email);
-                    }
-                )
-
-                // jika phone dipilih
-                ->when(
-                    $phone,
-                    function ($q) use ($phone) {
-                        $q->where('Phone', $phone);
-                    }
-                )
-
+                ->where('Phone', $phone)
                 ->where('OTP', $request->otp)
                 ->where('IsUsed', 0)
                 ->where('ExpiredAt', '>=', $now)

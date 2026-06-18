@@ -56,8 +56,8 @@
                                     <select id="contactType"
                                         class="form-select mb-2">
                                         <option value="">-- Pilih Metode OTP --</option>
-                                        <option value="email">Email</option>
-                                        <option value="phone">No HP</option>
+                                        <option value="whatsapp">WhatsApp</option>
+                                        <option value="sms">SMS</option>
                                     </select>
 
                                     <select id="contactSelect"

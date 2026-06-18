@@ -259,16 +259,16 @@ jQuery(function ($) {
             '<option value="">-- Pilih Kontak --</option>';
 
         contacts.forEach(item => {
-            if (type === 'email' && item.Email) {
+            if (type === 'whatsapp' && item.Phone) {
                 html += `
-                    <option value="${item.Email}">
+                    <option value="${item.Phone}">
                         ${item.NamaUser}
-                        - ${item.Email}
+                        - ${item.Phone}
                     </option>
                 `;
             }
 
-            if (type === 'phone' && item.Phone) {
+            if (type === 'sms' && item.Phone) {
                 html += `
                     <option value="${item.Phone}">
                         ${item.NamaUser}
@@ -302,14 +302,10 @@ jQuery(function ($) {
 
         let payload = {
             id_pengiriman: idPengiriman,
-            otp_method: type // <-- TAMBAHKAN INI
+            otp_method: type
         };
 
-        if (type === 'email') {
-            payload.email = value;
-        } else {
-            payload.phone = value;
-        }
+        payload.phone = value;
 
         $.post('/SuratJalan/send-otp', payload)
 
@@ -353,11 +349,7 @@ jQuery(function ($) {
             otp: otp
         };
 
-        if (type === 'email') {
-            payload.email = value;
-        } else {
-            payload.phone = value;
-        }
+        payload.phone = value;
 
         let $btn = $('#btnVerifyOtp');
 
