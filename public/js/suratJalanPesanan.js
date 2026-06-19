@@ -124,7 +124,7 @@ jQuery(function ($) {
             $('#rowStatus').show();
             $('#statusApproval').text('Requested');
 
-            $('#labelApprovedBy').text('Email:');
+            $('#labelApprovedBy').text('No HP:');
             $('#labelApprovedAt').text('Tanggal:');
 
             $('#approvedEmail').text(approvedBy);
@@ -597,7 +597,7 @@ jQuery(function ($) {
                 $('#rowStatus').show();
                 $('#statusApproval').text('Requested');
 
-                $('#labelApprovedBy').text('Email:');
+                $('#labelApprovedBy').text('No HP:');
                 $('#labelApprovedAt').text('Tanggal:');
 
                 $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
