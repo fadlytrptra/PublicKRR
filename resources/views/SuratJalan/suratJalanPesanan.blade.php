@@ -112,8 +112,6 @@
                                 </button>
                             </div>
 
-                            <button id="btnFoto">Upload Foto</button>
-
                         </div>
                     </div>
 
@@ -170,6 +168,43 @@
 
                     <button id="btnSubmitQty" class="btn btn-primary w-100">
                         Submit
+                    </button>
+                </div>
+
+                <!-- STEP 3 -->
+                <div id="stepFoto" style="display:none;">
+                    <hr>
+                    <p>
+                        <strong>Upload Foto Barang</strong>
+                    </p>
+
+                    <small class="text-muted">
+                        Maksimal 25 foto dan ukuran maksimal 2 MB per foto
+                    </small>
+
+                    <div class="mt-3">
+                        <input type="file"
+                            id="fileFoto"
+                            class="form-control"
+                            accept="image/*"
+                            multiple
+                            capture="environment">
+                    </div>
+
+                    <div class="mt-3">
+                        <span id="jumlahFotoDipilih">
+                            0 foto dipilih
+                        </span>
+                    </div>
+
+                    <div id="fotoPreview"
+                        class="d-flex flex-wrap gap-2 mt-3">
+                    </div>
+
+                    <button id="btnUploadFoto"
+                            type="button"
+                            class="btn btn-primary w-100 mt-3">
+                        Upload Foto
                     </button>
                 </div>
 

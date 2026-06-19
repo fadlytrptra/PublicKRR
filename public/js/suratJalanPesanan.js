@@ -3,6 +3,7 @@ jQuery(function ($) {
 //#region Variables
     let idPengiriman = window.appData?.idPengiriman;
     let noPo = window.appData?.noPo;
+    let selectedFiles = [];
 
     if (!idPengiriman) {
         console.error("ID Pengiriman tidak ditemukan");
@@ -175,6 +176,43 @@ jQuery(function ($) {
         let seconds = String(date.getSeconds()).padStart(2, '0');
 
         return `${day}/${month}/${year}, ${hours}:${minutes}:${seconds}`;
+    }
+
+    function uploadFoto(files)
+    {
+        let formData = new FormData();
+
+        formData.append(
+            'id_surat_jalan',
+            window.idSuratJalan
+        );
+
+        for(let file of files){
+            formData.append(
+                'pictures[]',
+                file
+            );
+        }
+
+        $.ajax({
+            url: '/SuratJalan/upload-foto',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function(res){
+                alert(res.message);
+
+            },
+
+            error: function(xhr){
+                alert(
+                    xhr.responseJSON?.message ??
+                    'Upload foto gagal'
+                );
+            }
+        });
     }
 
 //#endregion
@@ -382,6 +420,7 @@ jQuery(function ($) {
 
                 $('#stepKonfirmasi').show();
                 $('#stepQty').hide();
+                $('#stepFoto').hide();
                 $('#qtyInput').val('');
 
                 $('#modalKonfirmasi').modal('show');
@@ -412,10 +451,14 @@ jQuery(function ($) {
             is_sesuai: 1,
             email: $('#emailSelect').val()
         })
+
         .done(function () {
             alert('Approved & Email berhasil dikirim');
 
-            $('#modalKonfirmasi').modal('hide');
+            //upload foto
+            $('#stepKonfirmasi').hide();
+            $('#stepQty').hide();
+            $('#stepFoto').show();
 
             $('#btnOpenOtp').hide();
             $('#otpSection').hide();
@@ -508,7 +551,9 @@ jQuery(function ($) {
         })
         .done(function () {
 
-            $('#modalKonfirmasi').modal('hide');
+            $('#stepKonfirmasi').hide();
+            $('#stepQty').hide();
+            $('#stepFoto').show();
 
             $('#btnOpenOtp').hide();
             $('#otpSection').hide();
@@ -591,6 +636,101 @@ jQuery(function ($) {
             $('#btnResendEmail').prop('disabled', false).text('Resend Email');
         });
     });
+
+    $('#fileFoto').on('change', function () {
+        selectedFiles = [...this.files];
+        let preview = $('#fotoPreview');
+
+        preview.empty();
+        $('#jumlahFotoDipilih').text(
+            selectedFiles.length + ' foto dipilih'
+        );
+
+        selectedFiles.forEach(file => {
+            if (file.size > 2 * 1024 * 1024) {
+                alert(
+                    file.name +
+                    ' melebihi 2 MB'
+                );
+                return;
+            }
+
+            let reader = new FileReader();
+            reader.onload = function (e) {
+
+                preview.append(`
+                    <img
+                        src="${e.target.result}"
+                        style="
+                            width:90px;
+                            height:90px;
+                            object-fit:cover;
+                            border:1px solid #ddd;
+                            border-radius:6px;
+                        ">
+                `);
+            };
+            reader.readAsDataURL(file);
+        });
+
+    });
+
+
+    //upload foto
+    $('#btnUploadFoto').click(function () {
+        if (selectedFiles.length === 0) {
+            alert('Pilih foto terlebih dahulu');
+            return;
+        }
+
+        let formData = new FormData();
+        formData.append(
+            'id_surat_jalan',
+            window.idSuratJalan
+        );
+
+        selectedFiles.forEach(file => {
+            formData.append(
+                'pictures[]',
+                file
+            );
+        });
+
+        let $btn = $(this);
+
+        $btn
+            .prop('disabled', true)
+            .text('Uploading...');
+
+        $.ajax({
+            url: '/SuratJalan/upload-foto',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function (res) {
+                alert(res.message);
+                $('#modalKonfirmasi').modal('hide');
+                location.reload();
+            },
+
+            error: function (xhr) {
+                alert(
+                    xhr.responseJSON?.message ??
+                    'Upload gagal'
+                );
+            },
+
+            complete: function () {
+                $btn
+                    .prop('disabled', false)
+                    .text('Upload Foto');
+            }
+        });
+    });
+
+
     //#endregion
 
 

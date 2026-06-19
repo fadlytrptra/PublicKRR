@@ -554,7 +554,6 @@ class SuratJalanPesananController extends Controller
                     ->where('IsUsed', 0)
                     ->update([
                         'IsUsed' => 1,
-                        'ApprovedAt' => $now
                     ]);
             }
 
@@ -844,6 +843,174 @@ class SuratJalanPesananController extends Controller
                 );
         });
     }
+
+    public function uploadFoto(Request $request)
+    {
+        $request->validate([
+            'id_surat_jalan' => 'required|integer',
+            'pictures' => 'required|array|min:1',
+            'pictures.*' => 'required|image|mimes:jpg,jpeg,png|max:2048'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $idSuratJalan = (int)$request->id_surat_jalan;
+
+            if (!$idSuratJalan) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Surat Jalan tidak ditemukan'
+                ], 404);
+            }
+
+           $suratJalan = DB::connection('ConnPublic')
+                ->table('T_KirimSuratJalan')
+                ->where('IdSuratJalan', $idSuratJalan)
+                ->first();
+
+
+
+            if (!$suratJalan) {
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Surat Jalan tidak ditemukan'
+                ], 404);
+            }
+
+
+            if ($suratJalan->ACCCustomer === null) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Silakan lakukan Confirm Approval terlebih dahulu'
+                ], 400);
+            }
+
+            $attachment = DB::connection('ConnPublic')
+                ->table('T_Attachment')
+                ->where('IdSuratJalan', $idSuratJalan)
+                ->lockForUpdate()
+                ->first();
+
+            // ==========================
+            // JIKA BELUM ADA RECORD
+            // ==========================
+            if (!$attachment) {
+                DB::connection('ConnPublic')
+                    ->table('T_Attachment')
+                    ->insert([
+                        'IdSuratJalan' => $idSuratJalan
+                    ]);
+
+                $attachment = DB::connection('ConnPublic')
+                    ->table('T_Attachment')
+                    ->where('IdSuratJalan', $idSuratJalan)
+                    ->lockForUpdate()
+                    ->first();
+            }
+
+            // ==========================
+            // CARI SLOT KOSONG
+            // ==========================
+            $emptyColumns = [];
+            for ($i = 1; $i <= 25; $i++) {
+                $column = 'picture' . $i;
+
+                if (empty($attachment->$column)) {
+                    $emptyColumns[] = $column;
+                }
+            }
+
+            // ==========================
+            // SUDAH PENUH
+            // ==========================
+            if (count($emptyColumns) === 0) {
+                DB::rollBack();
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Maksimal 25 foto telah tercapai'
+                ], 400);
+            }
+
+            $uploadedFiles = $request->file('pictures');
+
+            // ==========================
+            // CEK SISA SLOT
+            // ==========================
+            if (count($uploadedFiles) > count($emptyColumns)) {
+
+                DB::rollBack();
+
+                return response()->json([
+                    'success' => false,
+                    'message' =>
+                        'Sisa slot hanya ' .
+                        count($emptyColumns) .
+                        ' foto'
+                ], 400);
+            }
+
+            $updateData = [];
+
+            foreach ($uploadedFiles as $index => $file) {
+                $column = $emptyColumns[$index];
+                $base64 = base64_encode(
+                    file_get_contents(
+                        $file->getRealPath()
+                    )
+                );
+                $updateData[$column] = $base64;
+            }
+
+            DB::connection('ConnPublic')
+                ->table('T_Attachment')
+                ->where('IdSuratJalan', $idSuratJalan)
+                ->update($updateData);
+
+            DB::commit();
+
+            $attachmentBaru = DB::connection('ConnPublic')
+                ->table('T_Attachment')
+                ->where('IdSuratJalan', $idSuratJalan)
+                ->first();
+
+            $jumlahFoto = 0;
+
+            for ($i = 1; $i <= 25; $i++) {
+                $column = 'picture' . $i;
+                if (!empty($attachmentBaru->$column)) {
+                    $jumlahFoto++;
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Foto berhasil diupload',
+                'jumlah_foto' => $jumlahFoto,
+                'sisa_slot' => 25 - $jumlahFoto
+            ]);
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            Log::error('UPLOAD FOTO ERROR', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal upload foto',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 
 
     public function edit($id)
