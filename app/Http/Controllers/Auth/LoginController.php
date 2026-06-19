@@ -247,18 +247,16 @@ class LoginController extends Controller
         //     $method = 'Email';
         // }
 
+        $message =
+            "Kode OTP Verifikasi akun Anda: {$otp}\n\n" .
+            "OTP berlaku selama 5 menit.";
+
         if ($request->otp_method === 'whatsapp') {
             $response = Http::withHeaders([
                 'Authorization' => env('WA_TOKEN')
             ])->post('https://api.fonnte.com/send', [
                 'target' => $nohp,
-                'message' =>
-                    "*OTP VERIFIKASI AKUN*\n\n" .
-                    "Halo {$request->NamaUser},\n\n" .
-                    "Kode OTP Anda adalah:\n\n" .
-                    "*{$otp}*\n\n" .
-                    "OTP berlaku selama 5 menit.\n" .
-                    "Jangan berikan kode ini kepada siapapun.\n\n"
+                'message' => $message
             ]);
 
             if (!$response->successful()) {
@@ -281,7 +279,7 @@ class LoginController extends Controller
                     [
                         'from' => env('SMSVIRO_SENDER_ID'),
                         'to' => $nohp,
-                        'text' => "Kode OTP verifikasi akun Anda: $otp"
+                        'text' => $message
                     ]
                 );
 

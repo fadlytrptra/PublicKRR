@@ -257,9 +257,7 @@
 
     {{-- OTP FORM TERPISAH --}}
     @if (session('showOtp'))
-
         <div class="container">
-
             <hr>
 
             <h3>Verifikasi OTP</h3>

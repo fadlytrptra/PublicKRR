@@ -62,7 +62,7 @@
                         <td>Tanggal Terima</td>
                         <td>: </td>
                         <td>
-                            {{ \Carbon\Carbon::parse($items->TglAcc)->locale('id')->translatedFormat('d-F-Y') }}
+                            {{ \Carbon\Carbon::parse($items->TglAcc)->locale('id')->translatedFormat('d F Y, H:i:s') }}
                         </td>
                     </tr>
                 </table>
@@ -114,41 +114,61 @@
         <h5>Keterangan:</h5>
         <p>{{ !empty(trim($items->Ket ?? '')) ? $items->Ket : '-' }}</p>
     </div>
+
     <table style="width:100%; margin-top:10px;" cellpadding="0" cellspacing="0">
         <tr>
-
             <td style="width:55%; vertical-align:top; padding-left:10px;">
 
                 <table
-                    style="width:100%; text-align:center; border-bottom:1px solid black; border-collapse:collapse; font-size:14px; font-weight:bold;">
+                    style="width:100%; border-bottom:1px solid black; border-collapse:collapse;">
 
+                    {{-- Header --}}
                     <tr>
-                        <td colspan="2">
+                        <td style="
+                            width:30%;
+                            text-align:center;
+                            font-size:14px;
+                            font-weight:bold;
+                            vertical-align:top;
+                            padding-top:28px;
+                        ">
+                            PENGIRIM
+                        </td>
+
+                        <td style="
+                            width:70%;
+                            text-align:center;
+                            font-size:14px;
+                            font-weight:bold;
+                            padding-top:10px;
+                        ">
                             TANDA TERIMA <br>
                             BARANG TERSEBUT TELAH KAMI TERIMA DALAM KEADAAN CUKUP DAN BAIK
                         </td>
                     </tr>
 
+                    {{-- QR --}}
                     <tr>
-                        <td style="width:50%; height:120px; vertical-align:bottom; padding-top:15px;">
-                            @if ($ttdPengirim)
+                        <td style="height:120px; text-align:center; vertical-align:bottom; padding-top:15px;">
+                            @if ($barcodeGudang)
                                 <img src="{{ $ttCustomer }}" style="max-height:110px;">
                             @endif
                         </td>
 
-                        <td style="width:50%; height:120px; vertical-align:bottom; padding-top:15px;">
+                        <td style="height:120px; text-align:center; vertical-align:bottom; padding-top:15px;">
                             @if ($ttCustomer)
                                 <img src="{{ $ttCustomer }}" style="max-height:110px;">
                             @endif
                         </td>
                     </tr>
 
+                    {{-- Nama --}}
                     <tr>
-                        <td style="font-size:15px; font-weight:normal; padding-bottom:15px;">
-                            {{ $namaExpeditor ?? '-' }}
+                        <td style="text-align:center; font-size:15px; font-weight:normal; padding-bottom:15px;">
+                            Ekspeditor
                         </td>
 
-                        <td style="font-size:15px; font-weight:normal; padding-bottom:15px;">
+                        <td style="text-align:center; font-size:15px; font-weight:normal; padding-bottom:15px;">
                             {{ $namaCustomer ?? '-' }}
                         </td>
                     </tr>

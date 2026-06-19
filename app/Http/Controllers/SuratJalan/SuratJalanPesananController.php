@@ -330,16 +330,16 @@ class SuratJalanPesananController extends Controller
         //         ->to($request->email)
         //         ->send(new OTPMail($request->email, $otp, 'Approval Surat Jalan'));
 
+        $message =
+            "Kode OTP Approval Surat Jalan Anda: {$otp}\n\n" .
+            "OTP berlaku selama 5 menit.";
+
         if ($request->otp_method === 'whatsapp') {
             $response = Http::withHeaders([
                 'Authorization' => env('WA_TOKEN')
             ])->post('https://api.fonnte.com/send', [
                 'target' => $phone,
-                'message' =>
-                    "*OTP APPROVAL SURAT JALAN*\n\n" .
-                    "Kode OTP Anda:\n\n" .
-                    "*{$otp}*\n\n" .
-                    "OTP berlaku selama 5 menit."
+                'message' => $message
             ]);
         } elseif ($request->otp_method === 'sms') {
             // kirim sms
@@ -351,7 +351,7 @@ class SuratJalanPesananController extends Controller
                     [
                         'from' => env('SMSVIRO_SENDER_ID'),
                         'to' => $phone,
-                        'text' => "Kode OTP Approval Surat Jalan Anda: $otp"
+                        'text' => $message
                     ]
                 );
 
@@ -553,7 +553,8 @@ class SuratJalanPesananController extends Controller
                     ->where('Id', $request->otp_id)
                     ->where('IsUsed', 0)
                     ->update([
-                        'IsUsed' => 1
+                        'IsUsed' => 1,
+                        'ApprovedAt' => $now
                     ]);
             }
 
@@ -768,11 +769,21 @@ class SuratJalanPesananController extends Controller
         $barcodeSupir = $formatBase64Image($items->GbrACCSupir);
         $ttCustomer = $formatBase64Image($items->GbrACCCustomer);
 
-        $namaCustomer = DB::connection('ConnPublic')
-            ->table('CustomerUserPublic as cup')
-            ->join('UserPublic as up', 'cup.IdUser', '=', 'up.IdUser')
-            ->where('cup.IDCust', $items->IDCust)
-            ->value('up.NamaUser') ?? '-';
+        $otp = DB::table('T_SuratJalanOTP')
+            ->where('IdSuratJalan', $items->IdSuratJalan)
+            ->whereNotNull('ApprovedAt')
+            ->orderByDesc('ApprovedAt')
+            ->first();
+
+        $namaCustomer = '-';
+        if ($otp && !empty($otp->Phone)) {
+            $phone = preg_replace('/[^0-9]/', '', $otp->Phone);
+
+            $namaCustomer = DB::connection('ConnPublic')
+                ->table('UserPublic')
+                ->where('NoHP', $phone)
+                ->value('NamaUser') ?? '-';
+        }
 
         $namaPengirim = null;
         $ttdPengirim = null;
@@ -809,7 +820,7 @@ class SuratJalanPesananController extends Controller
             $subject .= " - RESEND KE-{$resendCount}";
         }
 
-        Mail::mailer('MailSales')->send([], [], function ($message) use ($emails, $idPengiriman, $pdf, $subject, $resendCount) {
+        Mail::mailer('MailShipment')->send([], [], function ($message) use ($emails, $idPengiriman, $pdf, $subject, $resendCount) {
 
             $body = "
                 Berikut adalah Surat Jalan dengan nomor <b>{$idPengiriman}</b>.<br>
@@ -833,6 +844,7 @@ class SuratJalanPesananController extends Controller
                 );
         });
     }
+
 
     public function edit($id)
     {

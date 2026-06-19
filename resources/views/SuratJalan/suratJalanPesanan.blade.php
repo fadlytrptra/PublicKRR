@@ -112,6 +112,8 @@
                                 </button>
                             </div>
 
+                            <button id="btnFoto">Upload Foto</button>
+
                         </div>
                     </div>
 

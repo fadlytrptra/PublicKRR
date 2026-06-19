@@ -261,18 +261,22 @@ jQuery(function ($) {
         contacts.forEach(item => {
             if (type === 'whatsapp' && item.Phone) {
                 html += `
-                    <option value="${item.Phone}">
-                        ${item.NamaUser}
-                        - ${item.Phone}
+                    <option
+                        value="${item.Phone}"
+                        data-userid="${item.IdUser}"
+                        data-nama="${item.NamaUser}">
+                        ${item.NamaUser} - ${item.Phone}
                     </option>
                 `;
             }
 
             if (type === 'sms' && item.Phone) {
                 html += `
-                    <option value="${item.Phone}">
-                        ${item.NamaUser}
-                        - ${item.Phone}
+                    <option
+                        value="${item.Phone}"
+                        data-userid="${item.IdUser}"
+                        data-nama="${item.NamaUser}">
+                        ${item.NamaUser} - ${item.Phone}
                     </option>
                 `;
             }
@@ -285,6 +289,7 @@ jQuery(function ($) {
     $('#btnSendOtp').click(function () {
         let type = $('#contactType').val();
         let value = $('#contactSelect').val();
+        let selected = $('#contactSelect option:selected');
 
         if (!type) {
             alert('Pilih metode OTP');
@@ -302,7 +307,9 @@ jQuery(function ($) {
 
         let payload = {
             id_pengiriman: idPengiriman,
-            otp_method: type
+            otp_method: type,
+            id_user: selected.data('userid'),
+            phone: value
         };
 
         payload.phone = value;
@@ -333,6 +340,7 @@ jQuery(function ($) {
         let type = $('#contactType').val();
         let value = $('#contactSelect').val();
         let otp = $('#otpInput').val();
+        let selected = $('#contactSelect option:selected');
 
         if (!value) {
             alert('Pilih kontak terlebih dahulu');
@@ -346,7 +354,9 @@ jQuery(function ($) {
 
         let payload = {
             id_pengiriman: idPengiriman,
-            otp: otp
+            otp: otp,
+            id_user: selected.data('userid'),
+            phone: value
         };
 
         payload.phone = value;

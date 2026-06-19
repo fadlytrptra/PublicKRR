@@ -107,6 +107,21 @@ return [
                 'name' => env('MAILNOREPLY_FROM_NAME'),
             ],
         ],
+
+        'MailShipment' => [
+            'transport' => 'smtp',
+            'host' => env('MAILSHIPMENT_HOST', 'smtp.mailgun.org'),
+            'port' => env('MAILSHIPMENT_PORT', 587),
+            'encryption' => env('MAILSHIPMENT_ENCRYPTION', 'tls'),
+            'username' => env('MAILSHIPMENT_USERNAME'),
+            'password' => env('MAILSHIPMENT_PASSWORD'),
+            'timeout' => null,
+            'auth_mode' => null,
+            'from' => [
+                'address' => env('MAILSHIPMENT_FROM_ADDRESS'),
+                'name' => env('MAILSHIPMENT_FROM_NAME'),
+            ],
+        ],
     ],
 
     /*
