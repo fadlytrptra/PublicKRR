@@ -768,11 +768,23 @@ class SuratJalanPesananController extends Controller
         $barcodeSupir = $formatBase64Image($items->GbrACCSupir);
         $ttCustomer = $formatBase64Image($items->GbrACCCustomer);
 
+        // $otp = DB::table('T_SuratJalanOTP')
+        //     ->where('IdSuratJalan', $items->IdSuratJalan)
+        //     ->whereNotNull('ApprovedAt')
+        //     ->orderByDesc('ApprovedAt')
+        //     ->first();
+
         $otp = DB::table('T_SuratJalanOTP')
             ->where('IdSuratJalan', $items->IdSuratJalan)
-            ->whereNotNull('ApprovedAt')
-            ->orderByDesc('ApprovedAt')
+            ->where('IsUsed', 1)
+            ->latest('CreatedAt')
             ->first();
+
+        $tanggalCustomer = null;
+
+        if ($otp) {
+            $tanggalCustomer = $otp->ApprovedAt ?? $otp->CreatedAt;
+        }
 
         $namaCustomer = '-';
         if ($otp && !empty($otp->Phone)) {
@@ -809,6 +821,7 @@ class SuratJalanPesananController extends Controller
             'barcodeSupir' => $barcodeSupir,
             'ttCustomer' => $ttCustomer,
             'namaCustomer' => $namaCustomer,
+            'tanggalCustomer' => $tanggalCustomer,
             'namaExpeditor' => $namaExpeditor,
         ])->setPaper('A4', 'portrait');
 

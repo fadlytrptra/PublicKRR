@@ -234,7 +234,6 @@
 
 <div id="cameraModal" class="camera-modal">
     <div class="camera-box">
-
         <video
             id="cameraVideo"
             autoplay
