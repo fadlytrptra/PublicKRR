@@ -174,6 +174,7 @@
                 <!-- STEP 3 -->
                 <div id="stepFoto" style="display:none;">
                     <hr>
+
                     <p>
                         <strong>Upload Foto Barang</strong>
                     </p>
@@ -187,9 +188,24 @@
                             id="fileFoto"
                             class="form-control"
                             accept="image/*"
-                            multiple
-                            capture="environment">
+                            multiple>
                     </div>
+
+                    <div class="mt-2">
+                        <button
+                            type="button"
+                            id="btnCameraFoto"
+                            class="btn btn-success">
+                            Kamera
+                        </button>
+                    </div>
+
+                    <input
+                        type="file"
+                        id="cameraInput"
+                        hidden
+                        accept="image/*"
+                        capture="environment">
 
                     <div class="mt-3">
                         <span id="jumlahFotoDipilih">
@@ -201,9 +217,10 @@
                         class="d-flex flex-wrap gap-2 mt-3">
                     </div>
 
-                    <button id="btnUploadFoto"
-                            type="button"
-                            class="btn btn-primary w-100 mt-3">
+                    <button
+                        id="btnUploadFoto"
+                        type="button"
+                        class="btn btn-primary w-100 mt-3">
                         Upload Foto
                     </button>
                 </div>
@@ -213,6 +230,36 @@
         </div>
     </div>
 </div>
+
+
+<div id="cameraModal" class="camera-modal">
+    <div class="camera-box">
+
+        <video
+            id="cameraVideo"
+            autoplay
+            playsinline>
+        </video>
+
+        <div class="camera-action">
+            <button
+                id="btnTakePhoto"
+                type="button"
+                class="btn btn-success">
+                Ambil Foto
+            </button>
+
+            <button
+                id="btnCloseCamera"
+                type="button"
+                class="btn btn-danger">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
+
+<canvas id="cameraCanvas" hidden></canvas>
 
 {{-- Inject data --}}
 <script>

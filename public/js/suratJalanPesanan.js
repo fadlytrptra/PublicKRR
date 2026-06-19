@@ -4,6 +4,13 @@ jQuery(function ($) {
     let idPengiriman = window.appData?.idPengiriman;
     let noPo = window.appData?.noPo;
     let selectedFiles = [];
+    let stream = null;
+    let fileFoto =document.getElementById('fileFoto');
+    let cameraInput =document.getElementById('cameraInput');
+    let btnCameraFoto =document.getElementById('btnCameraFoto');
+    let cameraModal =document.getElementById('cameraModal');
+    let cameraVideo =document.getElementById('cameraVideo');
+    let cameraCanvas =document.getElementById('cameraCanvas');
 
     if (!idPengiriman) {
         console.error("ID Pengiriman tidak ditemukan");
@@ -638,27 +645,27 @@ jQuery(function ($) {
     });
 
     $('#fileFoto').on('change', function () {
-        selectedFiles = [...this.files];
-        let preview = $('#fotoPreview');
+        const files = Array.from(this.files);
 
-        preview.empty();
-        $('#jumlahFotoDipilih').text(
-            selectedFiles.length + ' foto dipilih'
-        );
+        files.forEach(file => {
 
-        selectedFiles.forEach(file => {
             if (file.size > 2 * 1024 * 1024) {
-                alert(
-                    file.name +
-                    ' melebihi 2 MB'
-                );
+                alert(file.name + ' melebihi 2 MB');
                 return;
             }
 
-            let reader = new FileReader();
+            if (selectedFiles.length >= 25) {
+                alert('Maksimal 25 foto');
+                return;
+            }
+
+            selectedFiles.push(file);
+
+            const reader = new FileReader();
+
             reader.onload = function (e) {
 
-                preview.append(`
+                $('#fotoPreview').append(`
                     <img
                         src="${e.target.result}"
                         style="
@@ -670,9 +677,15 @@ jQuery(function ($) {
                         ">
                 `);
             };
+
             reader.readAsDataURL(file);
         });
 
+        $('#jumlahFotoDipilih').text(
+            selectedFiles.length + ' foto dipilih'
+        );
+
+        $(this).val('');
     });
 
 
@@ -728,6 +741,149 @@ jQuery(function ($) {
                     .text('Upload Foto');
             }
         });
+    });
+
+    $('#btnCameraFoto').click(async function () {
+        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            $('#cameraInput').click();
+            return;
+        }
+
+        try {
+            stream =
+                await navigator.mediaDevices
+                    .getUserMedia({
+                        video: true
+                    });
+            cameraVideo.srcObject = stream;
+            cameraModal.style.display = 'flex';
+
+        }
+        catch (err) {
+            alert('Tidak dapat mengakses kamera');
+        }
+    });
+
+    $('#cameraInput').on('change', function () {
+        let files = Array.from(this.files);
+
+        files.forEach(file => {
+            if (file.size > 2 * 1024 * 1024) {
+                alert(file.name + ' melebihi 2 MB');
+                return;
+            }
+
+            if (selectedFiles.length >= 25) {
+                alert('Maksimal 25 foto');
+                return;
+            }
+
+            selectedFiles.push(file);
+
+            let reader = new FileReader();
+
+            reader.onload = function (e) {
+
+                $('#fotoPreview').append(`
+                    <img
+                        src="${e.target.result}"
+                        style="
+                            width:90px;
+                            height:90px;
+                            object-fit:cover;
+                            border:1px solid #ddd;
+                            border-radius:6px;
+                        ">
+                `);
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+        $('#jumlahFotoDipilih').text(
+            selectedFiles.length + ' foto dipilih'
+        );
+    });
+
+    $('#btnTakePhoto').click(function () {
+        let ctx = cameraCanvas.getContext('2d');
+
+        cameraCanvas.width = cameraVideo.videoWidth;
+        cameraCanvas.height = cameraVideo.videoHeight;
+
+        ctx.drawImage(
+            cameraVideo,
+            0,
+            0
+        );
+
+        cameraCanvas.toBlob(
+            function (blob) {
+
+                const file =
+                    new File(
+                        [blob],
+                        `camera_${Date.now()}.jpg`,
+                        {
+                            type: 'image/jpeg'
+                        }
+                    );
+
+                if (selectedFiles.length >= 25) {
+                    alert('Maksimal 25 foto');
+                    if (stream) {
+                        stream.getTracks().forEach(
+                            track => track.stop()
+                        );
+                    }
+                    cameraModal.style.display = 'none';
+                    return;
+                }
+
+                selectedFiles.push(file);
+
+                const url =
+                    URL.createObjectURL(blob);
+
+                $('#fotoPreview').append(`
+                    <img
+                        src="${url}"
+                        style="
+                            width:90px;
+                            height:90px;
+                            object-fit:cover;
+                            border:1px solid #ddd;
+                            border-radius:6px;
+                        ">
+                `);
+
+                $('#jumlahFotoDipilih').text(
+                    selectedFiles.length + ' foto dipilih'
+                );
+            },
+            'image/jpeg',
+            0.9
+        );
+
+        if (stream) {
+            stream.getTracks().forEach(
+                track => track.stop()
+            );
+        }
+
+        cameraModal.style.display = 'none';
+    });
+
+    $('#btnCloseCamera').click(function () {
+        if (stream) {
+            stream.getTracks().forEach(
+                track => track.stop()
+            );
+        }
+
+        cameraModal.style.display = 'none';
     });
 
 
