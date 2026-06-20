@@ -182,7 +182,7 @@
                     </p>
 
                     <small class="text-muted">
-                        Maksimal 25 foto dan ukuran maksimal 2 MB per foto
+                        Total seluruh foto maksimal 50 MB.
                     </small>
 
                     <div class="mt-3">
@@ -253,15 +253,14 @@
             <div class="modal-body">
 
                 <small class="text-muted">
-                    Upload foto bersifat opsional.
+                    Hanya dapat Upload maksimal 1 foto (5 MB).
                 </small>
 
                 <div class="mt-3">
                     <input type="file"
                            id="fileFotoACC"
                            class="form-control"
-                           accept="image/*"
-                           multiple>
+                           accept="image/*">
                 </div>
 
                 <div class="mt-2">
@@ -337,10 +336,7 @@
     </div>
 </div>
 
-<div class="modal fade"
-     id="imagePreviewModal"
-     tabindex="-1">
-
+<div class="modal fade" id="imagePreviewModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content">
 
@@ -363,9 +359,9 @@
                         max-width:100%;
                         max-height:75vh;
                         object-fit:contain;
-                    ">
+                    "
+                >
             </div>
-
         </div>
     </div>
 </div>

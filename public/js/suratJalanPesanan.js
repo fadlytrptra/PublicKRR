@@ -4,6 +4,8 @@ jQuery(function ($) {
     let idPengiriman = window.appData?.idPengiriman;
     let noPo = window.appData?.noPo;
     let selectedFiles = [];
+    let selectedFilesACC = [];
+    let activeUploadMode = null;
     let stream = null;
     let fileFoto =document.getElementById('fileFoto');
     let cameraInput =document.getElementById('cameraInput');
@@ -269,6 +271,41 @@ jQuery(function ($) {
         );
     }
 
+    function renderPreviewACC() {
+        $('#fotoPreviewACC').empty();
+
+        selectedFilesACC.forEach((file, index) => {
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+
+                $('#fotoPreviewACC').append(`
+                    <div class="preview-item">
+                        <img
+                            src="${e.target.result}"
+                            class="preview-image"
+                            data-src="${e.target.result}"
+                        >
+
+                        <button
+                            type="button"
+                            class="delete-btn-acc"
+                            data-index="${index}">
+                            ×
+                        </button>
+                    </div>
+                `);
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+        $('#jumlahFotoDipilihACC').text(
+            selectedFilesACC.length + ' foto dipilih'
+        );
+    }
+
 //#endregion
 
 //#region Event Listener
@@ -507,7 +544,7 @@ jQuery(function ($) {
         })
 
         .done(function () {
-            alert('Approved & Email berhasil dikirim');
+            alert('Approved & Email berhasil dikirim.');
 
             $('#modalKonfirmasi').modal('hide');
 
@@ -693,13 +730,15 @@ jQuery(function ($) {
 
         files.forEach(file => {
 
-            if (file.size > 2 * 1024 * 1024) {
-                alert(file.name + ' melebihi 2 MB');
-                return;
-            }
+            let currentTotalSize = selectedFiles.reduce(
+                (sum, file) => sum + file.size,
+                    0
+                );
 
-            if (selectedFiles.length >= 25) {
-                alert('Maksimal 25 foto');
+            if (currentTotalSize + file.size > 50 * 1024 * 1024) {
+                alert(
+                    'Total ukuran seluruh foto maksimal 50 MB'
+                );
                 return;
             }
 
@@ -717,7 +756,7 @@ jQuery(function ($) {
     });
 
 
-    //upload foto
+    //upload foto pasca
     $('#btnUploadFoto').click(function () {
         if (selectedFiles.length === 0) {
             alert('Pilih foto terlebih dahulu');
@@ -729,6 +768,8 @@ jQuery(function ($) {
             'id_surat_jalan',
             window.idSuratJalan
         );
+
+        formData.append('mode', 'PASCA');
 
         selectedFiles.forEach(file => {
             formData.append(
@@ -781,6 +822,7 @@ jQuery(function ($) {
     });
 
     $('#btnCameraFoto').click(async function () {
+        activeUploadMode = 'PASCA';
         const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
 
         if (isMobile) {
@@ -803,31 +845,78 @@ jQuery(function ($) {
         }
     });
 
+    $('#btnCameraFotoACC').click(async function () {
+        activeUploadMode = 'ACC';
+
+        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            $('#cameraInputACC').click();
+            return;
+        }
+
+        try {
+
+            stream =
+                await navigator.mediaDevices
+                    .getUserMedia({
+                        video: true
+                    });
+
+            cameraVideo.srcObject = stream;
+            cameraModal.style.display = 'flex';
+
+        }
+        catch (err) {
+
+            alert(
+                'Tidak dapat mengakses kamera'
+            );
+        }
+    });
+
     $('#cameraInput').on('change', function () {
         let files = Array.from(this.files);
 
-        for (const file of files) {
-            if (file.size > 2 * 1024 * 1024) {
+        if (activeUploadMode === 'ACC') {
+            let file = files[0];
+            if (!file) {
+                return;
+            }
 
-                const sizeMB = (file.size / 1024 / 1024).toFixed(2);
-
+            if (file.size > 5 * 1024 * 1024) {
                 alert(
-                    `${file.name}\n\nUkuran file ${sizeMB} MB.\nMaksimal 2 MB.`
+                    'Ukuran foto maksimal 5 MB'
+                );
+                return;
+            }
+
+            selectedFilesACC = [file];
+            renderPreviewACC();
+            $(this).val('');
+            return;
+        }
+
+        // PASCA
+        for (let file of files) {
+            let currentTotalSize =
+                selectedFiles.reduce(
+                    (sum, f) => sum + f.size,
+                    0
                 );
 
-                $(this).val('');
+            if (currentTotalSize + file.size > 50 * 1024 * 1024) {
+                alert(
+                    'Total ukuran seluruh foto maksimal 50 MB'
+                );
                 return;
             }
-
-            if (selectedFiles.length >= 25) {
-                alert('Maksimal 25 foto');
-                return;
-            }
-
             selectedFiles.push(file);
         }
 
         renderPreview();
+
+        $(this).val('');
     });
 
     $('#btnTakePhoto').click(function () {
@@ -844,7 +933,6 @@ jQuery(function ($) {
 
         cameraCanvas.toBlob(
             function (blob) {
-
                 const file =
                     new File(
                         [blob],
@@ -854,23 +942,61 @@ jQuery(function ($) {
                         }
                     );
 
-                if (selectedFiles.length >= 25) {
-                    alert('Maksimal 25 foto');
+                const currentTotalSize =
+                    selectedFiles.reduce(
+                        (sum, f) => sum + f.size,
+                        0
+                    );
+
+                if (
+                    currentTotalSize + file.size >
+                    50 * 1024 * 1024
+                ) {
+
+                    alert(
+                        'Total ukuran seluruh foto maksimal 50 MB'
+                    );
+
                     if (stream) {
                         stream.getTracks().forEach(
                             track => track.stop()
                         );
                     }
+
                     cameraModal.style.display = 'none';
+
                     return;
                 }
 
-                selectedFiles.push(file);
+                if (activeUploadMode === 'ACC') {
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert(
+                            'Ukuran foto maksimal 5 MB'
+                        );
+                        return;
+                    }
 
-                renderPreview();
+                    selectedFilesACC = [file];
+                    renderPreviewACC();
+
+                } else {
+                    let currentTotalSize =
+                        selectedFiles.reduce(
+                            (sum, f) => sum + f.size,
+                            0
+                        );
+
+                    if (currentTotalSize + file.size > 50 * 1024 * 1024) {
+                        alert(
+                            'Total ukuran seluruh foto maksimal 50 MB'
+                        );
+                        return;
+                    }
+                    selectedFiles.push(file);
+                    renderPreview();
+                }
             },
-            'image/jpeg',
-            0.9
+            'image/jpeg',0.9
         );
 
         if (stream) {
@@ -898,6 +1024,12 @@ jQuery(function ($) {
         renderPreview();
     });
 
+    $(document).on('click', '.delete-btn-acc', function () {
+        selectedFilesACC = [];
+        renderPreviewACC();
+        }
+    );
+
     $(document).on('click', '.preview-image', function () {
         $('#previewModalImage').attr(
             'src',
@@ -907,6 +1039,89 @@ jQuery(function ($) {
         $('#imagePreviewModal').modal('show');
     });
 
+
+    $('#fileFotoACC').on('change', function () {
+        let file = this.files[0];
+
+        if (!file) {
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Ukuran foto maksimal 5 MB');
+            $(this).val('');
+            return;
+        }
+
+        selectedFilesACC = [file];
+
+        renderPreviewACC();
+
+        $(this).val('');
+    });
+
+    $('#btnUploadFotoACC').click(function () {
+        if (selectedFilesACC.length === 0) {
+            $('#modalACC').modal('hide');
+            location.reload();
+            return;
+        }
+
+        let formData = new FormData();
+
+        formData.append(
+            'id_surat_jalan',
+            window.idSuratJalan
+        );
+
+        formData.append(
+        'mode',
+        'ACC'
+    );
+
+        formData.append(
+            'pictures[]',
+            selectedFilesACC[0]
+        );
+
+        let $btn = $(this);
+
+        $btn
+            .prop('disabled', true)
+            .text('Uploading...');
+
+        $.ajax({
+            url: '/SuratJalan/upload-foto',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function (res) {
+
+                alert(res.message);
+
+                $('#modalACC').modal('hide');
+
+                location.reload();
+            },
+
+            error: function (xhr) {
+
+                alert(
+                    xhr.responseJSON?.message ??
+                    'Upload gagal'
+                );
+            },
+
+            complete: function () {
+
+                $btn
+                    .prop('disabled', false)
+                    .text('Upload Foto');
+            }
+        });
+    });
 
     //#endregion
 
