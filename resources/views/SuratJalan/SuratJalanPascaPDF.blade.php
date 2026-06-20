@@ -89,6 +89,7 @@
         }
 
         $jumlahUmum = number_format($jumlahUmum ?? 0, 0, ',', '.');
+
     @endphp
 
     <table style="border: 1px solid black;width: 100%;border-collapse: collapse;margin-top: 10px;">
@@ -104,7 +105,7 @@
             </td>
             <td style="border: 1px solid black;padding:8px">{{ trim($satuanUmum) }} <br> {{ trim($items->satPrimer) }}
             </td>
-            <td style="border: 1px solid black;padding:8px">{{ trim($jumlahUmum) }} <br>
+            <td style="border: 1px solid black;padding:8px">{{ number_format((float) $items->QtyTemp, 0, ',', '.') }} / {{ trim($jumlahUmum) }} <br>
                 {{ number_format($items->QtyPrimer, 0, ',', '.') }}
             </td>
         </tr>
