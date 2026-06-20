@@ -337,6 +337,39 @@
     </div>
 </div>
 
+<div class="modal fade"
+     id="imagePreviewModal"
+     tabindex="-1">
+
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Preview Foto</h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body text-center">
+
+                <img
+                    id="previewModalImage"
+                    src=""
+                    style="
+                        max-width:100%;
+                        max-height:75vh;
+                        object-fit:contain;
+                    ">
+            </div>
+
+        </div>
+    </div>
+</div>
+
 <canvas id="cameraCanvas" hidden></canvas>
 
 {{-- Inject data --}}

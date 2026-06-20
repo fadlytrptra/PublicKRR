@@ -240,6 +240,35 @@ jQuery(function ($) {
         });
     }
 
+    function renderPreview() {
+        $('#fotoPreview').empty();
+
+        selectedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#fotoPreview').append(`
+                    <div class="preview-item">
+                        <img src="${e.target.result}" class="preview-image"
+                            data-src="${e.target.result}">
+                        <button
+                            type="button"
+                            class="delete-btn"
+                            data-index="${index}">
+                            ×
+                        </button>
+                    </div>
+                `);
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+        $('#jumlahFotoDipilih').text(
+            selectedFiles.length + ' foto dipilih'
+        );
+    }
+
 //#endregion
 
 //#region Event Listener
@@ -675,26 +704,10 @@ jQuery(function ($) {
             }
 
             selectedFiles.push(file);
-
-            const reader = new FileReader();
-
-            reader.onload = function (e) {
-
-                $('#fotoPreview').append(`
-                    <img
-                        src="${e.target.result}"
-                        style="
-                            width:90px;
-                            height:90px;
-                            object-fit:cover;
-                            border:1px solid #ddd;
-                            border-radius:6px;
-                        ">
-                `);
-            };
-
-            reader.readAsDataURL(file);
         });
+
+        renderPreview();
+        $(this).val('');
 
         $('#jumlahFotoDipilih').text(
             selectedFiles.length + ' foto dipilih'
@@ -812,28 +825,9 @@ jQuery(function ($) {
             }
 
             selectedFiles.push(file);
-            let reader = new FileReader();
-
-            reader.onload = function (e) {
-                $('#fotoPreview').append(`
-                    <img
-                        src="${e.target.result}"
-                        style="
-                            width:90px;
-                            height:90px;
-                            object-fit:cover;
-                            border:1px solid #ddd;
-                            border-radius:6px;
-                        ">
-                `);
-            };
-
-            reader.readAsDataURL(file);
         }
 
-        $('#jumlahFotoDipilih').text(
-            selectedFiles.length + ' foto dipilih'
-        );
+        renderPreview();
     });
 
     $('#btnTakePhoto').click(function () {
@@ -873,24 +867,7 @@ jQuery(function ($) {
 
                 selectedFiles.push(file);
 
-                const url =
-                    URL.createObjectURL(blob);
-
-                $('#fotoPreview').append(`
-                    <img
-                        src="${url}"
-                        style="
-                            width:90px;
-                            height:90px;
-                            object-fit:cover;
-                            border:1px solid #ddd;
-                            border-radius:6px;
-                        ">
-                `);
-
-                $('#jumlahFotoDipilih').text(
-                    selectedFiles.length + ' foto dipilih'
-                );
+                renderPreview();
             },
             'image/jpeg',
             0.9
@@ -913,6 +890,21 @@ jQuery(function ($) {
         }
 
         cameraModal.style.display = 'none';
+    });
+
+    $(document).on('click', '.delete-btn', function () {
+        let index = $(this).data('index');
+        selectedFiles.splice(index, 1);
+        renderPreview();
+    });
+
+    $(document).on('click', '.preview-image', function () {
+        $('#previewModalImage').attr(
+            'src',
+            $(this).data('src')
+        );
+
+        $('#imagePreviewModal').modal('show');
     });
 
 
