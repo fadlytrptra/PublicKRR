@@ -116,19 +116,21 @@
                     </div>
 
                     <!-- TABLE -->
-                    <table id="tableSuratJalan" class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Nama Barang</th>
-                                <th>Quantity</th>
-                                <th>Satuan</th>
-                                <th>Nama Customer</th>
-                                <th>Surat Pesanan</th>
-                                <th>Nama Ekspedisi</th>
-                                <th>Nomor Polisi</th>
-                            </tr>
-                        </thead>
-                    </table>
+                    <div class="table-responsive">
+                        <table id="tableSuratJalan" class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nama Barang</th>
+                                    <th>Quantity</th>
+                                    <th>Satuan</th>
+                                    <th>Nama Customer</th>
+                                    <th>Surat Pesanan</th>
+                                    <th>Nama Ekspedisi</th>
+                                    <th>Nomor Polisi</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
 
                 </div>
             </div>
@@ -136,14 +138,14 @@
     </div>
 </div>
 
-<!-- MODAL KONFIRMASI -->
-<div class="modal fade" id="modalKonfirmasi" tabindex="-1">
+<!-- MODAL PASCA -->
+<div class="modal fade" id="modalKonfirmasi" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
 
             <div class="modal-header">
                 <h5 class="modal-title">Konfirmasi Penerimaan Barang</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                {{-- <button type="button" class="btn-close" data-bs-dismiss="modal"></button> --}}
             </div>
 
             <div class="modal-body">
@@ -232,6 +234,83 @@
 </div>
 
 
+<!-- MODAL ACC -->
+<div class="modal fade" id="modalACC" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Upload Foto Barang (Opsional)
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <small class="text-muted">
+                    Upload foto bersifat opsional.
+                </small>
+
+                <div class="mt-3">
+                    <input type="file"
+                           id="fileFotoACC"
+                           class="form-control"
+                           accept="image/*"
+                           multiple>
+                </div>
+
+                <div class="mt-2">
+                    <button
+                        type="button"
+                        id="btnCameraFotoACC"
+                        class="btn btn-success">
+                        Kamera
+                    </button>
+                </div>
+
+                <input
+                    type="file"
+                    id="cameraInputACC"
+                    hidden
+                    accept="image/*"
+                    capture="environment">
+
+                <div class="mt-3">
+                    <span id="jumlahFotoDipilihACC">
+                        0 foto dipilih
+                    </span>
+                </div>
+
+                <div id="fotoPreviewACC"
+                     class="d-flex flex-wrap gap-2 mt-3">
+                </div>
+
+                <button
+                    id="btnUploadFotoACC"
+                    type="button"
+                    class="btn btn-primary w-100 mt-3">
+                    Upload Foto
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-secondary w-100 mt-2"
+                    data-bs-dismiss="modal">
+                    Lewati
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
 <div id="cameraModal" class="camera-modal">
     <div class="camera-box">
         <video
@@ -268,6 +347,11 @@
     };
 
     window.otpData = @json($otp ?? null);
+</script>
+
+<script>
+    window.wajibUploadFoto =
+        @json($wajibUploadFoto);
 </script>
 
 <!-- jQuery -->

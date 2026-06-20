@@ -142,6 +142,24 @@ jQuery(function ($) {
         }
     }
 
+    if (window.wajibUploadFoto) {
+        $('#stepKonfirmasi').hide();
+        $('#stepQty').hide();
+        $('#stepFoto').show();
+
+        const modal = new bootstrap.Modal(
+            document.getElementById('modalKonfirmasi'),
+            {
+                backdrop: 'static',
+                keyboard: false
+            }
+        );
+
+        modal.show();
+
+        $('.btn-close').hide();
+    }
+
 //#endregion
 
 //#region function
@@ -462,10 +480,10 @@ jQuery(function ($) {
         .done(function () {
             alert('Approved & Email berhasil dikirim');
 
-            //upload foto
-            $('#stepKonfirmasi').hide();
-            $('#stepQty').hide();
-            $('#stepFoto').show();
+            $('#modalKonfirmasi').modal('hide');
+
+            let modalACC = new bootstrap.Modal(document.getElementById('modalACC'));
+            modalACC.show();
 
             $('#btnOpenOtp').hide();
             $('#otpSection').hide();
@@ -477,12 +495,9 @@ jQuery(function ($) {
             $('#labelApprovedBy').text('Approved By:');
             $('#labelApprovedAt').text('Approved At:');
 
-
-            let type = $('#contactType').val();
-            let selectedText = $('#contactSelect option:selected').text();
             let contactValue = $('#contactSelect').val();
-            $('#approvedEmail').text(contactValue);
 
+            $('#approvedEmail').text(contactValue);
             $('#approvedAt').text(formatDateTime(new Date()));
 
             $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
@@ -729,6 +744,15 @@ jQuery(function ($) {
             },
 
             error: function (xhr) {
+                if (xhr.status === 422) {
+                    let errors = xhr.responseJSON.errors;
+                    let message = Object.values(errors)
+                        .flat()
+                        .join('\n');
+
+                    alert(message);
+                    return;
+                }
                 alert(
                     xhr.responseJSON?.message ??
                     'Upload gagal'
@@ -769,9 +793,16 @@ jQuery(function ($) {
     $('#cameraInput').on('change', function () {
         let files = Array.from(this.files);
 
-        files.forEach(file => {
+        for (const file of files) {
             if (file.size > 2 * 1024 * 1024) {
-                alert(file.name + ' melebihi 2 MB');
+
+                const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+
+                alert(
+                    `${file.name}\n\nUkuran file ${sizeMB} MB.\nMaksimal 2 MB.`
+                );
+
+                $(this).val('');
                 return;
             }
 
@@ -781,11 +812,9 @@ jQuery(function ($) {
             }
 
             selectedFiles.push(file);
-
             let reader = new FileReader();
 
             reader.onload = function (e) {
-
                 $('#fotoPreview').append(`
                     <img
                         src="${e.target.result}"
@@ -800,7 +829,7 @@ jQuery(function ($) {
             };
 
             reader.readAsDataURL(file);
-        });
+        }
 
         $('#jumlahFotoDipilih').text(
             selectedFiles.length + ' foto dipilih'

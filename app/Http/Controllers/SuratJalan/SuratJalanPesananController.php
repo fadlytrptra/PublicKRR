@@ -52,6 +52,25 @@ class SuratJalanPesananController extends Controller
             ->where('IDPengiriman', $idPengiriman)
             ->first();
 
+        $attachment = DB::connection('ConnPublic')
+            ->table('T_Attachment')
+            ->where('IdSuratJalan', $row->IdSuratJalan)
+            ->first();
+
+        $jumlahFoto = 0;
+
+        if ($attachment) {
+            for ($i = 1; $i <= 25; $i++) {
+                $column = 'picture' . $i;
+                if (!empty($attachment->$column)) {
+                    $jumlahFoto++;
+                }
+            }
+        }
+
+        //ketika pasca
+        $wajibUploadFoto = $row->ACCCustomer === 0 && $jumlahFoto === 0;
+
         if (!$row) {
             abort(404);
         }
@@ -65,7 +84,8 @@ class SuratJalanPesananController extends Controller
         return view('SuratJalan.suratJalanPesanan', [
             'id_pengiriman' => $idPengiriman,
             'no_po' => $row->No_PO,
-            'otp' => $otp
+            'otp' => $otp,
+            'wajibUploadFoto' => $wajibUploadFoto
         ]);
     }
 
@@ -863,6 +883,11 @@ class SuratJalanPesananController extends Controller
             'id_surat_jalan' => 'required|integer',
             'pictures' => 'required|array|min:1',
             'pictures.*' => 'required|image|mimes:jpg,jpeg,png|max:2048'
+        ],
+        [
+            'pictures.required' => 'Silakan pilih foto terlebih dahulu',
+            'pictures.min' => 'Silakan pilih minimal 1 foto',
+            'pictures.*.max' => 'Ukuran setiap foto maksimal 2 MB',
         ]);
 
         DB::beginTransaction();
