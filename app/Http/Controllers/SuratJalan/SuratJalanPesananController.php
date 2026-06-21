@@ -146,10 +146,12 @@ class SuratJalanPesananController extends Controller
     public function data(Request $request)
     {
         $no_po = $request->no_po;
+        $idPengiriman = $request->idPengiriman;
 
         $data = DB::connection('ConnPublic')
             ->table('T_KirimSuratJalan')
-            ->where('No_PO', $no_po)
+            // ->where('No_PO', $no_po)
+            ->where('IDPengiriman', $idPengiriman)
             ->select([
                 'NamaType',
 

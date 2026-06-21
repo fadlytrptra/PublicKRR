@@ -371,8 +371,7 @@
 {{-- Inject data --}}
 <script>
     window.appData = {
-        idPengiriman: "{{ $id_pengiriman }}",
-        noPo: "{{ $no_po }}"
+        idPengiriman: "{{ $id_pengiriman }}"
     };
 
     window.otpData = @json($otp ?? null);
