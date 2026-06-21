@@ -35,6 +35,7 @@ jQuery(function ($) {
         ajax: {
             url: "/SuratJalan-data",
             data: function (d) {
+                d.idPengiriman = idPengiriman,
                 d.no_po = noPo; // hanya untuk ambil data tabel
             },
             dataSrc: function (json) {
