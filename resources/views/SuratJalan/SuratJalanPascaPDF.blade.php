@@ -26,7 +26,7 @@
     <h4>JL RAYA TROPODO No. 1 WARU - SIDOARJO - INDONESIA</h4>
     <h4>TELP (031) 8669595 (HUNTING)</h4>
     <h3>SURAT PENGANTAR PENGIRIMAN BARANG</h3>
-    <table style="width:100%; margin-bottom: 100px;" cellpadding="0" cellspacing="0">
+    <table style="width:100%; margin-bottom: 10px;" cellpadding="0" cellspacing="0">
         <tr>
             <!-- LEFT SIDE -->
             <td style="width:50%; vertical-align:top; border:1px solid black; padding:8px;">
@@ -172,7 +172,7 @@
                     {{-- Nama --}}
                     <tr>
                         <td style="text-align:center; font-size:15px; font-weight:normal; padding-bottom:15px;">
-                            {{ $namaExpeditor ?? '-' }}
+                            PT. KERTA RAJASA RAYA
                         </td>
 
                         <td style="text-align:center; font-size:15px; font-weight:normal; padding-bottom:15px;">

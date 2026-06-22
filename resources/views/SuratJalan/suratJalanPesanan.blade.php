@@ -238,7 +238,7 @@
                         <button type="button" id="btnCameraFotoACC" class="btn btn-success">
                             Kamera
                         </button>
-                        <button class="btn btn-secondary" id="btn_clearPhotos">Clear Photos</button>
+                        <button class="btn btn-secondary" id="btn_clearPhotos_acc">Clear Photos</button>
                     </div>
 
                     <input type="file" id="cameraInputACC" hidden accept="image/*" capture="environment">

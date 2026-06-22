@@ -14,6 +14,7 @@ jQuery(function ($) {
     let cameraVideo =document.getElementById('cameraVideo');
     let cameraCanvas =document.getElementById('cameraCanvas');
     let btn_clearPhotos = document.getElementById("btn_clearPhotos");
+    let btn_clearPhotos_acc = document.getElementById("btn_clearPhotos_acc");
 
     if (!idPengiriman) {
         console.error("ID Pengiriman tidak ditemukan");
@@ -736,25 +737,29 @@ jQuery(function ($) {
     $('#fileFoto').on('change', function () {
         const files = Array.from(this.files);
 
-        files.forEach(file => {
+        const currentTotalSize = selectedFiles.reduce(
+            (sum, file) => sum + file.size,
+            0
+        );
 
-            let currentTotalSize = selectedFiles.reduce(
-                (sum, file) => sum + file.size,
-                    0
-                );
+        const newFilesSize = files.reduce(
+            (sum, file) => sum + file.size,
+            0
+        );
 
-            if (currentTotalSize + file.size > 50 * 1024 * 1024) {
-                alert(
-                    'Total ukuran seluruh foto maksimal 50 MB'
-                );
-                return;
-            }
+        if (
+            currentTotalSize + newFilesSize >
+            50 * 1024 * 1024
+        ) {
+            alert('Total ukuran seluruh foto maksimal 50 MB');
 
-            selectedFiles.push(file);
-        });
+            $(this).val('');
+            return;
+        }
+
+        selectedFiles.push(...files);
 
         renderPreview();
-        $(this).val('');
 
         $('#jumlahFotoDipilih').text(
             selectedFiles.length + ' foto dipilih'
@@ -844,7 +849,6 @@ jQuery(function ($) {
                     );
                     return;
                 }
-
                 alert('Upload gagal');
             },
 
@@ -1161,6 +1165,14 @@ jQuery(function ($) {
     btn_clearPhotos.addEventListener("click", function () {
         selectedFiles = [];
         renderPreview();
+    });
+
+    btn_clearPhotos_acc.addEventListener("click", function () {
+        selectedFilesACC = [];
+        renderPreviewACC();
+
+        $('#fileFotoACC').val('');
+        $('#jumlahFotoDipilihACC').text('0 foto dipilih');
     });
 
     //#endregion
