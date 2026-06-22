@@ -172,7 +172,7 @@
                     {{-- Nama --}}
                     <tr>
                         <td style="text-align:center; font-size:15px; font-weight:normal; padding-bottom:15px;">
-                            Ekspeditor
+                            {{ $namaExpeditor ?? '-' }}
                         </td>
 
                         <td style="text-align:center; font-size:15px; font-weight:normal; padding-bottom:15px;">

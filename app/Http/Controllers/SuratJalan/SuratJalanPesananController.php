@@ -346,13 +346,13 @@ class SuratJalanPesananController extends Controller
 
         if ($request->otp_method === 'email') {
             // kirim email
-            Mail::mailer('MailNoReply')->raw(
-                "Kode OTP Approval Surat Jalan Anda: $otp",
-                function ($message) use ($request) {
-                    $message->to($request->email)
-                        ->subject('OTP Approval Surat Jalan');
-                }
-            );
+            // Mail::mailer('MailNoReply')->raw(
+            //     "Kode OTP Approval Surat Jalan Anda: $otp",
+            //     function ($message) use ($request) {
+            //         $message->to($request->email)
+            //             ->subject('OTP Approval Surat Jalan');
+            //     }
+            // );
             Mail::mailer('MailNoReply')
                 ->to($request->email)
                 ->send(new OTPMail($request->email, $otp, 'Approval Surat Jalan'));
@@ -946,7 +946,6 @@ class SuratJalanPesananController extends Controller
                 }
 
                 $file = $request->file('pictures')[0];
-
                 if ($file->getSize() > (5 * 1024 * 1024)) {
 
                     DB::rollBack();
@@ -970,9 +969,7 @@ class SuratJalanPesananController extends Controller
                 });
 
                 if ($totalUploadSize > (50 * 1024 * 1024)) {
-
                     DB::rollBack();
-
                     return response()->json([
                         'success' => false,
                         'message' => 'Total ukuran foto maksimal 50 MB'
@@ -1077,6 +1074,7 @@ class SuratJalanPesananController extends Controller
             $encryptedIdPengiriman
         );
     }
+
 
 
 

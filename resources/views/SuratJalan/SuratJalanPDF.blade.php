@@ -19,6 +19,9 @@
 </style>
 <div style="width: 16cm;height: 20.5cm;border: 1px solid black;padding: 10px;box-sizing: border-box;"
     contenteditable="true">
+    <div style="position:absolute; top:-50px; left:-120px; z-index:-1;">
+        <img src="{{ public_path('images/verified.jpg') }}" style="width:900px; opacity:0.15;">
+    </div>
     <h2>PT. KERTA RAJASA RAYA</h2>
     <h4>JL RAYA TROPODO No. 1 WARU - SIDOARJO - INDONESIA</h4>
     <h4>TELP (031) 8669595 (HUNTING)</h4>
@@ -165,7 +168,7 @@
                     {{-- Nama --}}
                     <tr>
                         <td style="text-align:center; font-size:15px; font-weight:normal; padding-bottom:15px;">
-                            Ekspeditor
+                            PT. KERTA RAJASA RAYA
                         </td>
 
                         <td style="text-align:center; font-size:15px; font-weight:normal; padding-bottom:15px;">

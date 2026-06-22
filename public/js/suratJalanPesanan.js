@@ -806,27 +806,47 @@ jQuery(function ($) {
             },
 
             error: function (xhr) {
-            if (xhr.status === 422) {
+                console.log('Status:', xhr.status);
+                console.log('Response:', xhr.responseText);
+                console.log('JSON:', xhr.responseJSON);
 
-                if (xhr.responseJSON?.message) {
-                    alert(xhr.responseJSON.message);
-                    return;
-                }
+                if (xhr.status === 422) {
 
-                if (xhr.responseJSON?.errors) {
-                    let message = Object.values(xhr.responseJSON.errors)
+                    if (xhr.responseJSON?.message) {
+                        alert(xhr.responseJSON.message);
+                        return;
+                    }
+
+                    if (xhr.responseJSON?.errors) {
+
+                        let message = Object.values(
+                            xhr.responseJSON.errors
+                        )
                         .flat()
                         .join('\n');
 
-                    alert(message);
+                        alert(message);
+                        return;
+                    }
+                }
+
+                if (xhr.status === 413) {
+                    alert('Ukuran file melebihi batas server');
                     return;
                 }
-            }
-            alert(
-                xhr.responseJSON?.message ??
-                'Upload gagal'
-            );
-        },
+
+                if (xhr.responseText) {
+                    alert(
+                        'Error ' +
+                        xhr.status +
+                        '\n\n' +
+                        xhr.responseText.substring(0, 500)
+                    );
+                    return;
+                }
+
+                alert('Upload gagal');
+            },
 
             complete: function () {
                 $btn

@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\DokumenSJ\Pdf;
 use App\Http\Controllers\SuratJalan\SuratJalanPesananController;
 use App\Http\Controllers\DokumenSJ\DokumenSJController;
 use App\Http\Controllers\SuratJalan\VerifyDokumenController;
