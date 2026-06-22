@@ -61,8 +61,9 @@
             <tr>
                 <th>No</th>
                 <th>No Surat Jalan</th>
-                <th>Tanggal</th>
-                <th>Nama Perusahaan</th>
+                <th>Tanggal Receipt</th>
+                <th>No PO Customer</th>
+                <th>Nama Barang</th>
                 <th>Aksi</th>
             </tr>
         </thead>
@@ -75,13 +76,12 @@
                 <td class="text-center">
                     {{ \Carbon\Carbon::parse($item->TglKirim)->format('d-m-Y') }}
                 </td>
-                <td class="text-center">{{ $item->NamaCust }}</td>
+                <td class="text-center">{{ $item->No_PO }}</td>
+                <td class="text-center">{{ $item->NamaType }}</td>
                 <td class="text-center">
-                    <a href="{{ route('DokumenSJ.show', $item->encrypted_id) }}"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                    <a href="{{ route('DokumenSJ.download', $item->encrypted_id) }}"
                         class="btn btn-sm btn-success">
-                        Lihat Dokumen
+                        Download
                     </a>
                 </td>
             </tr>

@@ -13,6 +13,7 @@ jQuery(function ($) {
     let cameraModal =document.getElementById('cameraModal');
     let cameraVideo =document.getElementById('cameraVideo');
     let cameraCanvas =document.getElementById('cameraCanvas');
+    let btn_clearPhotos = document.getElementById("btn_clearPhotos");
 
     if (!idPengiriman) {
         console.error("ID Pengiriman tidak ditemukan");
@@ -389,13 +390,13 @@ jQuery(function ($) {
             '<option value="">-- Pilih Kontak --</option>';
 
         contacts.forEach(item => {
-            if (type === 'whatsapp' && item.Phone) {
+            if (type === 'email' && item.Email) {
                 html += `
                     <option
-                        value="${item.Phone}"
+                        value="${item.Email}"
                         data-userid="${item.IdUser}"
                         data-nama="${item.NamaUser}">
-                        ${item.NamaUser} - ${item.Phone}
+                        ${item.NamaUser} - ${item.Email}
                     </option>
                 `;
             }
@@ -439,10 +440,13 @@ jQuery(function ($) {
             id_pengiriman: idPengiriman,
             otp_method: type,
             id_user: selected.data('userid'),
-            phone: value
         };
 
-        payload.phone = value;
+        if (type === 'email') {
+            payload.email = value;
+        } else {
+            payload.phone = value;
+        }
 
         $.post('/SuratJalan/send-otp', payload)
 
@@ -486,10 +490,13 @@ jQuery(function ($) {
             id_pengiriman: idPengiriman,
             otp: otp,
             id_user: selected.data('userid'),
-            phone: value
         };
 
-        payload.phone = value;
+        if (type === 'email') {
+            payload.email = value;
+        } else {
+            payload.phone = value;
+        }
 
         let $btn = $('#btnVerifyOtp');
 
@@ -799,20 +806,27 @@ jQuery(function ($) {
             },
 
             error: function (xhr) {
-                if (xhr.status === 422) {
-                    let errors = xhr.responseJSON.errors;
-                    let message = Object.values(errors)
+            if (xhr.status === 422) {
+
+                if (xhr.responseJSON?.message) {
+                    alert(xhr.responseJSON.message);
+                    return;
+                }
+
+                if (xhr.responseJSON?.errors) {
+                    let message = Object.values(xhr.responseJSON.errors)
                         .flat()
                         .join('\n');
 
                     alert(message);
                     return;
                 }
-                alert(
-                    xhr.responseJSON?.message ??
-                    'Upload gagal'
-                );
-            },
+            }
+            alert(
+                xhr.responseJSON?.message ??
+                'Upload gagal'
+            );
+        },
 
             complete: function () {
                 $btn
@@ -1122,6 +1136,11 @@ jQuery(function ($) {
                     .text('Upload Foto');
             }
         });
+    });
+
+    btn_clearPhotos.addEventListener("click", function () {
+        selectedFiles = [];
+        renderPreview();
     });
 
     //#endregion

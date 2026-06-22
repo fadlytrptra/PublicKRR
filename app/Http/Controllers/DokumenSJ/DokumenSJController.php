@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Contracts\Encryption\DecryptException;
 
@@ -24,7 +25,8 @@ class DokumenSJController extends Controller
             ->select(
                 'sj.IDPengiriman',
                 DB::raw('MAX(sj.TglKirim) as TglKirim'),
-                DB::raw('MAX(sj.NamaCust) as NamaCust')
+                DB::raw('MAX(sj.No_PO) as No_PO'),
+                DB::raw('MAX(sj.NamaType) as NamaType')
             )
 
             ->groupBy('sj.IDPengiriman')
@@ -237,6 +239,121 @@ class DokumenSJController extends Controller
 
         return view('DokumenSJ.list', compact('list'));
     }
+
+    public function downloadPdf($id)
+    {
+        try {
+
+            $key = env('QR_SHARED_SECRET');
+            $cipher = 'AES-256-CBC';
+
+            $encrypter = new Encrypter($key, $cipher);
+
+            $idPengiriman = $encrypter->decryptString(
+                urldecode($id)
+            );
+
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $items = DB::connection('ConnPublic')
+            ->table('T_KirimSuratJalan')
+            ->where('IDPengiriman', $idPengiriman)
+            ->first();
+
+        if (!$items) {
+            abort(404, 'Data Surat Jalan tidak ditemukan');
+        }
+
+        $formatBase64Image = function ($base64) {
+
+            if (empty($base64)) {
+                return null;
+            }
+
+            $clean = trim(str_replace(["\r", "\n"], '', $base64));
+
+            $binary = base64_decode($clean);
+
+            if ($binary === false) {
+                return null;
+            }
+
+            $mime = 'image/png';
+
+            if (substr($binary, 0, 2) === "\xFF\xD8") {
+                $mime = 'image/jpeg';
+            }
+
+            return "data:$mime;base64," . $clean;
+        };
+
+        $barcodeGudang = $formatBase64Image($items->GbrACCGudang);
+        $barcodeSupir = $formatBase64Image($items->GbrACCSupir);
+        $ttCustomer = $formatBase64Image($items->GbrACCCustomer);
+
+        $otp = DB::table('T_SuratJalanOTP')
+            ->where('IdSuratJalan', $items->IdSuratJalan)
+            ->where('IsUsed', 1)
+            ->latest('CreatedAt')
+            ->first();
+
+        $tanggalCustomer = null;
+
+        if ($otp) {
+            $tanggalCustomer = $otp->ApprovedAt ?? $otp->CreatedAt;
+        }
+
+        $namaCustomer = '-';
+
+        if ($otp && !empty($otp->Phone)) {
+
+            $phone = preg_replace('/[^0-9]/', '', $otp->Phone);
+
+            $namaCustomer = DB::connection('ConnPublic')
+                ->table('UserPublic')
+                ->where('NoHP', $phone)
+                ->value('NamaUser') ?? '-';
+        }
+
+        $namaPengirim = null;
+        $ttdPengirim = null;
+
+        $namaExpeditor = $items->NamaExpeditor;
+
+        if (!empty($items->NamaSupir) || !empty($items->GbrACCSupir)) {
+
+            $namaPengirim = $items->NamaSupir;
+            $ttdPengirim = $barcodeSupir;
+
+        } elseif (!empty($items->NamaSatpam) || !empty($items->GbrACCSatpam)) {
+
+            $namaPengirim = $items->NamaSatpam;
+            $ttdPengirim = $formatBase64Image($items->GbrACCSatpam);
+        }
+
+        $template = ((int)$items->ACCCustomer === 1)
+            ? 'SuratJalan.SuratJalanPDF'
+            : 'SuratJalan.SuratJalanPascaPDF';
+
+        $pdf = Pdf::loadView($template, [
+            'items' => $items,
+            'namaPengirim' => $namaPengirim,
+            'ttdPengirim' => $ttdPengirim,
+            'barcodeGudang' => $barcodeGudang,
+            'barcodeSupir' => $barcodeSupir,
+            'ttCustomer' => $ttCustomer,
+            'namaCustomer' => $namaCustomer,
+            'tanggalCustomer' => $tanggalCustomer,
+            'namaExpeditor' => $namaExpeditor,
+        ])->setPaper('A4', 'portrait');
+
+        return $pdf->download(
+            'Surat Jalan ' . $idPengiriman . '.pdf'
+        );
+    }
+
 
     public function create()
     {

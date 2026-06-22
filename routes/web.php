@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\DokumenSJ\Pdf;
 use App\Http\Controllers\SuratJalan\SuratJalanPesananController;
 use App\Http\Controllers\DokumenSJ\DokumenSJController;
 use App\Http\Controllers\SuratJalan\VerifyDokumenController;
@@ -70,10 +71,13 @@ Route::get('SuratJalan/get-contacts/{id_pengiriman}', [SuratJalanPesananControll
 Route::post('SuratJalan/send-otp', [SuratJalanPesananController::class, 'sendOtp']);
 Route::get('/dokumen-sj/search', [DokumenSJController::class, 'search'])->name('DokumenSJ.search');
 Route::resource('DokumenSJ', DokumenSJController::class)->except(['show']);
+Route::get('/DokumenSJ/download/{id}', [DokumenSJController::class, 'downloadPdf'])->name('DokumenSJ.download');
 Route::post('SuratJalan/verify-otp', [SuratJalanPesananController::class, 'verifyOtp']);
 Route::post('SuratJalan/confirm-approval', [SuratJalanPesananController::class, 'confirmApproval']);
 Route::post('SuratJalan/resend-email', [SuratJalanPesananController::class, 'resendEmail']);
 Route::post('/SuratJalan/upload-foto', [SuratJalanPesananController::class, 'uploadFoto']);
+Route::get('/SuratJalan/product-receipt/{idPengiriman}', [SuratJalanPesananController::class, 'redirectProductReceipt']);
+
 // Route::get('/preview-surat-jalan/{id}', [SuratJalanPesananController::class, 'previewSuratJalan']);
 
 Route::middleware(['check.login'])->group(function () {

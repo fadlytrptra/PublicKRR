@@ -205,6 +205,12 @@ let table = $('#tableList').DataTable({
                     <button class="btn btn-primary btn-sm btn-detail" data-id="${data}">
                         Lihat
                     </button>
+                    <a
+                        href="/SuratJalan/product-receipt/${data}"
+                        target="_blank"
+                        class="btn btn-warning btn-sm">
+                        Product Receipt
+                    </a>
                 `;
             }
         }

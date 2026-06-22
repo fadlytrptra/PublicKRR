@@ -138,7 +138,7 @@ class LoginController extends Controller
             'NamaPerusahaan' => 'required',
             'AlamatPerusahaan' => 'required',
             'NoHP' => ['required', 'regex:/^628[0-9]{8,13}$/'],
-            'otp_method' => 'required|in:whatsapp,sms',
+            'otp_method' => 'required|in:email,sms',
             'Password' => [
                 'required',
                 'min:8',
@@ -226,51 +226,51 @@ class LoginController extends Controller
             'register_expired' => $now->copy()->addMinutes(5),
         ]);
 
-        // pilih metode kirim otp
-        // if ($request->otp_method === 'email') {
-        //     // Mail::mailer('MailNoReply')->raw(
-        //     //     "Kode OTP verifikasi akun Anda: $otp",
-        //     //     function ($message) use ($request) {
-        //     //         $message->to($request->Email)
-        //     //             ->from(
-        //     //                 env('MAILNOREPLY_FROM_ADDRESS'),
-        //     //                 env('MAILNOREPLY_FROM_NAME')
-        //     //             )
-        //     //             ->subject('OTP Verifikasi Akun');
-        //     //     }
-        //     // );
-        //     Mail::mailer('MailNoReply')
-        //         ->to($request->Email)
-        //         ->send(new OTPMail($request->NamaUser, $otp, 'Registrasi User'));
-
-        //     $destination = $request->Email;
-        //     $method = 'Email';
-        // }
-
         $message =
             "Kode OTP Verifikasi akun Anda: {$otp}\n\n" .
             "OTP berlaku selama 5 menit.";
 
-        if ($request->otp_method === 'whatsapp') {
-            $response = Http::withHeaders([
-                'Authorization' => env('WA_TOKEN')
-            ])->post('https://api.fonnte.com/send', [
-                'target' => $nohp,
-                'message' => $message
-            ]);
 
-            if (!$response->successful()) {
-                \Log::error('Fonnte Error: ' . $response->body());
+        // pilih metode kirim otp
+        if ($request->otp_method === 'email') {
+            Mail::mailer('MailNoReply')->raw(
+                "Kode OTP verifikasi akun Anda: $otp",
+                function ($message) use ($request) {
+                    $message->to($request->Email)
+                        ->from(
+                            env('MAILNOREPLY_FROM_ADDRESS'),
+                            env('MAILNOREPLY_FROM_NAME')
+                        )
+                        ->subject('OTP Verifikasi Akun');
+                }
+            );
+            Mail::mailer('MailNoReply')
+                ->to($request->Email)
+                ->send(new OTPMail($request->NamaUser, $otp, 'Registrasi User'));
 
-                return back()->withErrors([
-                    'error' => 'Gagal mengirim OTP WhatsApp'
-                ])->withInput();
-            }
+            $destination = $request->Email;
+            $method = 'Email';
+        }
+        // if ($request->otp_method === 'whatsapp') {
+        //     $response = Http::withHeaders([
+        //         'Authorization' => env('WA_TOKEN')
+        //     ])->post('https://api.fonnte.com/send', [
+        //         'target' => $nohp,
+        //         'message' => $message
+        //     ]);
 
-            $destination = $nohp;
-            $method = 'WhatsApp';
+        //     if (!$response->successful()) {
+        //         \Log::error('Fonnte Error: ' . $response->body());
 
-        } else {
+        //         return back()->withErrors([
+        //             'error' => 'Gagal mengirim OTP WhatsApp'
+        //         ])->withInput();
+        //     }
+
+        //     $destination = $nohp;
+        //     $method = 'WhatsApp';
+
+        else {
             $response = Http::withHeaders([
                 'Authorization' => 'App ' . env('SMSVIRO_API_KEY'),
                 'Content-Type' => 'application/json',

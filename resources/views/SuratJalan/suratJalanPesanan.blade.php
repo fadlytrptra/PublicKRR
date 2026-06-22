@@ -56,7 +56,7 @@
                                     <select id="contactType"
                                         class="form-select mb-2">
                                         <option value="">-- Pilih Metode OTP --</option>
-                                        <option value="whatsapp">WhatsApp</option>
+                                        <option value="email">Email</option>
                                         <option value="sms">SMS</option>
                                     </select>
 
@@ -200,6 +200,7 @@
                             class="btn btn-success">
                             Kamera
                         </button>
+                        <button class="btn btn-secondary" id="btn_clearPhotos">Clear Photos</button>
                     </div>
 
                     <input
@@ -359,8 +360,7 @@
 {{-- Inject data --}}
 <script>
     window.appData = {
-        idPengiriman: "{{ $id_pengiriman }}",
-        noPo: "{{ $no_po }}"
+        idPengiriman: "{{ $id_pengiriman }}"
     };
 
     window.otpData = @json($otp ?? null);
