@@ -241,13 +241,8 @@
 
             <div class="modal-header">
                 <h5 class="modal-title">
-                    Upload Foto Barang (Opsional)
+                    Upload Foto Barang
                 </h5>
-
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal">
-                </button>
             </div>
 
             <div class="modal-body">
@@ -294,13 +289,6 @@
                     type="button"
                     class="btn btn-primary w-100 mt-3">
                     Upload Foto
-                </button>
-
-                <button
-                    type="button"
-                    class="btn btn-secondary w-100 mt-2"
-                    data-bs-dismiss="modal">
-                    Lewati
                 </button>
 
             </div>
