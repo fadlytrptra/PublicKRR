@@ -48,7 +48,7 @@
                         <td>Tanggal Kirim</td>
                         <td>: </td>
                         <td>
-                            {{ \Carbon\Carbon::parse($otp->TglKirim)->locale('id')->translatedFormat('d-F-Y') }}
+                            {{ \Carbon\Carbon::parse($items->TglKirim)->locale('id')->translatedFormat('d-F-Y') }}
                         </td>
                     </tr>
                     <tr>
