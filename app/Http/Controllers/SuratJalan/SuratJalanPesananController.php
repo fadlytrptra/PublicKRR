@@ -846,6 +846,7 @@ class SuratJalanPesananController extends Controller
 
         $pdf = Pdf::loadView($template, [
             'items' => $items,
+            'otp' => $otp,
             'namaPengirim' => $namaPengirim,
             'ttdPengirim' => $ttdPengirim,
             'barcodeGudang' => $barcodeGudang,
