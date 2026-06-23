@@ -769,8 +769,9 @@ jQuery(function ($) {
     });
 
 
-    //upload foto pasca
+    // upload foto pasca
     $('#btnUploadFoto').click(function () {
+
         if (selectedFiles.length === 0) {
             alert('Pilih foto terlebih dahulu');
             return;
@@ -778,36 +779,17 @@ jQuery(function ($) {
 
         let formData = new FormData();
 
-        formData.append(
-            'id_surat_jalan',
-            window.idSuratJalan
-        );
-
-        formData.append(
-            'mode',
-            'PASCA'
-        );
+        formData.append('id_surat_jalan', window.idSuratJalan);
+        formData.append('mode', 'PASCA');
 
         selectedFiles.forEach(file => {
-            formData.append(
-                'pictures[]',
-                file
-            );
+            formData.append('pictures[]', file);
         });
 
-        let totalSizeMB =
-            (
-                selectedFiles.reduce(
-                    (sum, file) => sum + file.size,
-                    0
-                ) / 1024 / 1024
-            ).toFixed(2);
-
+        let totalSizeMB = (selectedFiles.reduce((sum, file) => sum + file.size, 0) / 1024 / 1024).toFixed(2);
         let $btn = $(this);
 
-        $btn
-            .prop('disabled', true)
-            .text('Uploading...');
+        $btn.prop('disabled', true).text('Uploading...');
 
         $('#uploadProgressContainer').show();
 
@@ -819,6 +801,10 @@ jQuery(function ($) {
             `Mengupload ${selectedFiles.length} foto (${totalSizeMB} MB)`
         );
 
+        let progressTimer = null;
+        let uploadFinished = false;
+        let displayedPercent = 0;
+
         $.ajax({
             url: '/SuratJalan/upload-foto',
             type: 'POST',
@@ -827,41 +813,65 @@ jQuery(function ($) {
             contentType: false,
 
             xhr: function () {
-
                 let xhr = new window.XMLHttpRequest();
 
                 xhr.upload.addEventListener(
                     'progress',
                     function (e) {
 
-                        if (e.lengthComputable) {
+                        if (!e.lengthComputable) {
+                            return;
+                        }
 
-                            let percent = Math.round(
-                                (e.loaded / e.total) * 100
+                        // jika sudah masuk fase simpan server
+                        if (uploadFinished) {
+                            return;
+                        }
+
+                        let percent = Math.round(
+                            (e.loaded / e.total) * 100
+                        );
+
+                        if (percent >= 100) {
+                            uploadFinished = true;
+                            displayedPercent = Math.max(displayedPercent, 90);
+
+                            $('#uploadProgressBar')
+                                .css('width', displayedPercent + '%')
+                                .text(displayedPercent + '%');
+
+                            $('#uploadProgressText').text(
+                                'Proses penyimpanan dilakukan...'
                             );
+
+                            progressTimer = setInterval(() => {
+                                if (displayedPercent < 99) {
+                                    displayedPercent++;
+                                    $('#uploadProgressBar')
+                                        .css('width', displayedPercent + '%')
+                                        .text(displayedPercent + '%');
+                                }
+
+                            }, 500);
+                            return;
+                        }
+                        if (percent > displayedPercent) {
+                            displayedPercent = percent;
 
                             $('#uploadProgressBar')
                                 .css('width', percent + '%')
                                 .text(percent + '%');
-
-                            if (percent < 100) {
-                                $('#uploadProgressText').text(
-                                    `Uploading ${percent}%`
-                                );
-                            } else {
-                                $('#uploadProgressText').text(
-                                    'Upload selesai, tunggu proses penyimpanan foto dilakukan...'
-                                );
-                            }
                         }
                     },
                     false
                 );
-
                 return xhr;
             },
 
             success: function (res) {
+                if (progressTimer) {
+                    clearInterval(progressTimer);
+                }
 
                 $('#uploadProgressBar')
                     .css('width', '100%')
@@ -880,8 +890,12 @@ jQuery(function ($) {
 
             error: function (xhr) {
 
+                if (progressTimer) {
+                    clearInterval(progressTimer);
+                }
+
                 if (xhr.status === 413) {
-                    alert('Ukuran file melebihi batas server');
+                    alert('Ukuran file melebihi batas bawaan sistem.');
                     return;
                 }
 
@@ -892,15 +906,12 @@ jQuery(function ($) {
             },
 
             complete: function () {
-
                 $btn
                     .prop('disabled', false)
                     .text('Upload Foto');
 
                 setTimeout(() => {
-
                     $('#uploadProgressContainer').hide();
-
                     $('#uploadProgressBar')
                         .css('width', '0%')
                         .text('0%');
