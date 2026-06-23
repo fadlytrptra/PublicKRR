@@ -148,8 +148,10 @@ class DokumenSJController extends Controller
             ->latest('CreatedAt')
             ->first();
 
-        $header->TglApp = $otp && $otp->ApprovedAt
-            ? Carbon::parse($otp->ApprovedAt)->format('d-m-Y H:i:s')
+       $header->TglApp = $otp
+            ? Carbon::parse(
+                $otp->ApprovedAt ?? $otp->CreatedAt
+            )->format('d-m-Y H:i:s')
             : '-';
 
         // Tgl Kirim
