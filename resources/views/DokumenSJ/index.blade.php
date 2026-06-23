@@ -119,7 +119,13 @@
                                     </td>
 
                                     <td class="text-center">
-                                        {{ number_format($item->QtyJual ?? 0) }}
+                                        @if($item->ACCCUSTOMER == 0 && !is_null($item->QtyTemp))
+                                            {{ number_format($item->QtyTemp, 0, ',', '.') }}
+                                            /
+                                            {{ number_format($item->QtyAsli, 0, ',', '.') }}
+                                        @else
+                                            {{ number_format($item->QtyJual, 0, ',', '.') }}
+                                        @endif
                                     </td>
 
                                     <td class="text-center">

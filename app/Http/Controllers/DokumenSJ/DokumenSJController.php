@@ -116,6 +116,24 @@ class DokumenSJController extends Controller
                     END as QtyJual
                 "),
 
+                DB::raw("
+                    CASE
+                        WHEN RTRIM(sj.SatJual) = RTRIM(sj.satPrimer)
+                        THEN sj.QtyPrimer
+
+                        WHEN RTRIM(sj.SatJual) = RTRIM(sj.satSekunder)
+                        THEN sj.QtySekunder
+
+                        WHEN RTRIM(sj.SatJual) = RTRIM(sj.satTritier)
+                        THEN sj.QtyTritier
+
+                        ELSE 0
+                    END as QtyAsli
+                "),
+
+                'sj.QtyTemp',
+                'sj.ACCCUSTOMER',
+
                 DB::raw("RTRIM(sj.SatJual) as SatJual"),
 
                 // HEADER
