@@ -583,7 +583,8 @@ class SuratJalanPesananController extends Controller
                 // PASCA KIRIM
                 $update = [
                     'ACCCustomer' => 0,
-                    'QtyTemp' => $request->qty_temp
+                    'QtyTemp' => $request->qty_temp,
+                    'GbrACCCustomer' => $qrBase64
                 ];
 
                 // update OTP TANPA ApprovedAt
