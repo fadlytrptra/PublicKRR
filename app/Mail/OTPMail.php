@@ -35,15 +35,19 @@ class OTPMail extends Mailable
      */
     public function envelope()
     {
+        $subjects = [
+            'Registrasi User' => 'OTP Registrasi Kerta Rajasa Raya',
+            'Approval Surat Jalan' => 'OTP Product Receipt Kerta Rajasa Raya',
+        ];
+
         return new Envelope(
-            subject: 'O T P Mail',
+            subject: $subjects[$this->activity] ?? 'OTP Kerta Rajasa Raya',
         );
     }
 
     public function build()
     {
-        return $this->subject('OTP Mail')
-            ->view('emails.OTP');
+        return $this->view('emails.OTP');
     }
 
     /**
