@@ -777,12 +777,16 @@ jQuery(function ($) {
         }
 
         let formData = new FormData();
+
         formData.append(
             'id_surat_jalan',
             window.idSuratJalan
         );
 
-        formData.append('mode', 'PASCA');
+        formData.append(
+            'mode',
+            'PASCA'
+        );
 
         selectedFiles.forEach(file => {
             formData.append(
@@ -791,11 +795,29 @@ jQuery(function ($) {
             );
         });
 
+        let totalSizeMB =
+            (
+                selectedFiles.reduce(
+                    (sum, file) => sum + file.size,
+                    0
+                ) / 1024 / 1024
+            ).toFixed(2);
+
         let $btn = $(this);
 
         $btn
             .prop('disabled', true)
             .text('Uploading...');
+
+        $('#uploadProgressContainer').show();
+
+        $('#uploadProgressBar')
+            .css('width', '0%')
+            .text('0%');
+
+        $('#uploadProgressText').text(
+            `Mengupload ${selectedFiles.length} foto (${totalSizeMB} MB)`
+        );
 
         $.ajax({
             url: '/SuratJalan/upload-foto',
@@ -804,58 +826,86 @@ jQuery(function ($) {
             processData: false,
             contentType: false,
 
+            xhr: function () {
+
+                let xhr = new window.XMLHttpRequest();
+
+                xhr.upload.addEventListener(
+                    'progress',
+                    function (e) {
+
+                        if (e.lengthComputable) {
+
+                            let percent = Math.round(
+                                (e.loaded / e.total) * 100
+                            );
+
+                            $('#uploadProgressBar')
+                                .css('width', percent + '%')
+                                .text(percent + '%');
+
+                            if (percent < 100) {
+                                $('#uploadProgressText').text(
+                                    `Uploading ${percent}%`
+                                );
+                            } else {
+                                $('#uploadProgressText').text(
+                                    'Upload selesai, server sedang memproses foto...'
+                                );
+                            }
+                        }
+                    },
+                    false
+                );
+
+                return xhr;
+            },
+
             success: function (res) {
+
+                $('#uploadProgressBar')
+                    .css('width', '100%')
+                    .text('100%');
+
+                $('#uploadProgressText').text(
+                    'Upload berhasil'
+                );
+
                 alert(res.message);
+
                 $('#modalKonfirmasi').modal('hide');
+
                 location.reload();
             },
 
             error: function (xhr) {
-                console.log('Status:', xhr.status);
-                console.log('Response:', xhr.responseText);
-                console.log('JSON:', xhr.responseJSON);
-
-                if (xhr.status === 422) {
-
-                    if (xhr.responseJSON?.message) {
-                        alert(xhr.responseJSON.message);
-                        return;
-                    }
-
-                    if (xhr.responseJSON?.errors) {
-
-                        let message = Object.values(
-                            xhr.responseJSON.errors
-                        )
-                        .flat()
-                        .join('\n');
-
-                        alert(message);
-                        return;
-                    }
-                }
 
                 if (xhr.status === 413) {
                     alert('Ukuran file melebihi batas server');
                     return;
                 }
 
-                if (xhr.responseText) {
-                    alert(
-                        'Error ' +
-                        xhr.status +
-                        '\n\n' +
-                        xhr.responseText.substring(0, 500)
-                    );
-                    return;
-                }
-                alert('Upload gagal');
+                alert(
+                    xhr.responseJSON?.message ??
+                    'Upload gagal'
+                );
             },
 
             complete: function () {
+
                 $btn
                     .prop('disabled', false)
                     .text('Upload Foto');
+
+                setTimeout(() => {
+
+                    $('#uploadProgressContainer').hide();
+
+                    $('#uploadProgressBar')
+                        .css('width', '0%')
+                        .text('0%');
+
+                }, 1000);
             }
         });
     });

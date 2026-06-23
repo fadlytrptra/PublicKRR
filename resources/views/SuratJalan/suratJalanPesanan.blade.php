@@ -201,7 +201,29 @@
                         <div id="fotoPreview" class="d-flex flex-wrap gap-2 mt-3">
                         </div>
 
-                        <button id="btnUploadFoto" type="button" class="btn btn-primary w-100 mt-3">
+                        <!-- Progress Upload -->
+                        <div id="uploadProgressContainer" class="mt-3" style="display:none;">
+                            <div class="progress">
+                                <div
+                                    id="uploadProgressBar"
+                                    class="progress-bar progress-bar-striped progress-bar-animated"
+                                    role="progressbar"
+                                    style="width:0%">
+                                    0%
+                                </div>
+                            </div>
+
+                            <small
+                                id="uploadProgressText"
+                                class="text-muted d-block mt-1">
+                                Menyiapkan upload...
+                            </small>
+                        </div>
+
+                        <button
+                            id="btnUploadFoto"
+                            type="button"
+                            class="btn btn-primary w-100 mt-3">
                             Upload Foto
                         </button>
                     </div>
