@@ -165,11 +165,6 @@ class DokumenSJController extends Controller
             ? Carbon::parse($tglPengirim)->format('d-m-Y H:i:s')
             : '-';
 
-        // Tanggal diterima customer
-        $header->TglApp = $header->TglApp
-            ? Carbon::parse($header->TglApp)->format('d-m-Y H:i:s')
-            : '-';
-
         foreach ($data as $item) {
             $item->SatJual = $this->formatSatuan($item->SatJual);
         }
