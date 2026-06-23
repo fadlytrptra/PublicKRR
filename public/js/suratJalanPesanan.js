@@ -850,7 +850,7 @@ jQuery(function ($) {
                                 );
                             } else {
                                 $('#uploadProgressText').text(
-                                    'Upload selesai, server sedang memproses foto...'
+                                    'Upload selesai, tunggu proses penyimpanan foto dilakukan...'
                                 );
                             }
                         }
