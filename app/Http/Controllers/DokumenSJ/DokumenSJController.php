@@ -99,9 +99,19 @@ class DokumenSJController extends Controller
 
                 DB::raw("
                     CASE
-                        WHEN RTRIM(sj.SatJual) = RTRIM(sj.satPrimer) THEN sj.QtyPrimer
-                        WHEN RTRIM(sj.SatJual) = RTRIM(sj.satSekunder) THEN sj.QtySekunder
-                        WHEN RTRIM(sj.SatJual) = RTRIM(sj.satTritier) THEN sj.QtyTritier
+                        WHEN sj.ACCCUSTOMER = 0
+                            AND sj.QtyTemp IS NOT NULL
+                        THEN sj.QtyTemp
+
+                        WHEN RTRIM(sj.SatJual) = RTRIM(sj.satPrimer)
+                        THEN sj.QtyPrimer
+
+                        WHEN RTRIM(sj.SatJual) = RTRIM(sj.satSekunder)
+                        THEN sj.QtySekunder
+
+                        WHEN RTRIM(sj.SatJual) = RTRIM(sj.satTritier)
+                        THEN sj.QtyTritier
+
                         ELSE 0
                     END as QtyJual
                 "),
@@ -110,6 +120,7 @@ class DokumenSJController extends Controller
 
                 // HEADER
                 'sj.IDPengiriman',
+                'sj.IdSuratJalan',
                 'sj.TglKirim',
                 'sj.NamaCust',
                 'sj.NamaExpeditor',
@@ -130,6 +141,16 @@ class DokumenSJController extends Controller
         }
 
         $header = $data->first();
+
+        $otp = DB::table('T_SuratJalanOTP')
+            ->where('IdSuratJalan', $header->IdSuratJalan)
+            ->where('IsUsed', 1)
+            ->latest('CreatedAt')
+            ->first();
+
+        $header->TglApp = $otp && $otp->ApprovedAt
+            ? Carbon::parse($otp->ApprovedAt)->format('d-m-Y H:i:s')
+            : '-';
 
         // Tgl Kirim
         $header->TglKirim = $header->TglKirim
@@ -292,7 +313,7 @@ class DokumenSJController extends Controller
         $barcodeGudang = $formatBase64Image($items->GbrACCGudang);
         $barcodeSupir = $formatBase64Image($items->GbrACCSupir);
         $ttCustomer = $formatBase64Image($items->GbrACCCustomer);
-
+        $ttCustomer2 = $formatBase64Image($items->GbrACCCustomer);
         $otp = DB::table('T_SuratJalanOTP')
             ->where('IdSuratJalan', $items->IdSuratJalan)
             ->where('IsUsed', 1)
@@ -339,11 +360,13 @@ class DokumenSJController extends Controller
 
         $pdf = Pdf::loadView($template, [
             'items' => $items,
+            'otp' => $otp,
             'namaPengirim' => $namaPengirim,
             'ttdPengirim' => $ttdPengirim,
             'barcodeGudang' => $barcodeGudang,
             'barcodeSupir' => $barcodeSupir,
             'ttCustomer' => $ttCustomer,
+            'ttCustomer2' => $ttCustomer2,
             'namaCustomer' => $namaCustomer,
             'tanggalCustomer' => $tanggalCustomer,
             'namaExpeditor' => $namaExpeditor,
