@@ -792,6 +792,7 @@ class SuratJalanPesananController extends Controller
         $barcodeGudang = $formatBase64Image($items->GbrACCGudang);
         $barcodeSupir = $formatBase64Image($items->GbrACCSupir);
         $ttCustomer = $formatBase64Image($items->GbrACCCustomer);
+        $ttCustomer2 = $formatBase64Image($items->GbrACCCustomer);
 
         // $otp = DB::table('T_SuratJalanOTP')
         //     ->where('IdSuratJalan', $items->IdSuratJalan)
@@ -850,6 +851,7 @@ class SuratJalanPesananController extends Controller
             'barcodeGudang' => $barcodeGudang,
             'barcodeSupir' => $barcodeSupir,
             'ttCustomer' => $ttCustomer,
+            'ttCustomer2' => $ttCustomer2,
             'namaCustomer' => $namaCustomer,
             'tanggalCustomer' => $tanggalCustomer,
             'namaExpeditor' => $namaExpeditor,

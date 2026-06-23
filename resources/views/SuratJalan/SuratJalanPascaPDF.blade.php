@@ -158,13 +158,13 @@
                     <tr>
                         <td style="height:120px; text-align:center; vertical-align:bottom; padding-top:15px;">
                             @if ($barcodeGudang)
-                                <img src="{{ $ttCustomer }}" style="max-height:110px;">
+                                <img src="{{ $ttCustomer2 }}" style="max-height:110px;">
                             @endif
                         </td>
 
                         <td style="height:120px; text-align:center; vertical-align:bottom; padding-top:15px;">
-                            @if ($ttCustomer)
-                                <img src="{{ $ttCustomer }}" style="max-height:110px;">
+                            @if ($ttCustomer2)
+                                <img src="{{ $ttCustomer2 }}" style="max-height:110px;">
                             @endif
                         </td>
                     </tr>

@@ -20,7 +20,7 @@
 <div style="width: 16cm;height: 20.5cm;border: 1px solid black;padding: 10px;box-sizing: border-box;"
     contenteditable="true">
     <div style="position:absolute; top:-50px; left:-120px; z-index:-1;">
-        <img src="{{ public_path('images/verified.jpg') }}" style="width:900px; opacity:0.15;">
+        <img src="{{ public_path('images/verified.png') }}" style="width:900px; opacity:0.15;">
     </div>
     <h2>PT. KERTA RAJASA RAYA</h2>
     <h4>JL RAYA TROPODO No. 1 WARU - SIDOARJO - INDONESIA</h4>
