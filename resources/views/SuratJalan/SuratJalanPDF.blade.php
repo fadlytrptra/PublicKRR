@@ -65,7 +65,7 @@
                         <td>Tanggal Terima</td>
                         <td>: </td>
                         <td>
-                            {{ \Carbon\Carbon::parse($otp->CreatedAt)->locale('id')->translatedFormat('d F Y, H:i:s') }}
+                            {{ \Carbon\Carbon::parse($otp->ApprovedAt)->locale('id')->translatedFormat('d F Y, H:i:s') }}
                         </td>
                     </tr>
                 </table>
