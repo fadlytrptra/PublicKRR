@@ -75,10 +75,20 @@ class SuratJalanPesananController extends Controller
             abort(404);
         }
 
-        $otp = DB::table('T_SuratJalanOTP')
-            ->where('IdSuratJalan', $row->IdSuratJalan)
-            ->where('IsUsed', 1)
-            ->latest('ApprovedAt')
+       $otp = DB::table('T_SuratJalanOTP as otp')
+            ->leftJoin(
+                'T_KirimSuratJalan as sj',
+                'sj.IdSuratJalan',
+                '=',
+                'otp.IdSuratJalan'
+            )
+            ->where('otp.IdSuratJalan', $row->IdSuratJalan)
+            ->where('otp.IsUsed', 1)
+            ->select(
+                'otp.*',
+                'sj.ACCCustomer'
+            )
+            ->orderByDesc('otp.CreatedAt')
             ->first();
 
         return view('SuratJalan.suratJalanPesanan', [
@@ -584,7 +594,7 @@ class SuratJalanPesananController extends Controller
                 $update = [
                     'ACCCustomer' => 0,
                     'QtyTemp' => $request->qty_temp,
-                    'GbrACCCustomer' => $qrBase64
+                    'GbrACCCustomer' => $qrBase64,
                 ];
 
                 // update OTP TANPA ApprovedAt
@@ -593,6 +603,7 @@ class SuratJalanPesananController extends Controller
                     ->where('IsUsed', 0)
                     ->update([
                         'IsUsed' => 1,
+                        'ApprovedAt' => $now
                     ]);
             }
 

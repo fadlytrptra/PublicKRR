@@ -101,10 +101,10 @@ jQuery(function ($) {
         $('#approvalInfo').show();
 
         let approvedBy = otpData.Email ?? otpData.Phone ?? '-';
-        let approvedAt = otpData.ApprovedAt;
+        let accCustomer = Number(otpData.ACCCustomer);
         let createdAt = otpData.CreatedAt;
 
-        if (approvedAt) {
+        if (accCustomer === 1) {
             // Approve (ACC)
             $('#rowStatus').hide();
 
