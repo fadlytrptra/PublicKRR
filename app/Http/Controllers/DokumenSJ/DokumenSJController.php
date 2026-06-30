@@ -346,15 +346,24 @@ class DokumenSJController extends Controller
         }
 
         $namaCustomer = '-';
+        if ($otp) {
 
-        if ($otp && !empty($otp->Phone)) {
+            if (!empty($otp->Phone)) {
 
-            $phone = preg_replace('/[^0-9]/', '', $otp->Phone);
+                $phone = preg_replace('/[^0-9]/', '', $otp->Phone);
 
-            $namaCustomer = DB::connection('ConnPublic')
-                ->table('UserPublic')
-                ->where('NoHP', $phone)
-                ->value('NamaUser') ?? '-';
+                $namaCustomer = DB::connection('ConnPublic')
+                    ->table('UserPublic')
+                    ->where('NoHP', $phone)
+                    ->value('NamaUser') ?? '-';
+
+            } elseif (!empty($otp->Email)) {
+
+                $namaCustomer = DB::connection('ConnPublic')
+                    ->table('UserPublic')
+                    ->where('Email', $otp->Email)
+                    ->value('NamaUser') ?? '-';
+            }
         }
 
         $namaPengirim = null;
