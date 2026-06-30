@@ -17,7 +17,7 @@
         max-height: 80px;
     }
 </style>
-<div style="width: 16cm;height: 20.5cm;border: 1px solid black;padding: 10px;box-sizing: border-box;"
+<div style="width: 16cm;height: 24cm;border: 1px solid black;padding: 10px;box-sizing: border-box;"
     contenteditable="true">
     <div style="position:absolute; top:250px; left:-20px; z-index:-1;">
         <img src="{{ public_path('images/unverified.png') }}" style="width:700px; opacity:0.20;">
@@ -62,11 +62,14 @@
                         <td>{{ $items->SuratPesanan }}</td>
                     </tr>
                     <tr>
-                        <td>Tanggal Terima</td>
+                        <td>No Container</td>
                         <td>: </td>
-                        <td>
-                            {{ \Carbon\Carbon::parse($otp->ApprovedAt)->locale('id')->translatedFormat('d F Y, H:i:s') }}
-                        </td>
+                        <td>{{ $items->NoContainer ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td>No Seal</td>
+                        <td>: </td>
+                        <td>{{ $items->NoSeal ?? '-' }}</td>
                     </tr>
                 </table>
             </td>
@@ -94,9 +97,9 @@
 
     <table style="border: 1px solid black;width: 100%;border-collapse: collapse;margin-top: 10px;">
         <tr>
-            <th style="border: 1px solid black;padding:8px">Uraian</th>
-            <th style="border: 1px solid black;padding:8px">Satuan</th>
-            <th style="border: 1px solid black;padding:8px">Jumlah</th>
+            <th style="border: 1px solid black;padding:8px; width:70%">Uraian</th>
+            <th style="border: 1px solid black;padding:8px; width:15%">Satuan</th>
+            <th style="border: 1px solid black;padding:8px; width:15%">Jumlah</th>
         </tr>
         <tr>
             <td style="border: 1px solid black;padding:8px">{{ $items->NamaKelompokUtama ?? '' }} <br>
@@ -108,7 +111,24 @@
                 {{ trim($items->satPrimer) }}
             </td>
             <td style="border: 1px solid black;padding:8px;white-space: nowrap;text-align: center;">
-                {{ number_format((float) $items->QtyTemp, 0, ',', '.') }} / {{ trim($jumlahUmum) }} <br>
+                {{ number_format($jumlahUmum) }} <br>
+                {{ number_format($items->QtyPrimer, 0, ',', '.') }}
+            </td>
+        </tr>
+    </table>
+    <table style="border: 1px solid black;width: 100%;border-collapse: collapse;margin-top: 10px;">
+        <tr>
+            <th style="border: 1px solid black;padding:8px; width:70%">Keterangan Pasca Kirim</th>
+            <th style="border: 1px solid black;padding:8px; width:15%">Satuan</th>
+            <th style="border: 1px solid black;padding:8px; width:15%">Jumlah</th>
+        </tr>
+        <tr>
+            <td style="border: 1px solid black;padding:8px">{{ $items->KeteranganPasca ?? '-' }} <br></td>
+            <td style="border: 1px solid black;padding:8px;white-space: nowrap;text-align: center;">{{ trim($satuanUmum) }} <br>
+                {{ trim($items->satPrimer) }}
+            </td>
+            <td style="border: 1px solid black;padding:8px;white-space: nowrap;text-align: center;">
+                {{ number_format((float) $items->QtyTemp, 0, ',', '.') }} <br>
                 {{ number_format($items->QtyPrimer, 0, ',', '.') }}
             </td>
         </tr>
@@ -167,6 +187,13 @@
                                 <img src="{{ $ttCustomer2 }}" style="max-height:110px;">
                             @endif
                         </td>
+
+                        <td style="vertical-align:middle; padding-right:30px; width:150px;">
+                            <strong>Tanggal Terima:</strong><br>
+                            {{ \Carbon\Carbon::parse($otp->ApprovedAt)
+                                ->locale('id')
+                                ->translatedFormat('d F Y, H:i:s') }}
+                        </td>
                     </tr>
 
                     {{-- Nama --}}
@@ -182,7 +209,7 @@
 
                 </table>
 
-                <table style="width:100%; font-size:12px; margin-top:10px;">
+                <table style="width:100%; font-size:12px; margin-top:90px;">
                     <tr>
                         <td><strong>Note :</strong></td>
                     </tr>

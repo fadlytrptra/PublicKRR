@@ -19,9 +19,6 @@
 </style>
 <div style="width: 16cm;height: 20.5cm;border: 1px solid black;padding: 10px;box-sizing: border-box;"
     contenteditable="true">
-    <div style="position:absolute; top:-50px; left:-120px; z-index:-1;">
-        <img src="{{ public_path('images/verified.png') }}" style="width:900px; opacity:0.15;">
-    </div>
     <h2>PT. KERTA RAJASA RAYA</h2>
     <h4>JL RAYA TROPODO No. 1 WARU - SIDOARJO - INDONESIA</h4>
     <h4>TELP (031) 8669595 (HUNTING)</h4>
@@ -62,11 +59,14 @@
                         <td>{{ $items->SuratPesanan }}</td>
                     </tr>
                     <tr>
-                        <td>Tanggal Terima</td>
+                        <td>No Container</td>
                         <td>: </td>
-                        <td>
-                            {{ \Carbon\Carbon::parse($otp->ApprovedAt)->locale('id')->translatedFormat('d F Y, H:i:s') }}
-                        </td>
+                        <td>{{ $items->NoContainer ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td>No Seal</td>
+                        <td>: </td>
+                        <td>{{ $items->NoSeal ?? '-' }}</td>
                     </tr>
                 </table>
             </td>
@@ -151,7 +151,7 @@
                     </tr>
 
                     {{-- QR --}}
-                    <tr>
+                     <tr>
                         <td style="height:120px; text-align:center; vertical-align:bottom; padding-top:15px;">
                             @if ($barcodeGudang)
                                 <img src="{{ $ttCustomer }}" style="max-height:110px;">
@@ -162,6 +162,13 @@
                             @if ($ttCustomer)
                                 <img src="{{ $ttCustomer }}" style="max-height:110px;">
                             @endif
+                        </td>
+
+                        <td style="vertical-align:middle; padding-right:30px; width:150px;">
+                            <strong>Tanggal Terima:</strong><br>
+                            {{ \Carbon\Carbon::parse($otp->ApprovedAt)
+                                ->locale('id')
+                                ->translatedFormat('d F Y, H:i:s') }}
                         </td>
                     </tr>
 
@@ -178,7 +185,7 @@
 
                 </table>
 
-                <table style="width:100%; font-size:12px; margin-top:10px;">
+                <table style="width:100%; font-size:12px; margin-top:50px;">
                     <tr>
                         <td><strong>Note :</strong></td>
                     </tr>

@@ -81,6 +81,10 @@ class DokumenSJController extends Controller
             abort(404);
         }
 
+        $lastOtp = DB::table('T_SuratJalanOTP')
+            ->selectRaw('MAX(Id) as Id, IdSuratJalan')
+            ->groupBy('IdSuratJalan');
+
         $data = DB::connection('ConnPublic')
             ->table('T_KirimSuratJalan as sj')
             ->whereExists(function ($query) {
@@ -88,10 +92,10 @@ class DokumenSJController extends Controller
                     ->from('CustomerUserPublic as cup')
                     ->whereColumn('cup.IDCust', 'sj.IDCust');
             })
-            ->leftJoin('T_SuratJalanOTP as otp', function ($join) {
-                $join->on('otp.IdSuratJalan', '=', 'sj.IdSuratJalan')
-                    ->whereNotNull('otp.ApprovedAt');
+            ->leftJoinSub($lastOtp, 'lastOtp', function ($join) {
+                $join->on('lastOtp.IdSuratJalan', '=', 'sj.IdSuratJalan');
             })
+            ->leftJoin('T_SuratJalanOTP as otp', 'otp.Id', '=', 'lastOtp.Id')
             ->where('sj.IDPengiriman', $idPengiriman)
             ->select([
                 'sj.NamaType',

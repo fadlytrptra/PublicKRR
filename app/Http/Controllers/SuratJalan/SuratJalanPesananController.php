@@ -907,6 +907,7 @@ class SuratJalanPesananController extends Controller
         $request->validate([
             'id_surat_jalan' => 'required|integer',
             'mode' => 'required|in:PASCA,ACC',
+            'keterangan_pasca' => 'nullable|string|max:1000',
             'pictures' => 'required|array|min:1',
             'pictures.*' => 'required|image|mimes:jpg,jpeg,png'
         ], [
@@ -977,6 +978,14 @@ class SuratJalanPesananController extends Controller
             // ==========================
             if ($request->mode === 'PASCA') {
 
+                if (trim($request->keterangan_pasca) === '') {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Alasan Tolak Barang harus diisi.'
+                    ], 422);
+                }
+
                 $totalUploadSize = collect(
                     $request->file('pictures')
                 )->sum(function ($file) {
@@ -1037,6 +1046,15 @@ class SuratJalanPesananController extends Controller
                 );
             }
 
+            if ($request->mode === 'PASCA') {
+                DB::connection('ConnPublic')
+                    ->table('T_KirimSuratJalan')
+                    ->where('IdSuratJalan', $idSuratJalan)
+                    ->update([
+                        'KeteranganPasca' => $request->keterangan_pasca
+                    ]);
+            }
+
             DB::connection('ConnPublic')
                 ->table('T_Attachment')
                 ->where('IdSuratJalan', $idSuratJalan)
@@ -1089,8 +1107,6 @@ class SuratJalanPesananController extends Controller
             $encryptedIdPengiriman
         );
     }
-
-
 
 
     public function edit($id)

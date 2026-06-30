@@ -166,12 +166,27 @@
 
                     <!-- STEP 3 -->
                     <div id="stepFoto" style="display:none;">
-                        <hr>
+                        <!-- Alasan Tolak Barang -->
+                        <div class="mb-3">
+                            <label for="keteranganPasca" class="form-label">
+                                <strong>Alasan Tolak Barang</strong>
+                            </label>
+
+                            <textarea
+                                id="keteranganPasca"
+                                class="form-control"
+                                rows="3"
+                                maxlength="500"
+                                placeholder="Masukkan alasan penolakan barang..."></textarea>
+
+                            <small class="text-muted">
+                                Wajib diisi apabila barang ditolak.
+                            </small>
+                        </div>
 
                         <p>
                             <strong>Upload Foto Barang</strong>
                         </p>
-
                         <small class="text-muted">
                             Total seluruh foto maksimal 50 MB.
                         </small>
@@ -227,9 +242,7 @@
                             Upload Foto
                         </button>
                     </div>
-
                 </div>
-
             </div>
         </div>
     </div>
@@ -276,6 +289,13 @@
 
                     <button id="btnUploadFotoACC" type="button" class="btn btn-primary w-100 mt-3">
                         Upload Foto
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary w-100 mt-2"
+                        data-bs-dismiss="modal">
+                        Lewati
                     </button>
 
                 </div>
@@ -336,7 +356,7 @@
     };
 
         window.otpData = @json($otp ?? null);
-    </script>
+</script>
 
     <script>
         window.wajibUploadFoto =

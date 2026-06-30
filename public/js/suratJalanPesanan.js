@@ -103,6 +103,7 @@ jQuery(function ($) {
         let approvedBy = otpData.Email ?? otpData.Phone ?? '-';
         let accCustomer = Number(otpData.ACCCustomer);
         let createdAt = otpData.CreatedAt;
+        let approvedAt = otpData.ApprovedAt;
 
         if (accCustomer === 1) {
             // Approve (ACC)
@@ -112,7 +113,7 @@ jQuery(function ($) {
             $('#labelApprovedAt').text('Approved At:');
 
             $('#approvedEmail').text(approvedBy);
-            $('#approvedAt').text(formatDateTime(approvedAt));
+            $('#approvedAt').text(formatDateTime());
 
             $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
                 .removeClass('text-danger')
@@ -133,7 +134,7 @@ jQuery(function ($) {
             $('#labelApprovedAt').text('Tanggal:');
 
             $('#approvedEmail').text(approvedBy);
-            $('#approvedAt').text(formatDateTime(createdAt));
+            $('#approvedAt').text(formatDateTime(approvedAt));
 
             $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
                 .removeClass('text-success')
@@ -777,10 +778,19 @@ jQuery(function ($) {
             return;
         }
 
+        let keteranganPasca = $('#keteranganPasca').val().trim();
+
+        if (keteranganPasca === '') {
+            alert('Alasan Tolak Barang wajib diisi.');
+            $('#keteranganPasca').focus();
+            return;
+        }
+
         let formData = new FormData();
 
         formData.append('id_surat_jalan', window.idSuratJalan);
         formData.append('mode', 'PASCA');
+        formData.append('keterangan_pasca', keteranganPasca);
 
         selectedFiles.forEach(file => {
             formData.append('pictures[]', file);
