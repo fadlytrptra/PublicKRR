@@ -910,7 +910,7 @@ class SuratJalanPesananController extends Controller
             'id_surat_jalan' => 'required|integer',
             'mode' => 'required|in:PASCA,ACC',
             'keterangan_pasca' => 'nullable|string|max:500',
-            'pictures' => 'nullable|array|min:1',
+            'pictures' => 'nullable|array',
             'pictures.*' => 'nullable|image|mimes:jpg,jpeg,png'
         ], [
             'pictures.required' => 'Silakan pilih foto terlebih dahulu',
@@ -1039,15 +1039,11 @@ class SuratJalanPesananController extends Controller
             }
 
             // ACC = replace foto lama
-            if ($request->mode === 'ACC') {
+            if ($request->mode === 'ACC' && $request->hasFile('pictures')) {
                 $pictures = [];
             }
 
             if ($request->hasFile('pictures')) {
-                if ($request->mode === 'ACC') {
-                    $pictures = [];
-                }
-
                 foreach ($request->file('pictures') as $file) {
                     $pictures[] = base64_encode(
                         file_get_contents($file->getRealPath())
@@ -1097,7 +1093,7 @@ class SuratJalanPesananController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Foto berhasil diupload',
+                'message' => 'Data berhasil di submit.',
                 'jumlah_foto' => count($pictures)
             ]);
 
