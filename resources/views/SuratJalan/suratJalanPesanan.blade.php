@@ -260,9 +260,8 @@
                 </div>
 
                 <div class="modal-body">
-
                     <small class="text-muted">
-                        Hanya dapat Upload maksimal 1 foto (5 MB).
+                        Upload maksimal 1 foto (5 MB). Upload bersifat opsional.
                     </small>
 
                     <div class="mt-3">
@@ -273,7 +272,9 @@
                         <button type="button" id="btnCameraFotoACC" class="btn btn-success">
                             Kamera
                         </button>
-                        <button class="btn btn-secondary" id="btn_clearPhotos_acc">Clear Photos</button>
+                        <button type="button" class="btn btn-secondary" id="btn_clearPhotos_acc">
+                            Clear Photos
+                        </button>
                     </div>
 
                     <input type="file" id="cameraInputACC" hidden accept="image/*" capture="environment">
@@ -288,14 +289,7 @@
                     </div>
 
                     <button id="btnUploadFotoACC" type="button" class="btn btn-primary w-100 mt-3">
-                        Upload Foto
-                    </button>
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary w-100 mt-2"
-                        data-bs-dismiss="modal">
-                        Lewati
+                        Submit
                     </button>
 
                 </div>

@@ -641,28 +641,30 @@ class SuratJalanPesananController extends Controller
         // =====
         // EMAIL
         // =====
-        try {
-            $emails = DB::connection('ConnPublic')
-                ->table('CustomerUserPublic as c')
-                ->join('UserPublic as u', 'c.IdUser', '=', 'u.IdUser')
-                ->where('c.IDCust', $data->IDCust)
-                ->whereNotNull('u.Email')
-                ->pluck('u.Email')
-                ->unique()
-                ->values()
-                ->toArray();
+        if ((int)$request->is_sesuai === 1) {
+            try {
+                $emails = DB::connection('ConnPublic')
+                    ->table('CustomerUserPublic as c')
+                    ->join('UserPublic as u', 'c.IdUser', '=', 'u.IdUser')
+                    ->where('c.IDCust', $data->IDCust)
+                    ->whereNotNull('u.Email')
+                    ->pluck('u.Email')
+                    ->unique()
+                    ->values()
+                    ->toArray();
 
-            if (!empty($emails)) {
-                $this->sendSuratJalanEmail(
-                    $data->IDPengiriman,
-                    $emails
-                );
+                if (!empty($emails)) {
+                    $this->sendSuratJalanEmail(
+                        $data->IDPengiriman,
+                        $emails
+                    );
+                }
+
+            } catch (\Exception $e) {
+                Log::error('EMAIL ERROR', [
+                    'message' => $e->getMessage()
+                ]);
             }
-
-        } catch (\Exception $e) {
-            Log::error('EMAIL ERROR', [
-                'message' => $e->getMessage()
-            ]);
         }
 
         return response()->json([
@@ -907,9 +909,9 @@ class SuratJalanPesananController extends Controller
         $request->validate([
             'id_surat_jalan' => 'required|integer',
             'mode' => 'required|in:PASCA,ACC',
-            'keterangan_pasca' => 'nullable|string|max:1000',
-            'pictures' => 'required|array|min:1',
-            'pictures.*' => 'required|image|mimes:jpg,jpeg,png'
+            'keterangan_pasca' => 'nullable|string|max:500',
+            'pictures' => 'nullable|array|min:1',
+            'pictures.*' => 'nullable|image|mimes:jpg,jpeg,png'
         ], [
             'pictures.required' => 'Silakan pilih foto terlebih dahulu',
             'pictures.min' => 'Silakan pilih minimal 1 foto'
@@ -949,12 +951,9 @@ class SuratJalanPesananController extends Controller
             // ==========================
             // VALIDASI KHUSUS ACC
             // ==========================
-            if ($request->mode === 'ACC') {
-
+            if ($request->mode === 'ACC' && $request->hasFile('pictures')) {
                 if (count($request->file('pictures')) > 1) {
-
                     DB::rollBack();
-
                     return response()->json([
                         'success' => false,
                         'message' => 'ACC hanya boleh upload 1 foto'
@@ -962,10 +961,9 @@ class SuratJalanPesananController extends Controller
                 }
 
                 $file = $request->file('pictures')[0];
+
                 if ($file->getSize() > (5 * 1024 * 1024)) {
-
                     DB::rollBack();
-
                     return response()->json([
                         'success' => false,
                         'message' => 'Ukuran foto maksimal 5 MB'
@@ -978,6 +976,14 @@ class SuratJalanPesananController extends Controller
             // ==========================
             if ($request->mode === 'PASCA') {
 
+
+                 if (!$request->hasFile('pictures') || count($request->file('pictures')) === 0) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Silakan pilih minimal 1 foto.'
+                    ], 422);
+                }
                 if (trim($request->keterangan_pasca) === '') {
                     DB::rollBack();
                     return response()->json([
@@ -1037,13 +1043,16 @@ class SuratJalanPesananController extends Controller
                 $pictures = [];
             }
 
-            foreach ($request->file('pictures') as $file) {
+            if ($request->hasFile('pictures')) {
+                if ($request->mode === 'ACC') {
+                    $pictures = [];
+                }
 
-                $pictures[] = base64_encode(
-                    file_get_contents(
-                        $file->getRealPath()
-                    )
-                );
+                foreach ($request->file('pictures') as $file) {
+                    $pictures[] = base64_encode(
+                        file_get_contents($file->getRealPath())
+                    );
+                }
             }
 
             if ($request->mode === 'PASCA') {
@@ -1064,6 +1073,25 @@ class SuratJalanPesananController extends Controller
                         JSON_UNESCAPED_SLASHES
                     )
                 ]);
+
+            if ($request->mode === 'PASCA') {
+                $emails = DB::connection('ConnPublic')
+                    ->table('CustomerUserPublic as c')
+                    ->join('UserPublic as u', 'c.IdUser', '=', 'u.IdUser')
+                    ->where('c.IDCust', $suratJalan->IDCust)
+                    ->whereNotNull('u.Email')
+                    ->pluck('u.Email')
+                    ->unique()
+                    ->values()
+                    ->toArray();
+
+                if (!empty($emails)) {
+                    $this->sendSuratJalanEmail(
+                        $suratJalan->IDPengiriman,
+                        $emails
+                    );
+                }
+            }
 
             DB::commit();
 

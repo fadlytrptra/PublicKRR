@@ -113,7 +113,7 @@ jQuery(function ($) {
             $('#labelApprovedAt').text('Approved At:');
 
             $('#approvedEmail').text(approvedBy);
-            $('#approvedAt').text(formatDateTime());
+            $('#approvedAt').text(formatDateTime(approvedAt));
 
             $('#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt')
                 .removeClass('text-danger')
@@ -773,11 +773,6 @@ jQuery(function ($) {
     // upload foto pasca
     $('#btnUploadFoto').click(function () {
 
-        if (selectedFiles.length === 0) {
-            alert('Pilih foto terlebih dahulu');
-            return;
-        }
-
         let keteranganPasca = $('#keteranganPasca').val().trim();
 
         if (keteranganPasca === '') {
@@ -785,6 +780,12 @@ jQuery(function ($) {
             $('#keteranganPasca').focus();
             return;
         }
+
+        if (selectedFiles.length === 0) {
+            alert('Pilih foto terlebih dahulu');
+            return;
+        }
+
 
         let formData = new FormData();
 
@@ -1171,34 +1172,21 @@ jQuery(function ($) {
     });
 
     $('#btnUploadFotoACC').click(function () {
-        if (selectedFilesACC.length === 0) {
-            $('#modalACC').modal('hide');
-            location.reload();
-            return;
-        }
-
         let formData = new FormData();
 
-        formData.append(
-            'id_surat_jalan',
-            window.idSuratJalan
-        );
+        formData.append('id_surat_jalan', window.idSuratJalan);
+        formData.append('mode', 'ACC');
 
-        formData.append(
-        'mode',
-        'ACC'
-    );
-
-        formData.append(
-            'pictures[]',
-            selectedFilesACC[0]
-        );
+        // Tambahkan foto hanya jika ada
+        if (selectedFilesACC.length > 0) {
+            formData.append('pictures[]', selectedFilesACC[0]);
+        }
 
         let $btn = $(this);
 
         $btn
             .prop('disabled', true)
-            .text('Uploading...');
+            .text('Submitting...');
 
         $.ajax({
             url: '/SuratJalan/upload-foto',
@@ -1220,7 +1208,7 @@ jQuery(function ($) {
 
                 alert(
                     xhr.responseJSON?.message ??
-                    'Upload gagal'
+                    'Submit gagal'
                 );
             },
 
@@ -1228,7 +1216,7 @@ jQuery(function ($) {
 
                 $btn
                     .prop('disabled', false)
-                    .text('Upload Foto');
+                    .text('Submit');
             }
         });
     });
