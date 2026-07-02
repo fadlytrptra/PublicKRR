@@ -239,7 +239,7 @@
                             id="btnUploadFoto"
                             type="button"
                             class="btn btn-primary w-100 mt-3">
-                            Upload Foto
+                            Submit
                         </button>
                     </div>
                 </div>
@@ -249,7 +249,7 @@
 
 
     <!-- MODAL ACC -->
-    <div class="modal fade" id="modalACC" tabindex="-1">
+    <div class="modal fade" id="modalACC" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
 

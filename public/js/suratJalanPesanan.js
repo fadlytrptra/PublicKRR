@@ -15,6 +15,7 @@ jQuery(function ($) {
     let cameraCanvas =document.getElementById('cameraCanvas');
     let btn_clearPhotos = document.getElementById("btn_clearPhotos");
     let btn_clearPhotos_acc = document.getElementById("btn_clearPhotos_acc");
+    let isRenderingPreview = false;
 
     if (!idPengiriman) {
         console.error("ID Pengiriman tidak ditemukan");
@@ -247,15 +248,44 @@ jQuery(function ($) {
     }
 
     function renderPreview() {
+        if (isRenderingPreview) return;
+
+        isRenderingPreview = true;
+
         $('#fotoPreview').empty();
 
+        $('#btn_clearPhotos').prop('disabled', true);
+        $('#btnCameraFoto').prop('disabled', true);
+        $('#fileFoto').prop('disabled', true);
+
+        $('.delete-btn').prop('disabled', true);
+
+        if (selectedFiles.length === 0) {
+
+            $('#jumlahFotoDipilih').text('0 foto dipilih');
+
+            isRenderingPreview = false;
+
+            $('#btn_clearPhotos').prop('disabled', false);
+            $('#btnCameraFoto').prop('disabled', false);
+            $('#fileFoto').prop('disabled', false);
+
+            return;
+        }
+
+        let completed = 0;
+
         selectedFiles.forEach((file, index) => {
+
             const reader = new FileReader();
 
-            reader.onload = function (e) {
+            reader.onload = function(e){
+
                 $('#fotoPreview').append(`
                     <div class="preview-item">
-                        <img src="${e.target.result}" class="preview-image"
+                        <img
+                            src="${e.target.result}"
+                            class="preview-image"
                             data-src="${e.target.result}">
                         <button
                             type="button"
@@ -265,14 +295,27 @@ jQuery(function ($) {
                         </button>
                     </div>
                 `);
+
+                completed++;
+
+                if (completed === selectedFiles.length) {
+
+                    isRenderingPreview = false;
+
+                    $('#btn_clearPhotos').prop('disabled', false);
+                    $('#btnCameraFoto').prop('disabled', false);
+                    $('#fileFoto').prop('disabled', false);
+
+                    $('#jumlahFotoDipilih').text(
+                        selectedFiles.length + ' foto dipilih'
+                    );
+                }
+
             };
 
             reader.readAsDataURL(file);
-        });
 
-        $('#jumlahFotoDipilih').text(
-            selectedFiles.length + ' foto dipilih'
-        );
+        });
     }
 
     function renderPreviewACC() {
@@ -829,7 +872,6 @@ jQuery(function ($) {
                 xhr.upload.addEventListener(
                     'progress',
                     function (e) {
-
                         if (!e.lengthComputable) {
                             return;
                         }
@@ -1130,6 +1172,8 @@ jQuery(function ($) {
     });
 
     $(document).on('click', '.delete-btn', function () {
+        if (isRenderingPreview) return;
+
         let index = $(this).data('index');
         selectedFiles.splice(index, 1);
         renderPreview();
@@ -1222,6 +1266,7 @@ jQuery(function ($) {
     });
 
     btn_clearPhotos.addEventListener("click", function () {
+        if (isRenderingPreview) return;
         selectedFiles = [];
         renderPreview();
     });

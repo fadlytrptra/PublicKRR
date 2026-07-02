@@ -135,7 +135,7 @@
                 {{ trim($items->satPrimer) }}
             </td>
             <td style="border: 1px solid black;padding:8px;white-space: nowrap;text-align: center;">
-                {{ number_format((float) $items->QtyTemp, 0, ',', '.') }} <br>
+                {{ number_format($items->QtyTemp) }} <br>
                 {{ number_format($qtyPrimerPasca, 0, ',', '.') }}
             </td>
         </tr>
