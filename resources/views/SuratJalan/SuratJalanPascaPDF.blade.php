@@ -80,6 +80,7 @@
         $satPrimer = strtoupper(trim($items->satPrimer ?? ''));
         $satSekunder = strtoupper(trim($items->satSekunder ?? ''));
         $satTritier = strtoupper(trim($items->satTritier ?? ''));
+
         $satuanUmum = $satJual;
         $jumlahUmum = 0;
 
@@ -91,8 +92,12 @@
             $jumlahUmum = $items->QtyTritier;
         }
 
-        $jumlahUmum = number_format($jumlahUmum ?? 0, 0, ',', '.');
+        $qtyPrimerPasca = $items->QtyPrimer;
 
+        if ($jumlahUmum > 0 && $items->QtyPrimer > 0) {
+            $rasio = $jumlahUmum / $items->QtyPrimer;
+            $qtyPrimerPasca = ceil($items->QtyTemp / $rasio);
+        }
     @endphp
 
     <table style="border: 1px solid black;width: 100%;border-collapse: collapse;margin-top: 10px;">
@@ -116,6 +121,8 @@
             </td>
         </tr>
     </table>
+
+    {{--Tabel Pasca--}}
     <table style="border: 1px solid black;width: 100%;border-collapse: collapse;margin-top: 10px;">
         <tr>
             <th style="border: 1px solid black;padding:8px; width:70%">Keterangan Pasca Kirim</th>
@@ -129,7 +136,7 @@
             </td>
             <td style="border: 1px solid black;padding:8px;white-space: nowrap;text-align: center;">
                 {{ number_format((float) $items->QtyTemp, 0, ',', '.') }} <br>
-                {{ number_format($items->QtyPrimer, 0, ',', '.') }}
+                {{ number_format($qtyPrimerPasca, 0, ',', '.') }}
             </td>
         </tr>
     </table>
