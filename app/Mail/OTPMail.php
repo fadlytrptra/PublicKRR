@@ -38,6 +38,7 @@ class OTPMail extends Mailable
         $subjects = [
             'Registrasi User' => 'OTP Registrasi Kerta Rajasa Raya',
             'Approval Surat Jalan' => 'OTP Product Receipt Kerta Rajasa Raya',
+            'Approval Pasca Kirim' => 'OTP Pasca Kirim Kerta Rajasa Raya',
         ];
 
         return new Envelope(

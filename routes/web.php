@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\SuratJalan\SuratJalanPesananController;
+use App\Http\Controllers\SuratJalan\PascaKirimController;
 use App\Http\Controllers\DokumenSJ\DokumenSJController;
 use App\Http\Controllers\SuratJalan\VerifyDokumenController;
 
@@ -31,6 +32,9 @@ Route::post('/refresh-csrf', function () {
     return response()->json([
         'success' => true
     ]);
+});
+Route::get('/heartbeat', function () {
+    return response()->json(['status' => 'ok']);
 });
 
 
@@ -65,6 +69,17 @@ Route::get('/SuratJalan/{id}', [SuratJalanPesananController::class, 'show'])
     ->where('id', '[A-Za-z0-9%]+')
     ->name('SuratJalan.show');
 
+// Pasca Kirim
+Route::get('/PascaKirim/{id}', [PascaKirimController::class, 'show'])
+    ->where('id', '[A-Za-z0-9%]+')
+    ->name('PascaKirim.show');
+
+Route::get('PascaKirim-data', [PascaKirimController::class, 'data'])->name('PascaKirim.data');
+Route::post('PascaKirim/send-otp', [PascaKirimController::class, 'sendOtp']);
+Route::post('PascaKirim/verify-otp', [PascaKirimController::class, 'verifyOtp']);
+Route::post('PascaKirim/confirm-approval', [PascaKirimController::class, 'confirmApproval']);
+Route::post('PascaKirim/resend-email', [PascaKirimController::class, 'resendEmail']);
+
 Route::get('SuratJalan-data', [SuratJalanPesananController::class, 'data'])->name('SuratJalan.data');
 Route::get('SuratJalan/get-contacts/{id_pengiriman}', [SuratJalanPesananController::class, 'getContacts']);
 Route::post('SuratJalan/send-otp', [SuratJalanPesananController::class, 'sendOtp']);
@@ -83,9 +98,6 @@ Route::middleware(['check.login'])->group(function () {
     Route::get('/home', function () {
         return view('home');
     })->name('home');
-    Route::get('/heartbeat', function () {
-        return response()->json(['status' => 'ok']);
-    });
 
     Route::resource('profile', UserController::class);
     Route::get('SuratJalan/list-data', [SuratJalanPesananController::class, 'listData'])->name('SuratJalan.listData');
