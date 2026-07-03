@@ -66,7 +66,8 @@ class PascaKirimController extends Controller
             ->where('otp.IsUsed', 1)
             ->select(
                 'otp.*',
-                'sj.ACCCustomer'
+                'sj.ACCCustomer',
+                'sj.ACCCustomerPasca'
             )
             ->orderByDesc('otp.CreatedAt')
             ->first();
@@ -373,6 +374,29 @@ class PascaKirimController extends Controller
                 ]);
             }
 
+            // ============
+            // GENERATE QR
+            // ============
+            $key = env('QR_SHARED_SECRET');
+
+            if (!$key || strlen($key) !== 32) {
+                throw new \Exception('QR key tidak valid');
+            }
+
+            $encrypter = new Encrypter($key, 'AES-256-CBC');
+
+            $encrypted = urlencode(
+                $encrypter->encryptString((string) $data->IDPengiriman)
+            );
+
+            // $link = url('/DokumenSJ/view/' . $encrypted);
+            $link = "https://mykrr.co.id/DokumenSJ/view/$encrypted";
+            $qrImage = QrCode::format('svg')
+                ->size(150)
+                ->generate($link);
+
+            $qrBase64 = base64_encode($qrImage);
+
             // ==============
             // UPDATE DATA
             // ==============
@@ -388,6 +412,7 @@ class PascaKirimController extends Controller
             if ($request->is_sesuai == 1) {
                 $update = [
                     'ACCCustomerPasca' => 1,
+                    'GbrACCCustomer' => $qrBase64
                 ];
             } else {
                 $update = [
@@ -463,6 +488,41 @@ class PascaKirimController extends Controller
                 'success' => false,
                 'message' => 'Data Surat Jalan tidak ditemukan'
             ], 404);
+        }
+
+        if (!$data->GbrACCCustomer) {
+            // ============
+            // GENERATE QR
+            // ============
+            $key = env('QR_SHARED_SECRET');
+
+            if (!$key || strlen($key) !== 32) {
+                throw new \Exception('QR key tidak valid');
+            }
+
+            $encrypter = new Encrypter($key, 'AES-256-CBC');
+
+            $encrypted = urlencode(
+                $encrypter->encryptString((string) $data->IDPengiriman)
+            );
+
+            // $link = url('/DokumenSJ/view/' . $encrypted);
+            $link = "https://mykrr.co.id/DokumenSJ/view/$encrypted";
+            $qrImage = QrCode::format('svg')
+                ->size(150)
+                ->generate($link);
+
+            $qrBase64 = base64_encode($qrImage);
+
+            DB::connection('ConnPublic')
+                ->table('T_KirimSuratJalan')
+                ->where('IdSuratJalan', $data->IdSuratJalan)
+                ->update(['GbrACCCustomer' => $qrBase64]);
+
+            $data = DB::connection('ConnPublic')
+                ->table('T_KirimSuratJalan')
+                ->where('IDPengiriman', $request->id_pengiriman)
+                ->first();
         }
 
         // hanya bisa resend setelah ACC

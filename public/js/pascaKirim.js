@@ -103,11 +103,11 @@ jQuery(function ($) {
         $("#approvalInfo").show();
 
         let approvedBy = otpData.Email ?? otpData.Phone ?? "-";
-        let accCustomer = Number(otpData.ACCCustomer);
+        let ACCCustomerPasca = Number(otpData.ACCCustomerPasca ?? 0);
         let createdAt = otpData.CreatedAt;
         let approvedAt = otpData.ApprovedAt;
 
-        if (accCustomer === 1) {
+        if (ACCCustomerPasca === 1) {
             // Approve (ACC)
             $("#rowStatus").hide();
 
@@ -115,7 +115,7 @@ jQuery(function ($) {
             $("#labelApprovedAt").text("Approved At:");
 
             $("#approvedEmail").text(approvedBy);
-            $("#approvedAt").text(formatDateTime());
+            $("#approvedAt").text(formatDateTime(approvedAt));
 
             $(
                 "#labelStatus, #statusApproval, #labelApprovedBy, #labelApprovedAt, #approvedEmail, #approvedAt",

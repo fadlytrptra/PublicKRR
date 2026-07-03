@@ -77,8 +77,10 @@
         $satPrimer = strtoupper(trim($items->satPrimer ?? ''));
         $satSekunder = strtoupper(trim($items->satSekunder ?? ''));
         $satTritier = strtoupper(trim($items->satTritier ?? ''));
-        $satuanUmum = $satJual;
-        $jumlahUmum = strtoupper(trim($items->QtyTempVerifikasi ?? ''));
+        $jumlahUmum = (float) trim($items->QtyTempVerifikasi ?? '');
+        $qtyPrimer = (float) trim($items->QtyPrimer ?? '');
+        $qtySekunder = (float) trim($items->QtySekunder ?? '');
+        $qtyTritier = (float) trim($items->QtyTritier ?? '');
 
         // if ($satJual == $satPrimer) {
         //     $jumlahUmum = $items->QtyPrimer;
@@ -87,6 +89,14 @@
         // } elseif ($satJual == $satTritier) {
         //     $jumlahUmum = $items->QtyTritier;
         // }
+
+        if ($satJual == $satSekunder) {
+            $perbandingSekunder = $qtySekunder / $qtyPrimer;
+            $qtyPrimer = ceil($jumlahUmum / $perbandingSekunder);
+        } elseif ($satJual == $satTritier) {
+            $perbandingTritier = $qtyTritier / $qtyPrimer;
+            $qtyPrimer = ceil($jumlahUmum / $perbandingTritier);
+        }
 
         $jumlahUmum = number_format($jumlahUmum ?? 0, 0, ',', '.');
     @endphp
@@ -102,10 +112,10 @@
                 <br>
                 {{ $items->No_PO }}
             </td>
-            <td style="border: 1px solid black;padding:8px">{{ trim($satuanUmum) }} <br> {{ trim($items->satPrimer) }}
+            <td style="border: 1px solid black;padding:8px">{{ trim($satJual) }} <br> {{ trim($items->satPrimer) }}
             </td>
             <td style="border: 1px solid black;padding:8px">{{ trim($jumlahUmum) }} <br>
-                {{ number_format($items->QtyPrimer, 0, ',', '.') }}
+                {{ number_format($qtyPrimer, 0, ',', '.') }}
             </td>
         </tr>
     </table>
