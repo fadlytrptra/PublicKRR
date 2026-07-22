@@ -439,6 +439,9 @@ class PascaKirimController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+        if ($request->is_sesuai == 0) {
+            return;
+        }
 
         // =====
         // EMAIL
