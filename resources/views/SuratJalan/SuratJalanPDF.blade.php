@@ -30,7 +30,7 @@
                 <h5 style="margin:0;">Kepada Yth.</h5>
                 <h5 style="margin:0;">{{ $items->NamaCust }}</h5>
                 <p style="margin:0;">{{ $items->AlamatCustomer }}<br>
-                                     {{ $items->KotaCustomer }}</p>
+                    {{ $items->KotaCustomer }}</p>
             </td>
 
             <!-- RIGHT SIDE -->
@@ -98,9 +98,14 @@
             <th style="border: 1px solid black;padding:8px">Jumlah</th>
         </tr>
         <tr>
-            <td style="border: 1px solid black;padding:8px">{{ $items->NamaKelompokUtama ?? '' }} <br> {{ $items->NamaType }}
+            <td style="border: 1px solid black;padding:8px">{{ $items->NamaKelompokUtama ?? '' }} <br>
+                {{ $items->NamaType }}
                 <br>
                 {{ $items->No_PO }}
+                @if (!empty($items->KetSKBDN))
+                    <br>
+                    {{ $items->KetSKBDN }}
+                @endif
             </td>
             <td style="border: 1px solid black;padding:8px">{{ trim($satuanUmum) }} <br> {{ trim($items->satPrimer) }}
             </td>
@@ -122,12 +127,12 @@
         <tr>
             <td style="width:55%; vertical-align:top; padding-left:10px;">
 
-                <table
-                    style="width:100%; border-bottom:1px solid black; border-collapse:collapse;">
+                <table style="width:100%; border-bottom:1px solid black; border-collapse:collapse;">
 
                     {{-- Header --}}
                     <tr>
-                        <td style="
+                        <td
+                            style="
                             width:30%;
                             text-align:center;
                             font-size:14px;
@@ -138,7 +143,8 @@
                             PENGIRIM
                         </td>
 
-                        <td style="
+                        <td
+                            style="
                             width:70%;
                             text-align:center;
                             font-size:14px;
@@ -151,7 +157,7 @@
                     </tr>
 
                     {{-- QR --}}
-                     <tr>
+                    <tr>
                         <td style="height:120px; text-align:center; vertical-align:bottom; padding-top:15px;">
                             @if ($barcodeGudang)
                                 <img src="{{ $ttCustomer }}" style="max-height:110px;">
@@ -166,9 +172,7 @@
 
                         <td style="vertical-align:middle; padding-right:30px; width:150px;">
                             <strong>Tanggal Terima:</strong><br>
-                            {{ \Carbon\Carbon::parse($otp->ApprovedAt)
-                                ->locale('id')
-                                ->translatedFormat('d F Y, H:i:s') }}
+                            {{ \Carbon\Carbon::parse($otp->ApprovedAt)->locale('id')->translatedFormat('d F Y, H:i:s') }}
                         </td>
                     </tr>
 
