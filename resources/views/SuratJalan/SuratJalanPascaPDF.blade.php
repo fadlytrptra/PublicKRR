@@ -111,8 +111,13 @@
                 {{ $items->NamaType }}
                 <br>
                 {{ $items->No_PO }}
+                @if (!empty($items->KetSKBDN))
+                    <br>
+                    {{ $items->KetSKBDN }}
+                @endif
             </td>
-            <td style="border: 1px solid black;padding:8px;white-space: nowrap;text-align: center;">{{ trim($satuanUmum) }} <br>
+            <td style="border: 1px solid black;padding:8px;white-space: nowrap;text-align: center;">
+                {{ trim($satuanUmum) }} <br>
                 {{ trim($items->satPrimer) }}
             </td>
             <td style="border: 1px solid black;padding:8px;white-space: nowrap;text-align: center;">
@@ -122,7 +127,7 @@
         </tr>
     </table>
 
-    {{--Tabel Pasca--}}
+    {{-- Tabel Pasca --}}
     <table style="border: 1px solid black;width: 100%;border-collapse: collapse;margin-top: 10px;">
         <tr>
             <th style="border: 1px solid black;padding:8px; width:70%">Keterangan Pasca Kirim</th>
@@ -131,7 +136,8 @@
         </tr>
         <tr>
             <td style="border: 1px solid black;padding:8px">{{ $items->KeteranganPasca ?? '-' }} <br></td>
-            <td style="border: 1px solid black;padding:8px;white-space: nowrap;text-align: center;">{{ trim($satuanUmum) }} <br>
+            <td style="border: 1px solid black;padding:8px;white-space: nowrap;text-align: center;">
+                {{ trim($satuanUmum) }} <br>
                 {{ trim($items->satPrimer) }}
             </td>
             <td style="border: 1px solid black;padding:8px;white-space: nowrap;text-align: center;">
@@ -197,9 +203,7 @@
 
                         <td style="vertical-align:middle; padding-right:30px; width:150px;">
                             <strong>Tanggal Terima:</strong><br>
-                            {{ \Carbon\Carbon::parse($otp->ApprovedAt)
-                                ->locale('id')
-                                ->translatedFormat('d F Y, H:i:s') }}
+                            {{ \Carbon\Carbon::parse($otp->ApprovedAt)->locale('id')->translatedFormat('d F Y, H:i:s') }}
                         </td>
                     </tr>
 
