@@ -17,7 +17,7 @@
         max-height: 80px;
     }
 </style>
-<div style="width: 16cm;height: 20.5cm;border: 1px solid black;padding: 10px;box-sizing: border-box;"
+<div style="min-width: 16cm;min-height: 20.5cm;border: 1px solid black;padding: 10px;box-sizing: border-box;"
     contenteditable="true">
     <h2>PT. KERTA RAJASA RAYA</h2>
     <h4>JL RAYA TROPODO No. 1 WARU - SIDOARJO - INDONESIA</h4>

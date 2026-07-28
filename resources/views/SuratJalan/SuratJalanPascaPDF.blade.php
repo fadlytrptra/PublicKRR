@@ -17,7 +17,7 @@
         max-height: 80px;
     }
 </style>
-<div style="width: 16cm;height: 24cm;border: 1px solid black;padding: 10px;box-sizing: border-box;"
+<div style="min-width: 16cm;min-height: 24cm;border: 1px solid black;padding: 10px;box-sizing: border-box;"
     contenteditable="true">
     <div style="position:absolute; top:250px; left:-20px; z-index:-1;">
         <img src="{{ public_path('images/unverified.png') }}" style="width:700px; opacity:0.20;">
