@@ -104,7 +104,7 @@
                 {{ $items->No_PO }}
                 @if (!empty($items->KetSKBDN))
                     <br>
-                    {{ $items->KetSKBDN }}
+                    <p style="font-size: small">{!! nl2br(e($items->KetSKBDN)) !!}</p>
                 @endif
             </td>
             <td style="border: 1px solid black;padding:8px">{{ trim($satuanUmum) }} <br> {{ trim($items->satPrimer) }}
@@ -115,8 +115,13 @@
         </tr>
     </table>
     <div style="width: 98%;border: 1px solid black;margin-top: 10px;padding: 0.85%;">
-        <h5>Alamat Kirim:</h5>
-        <p>{{ $items->AlamatKirimCustomer ?? $items->AlamatKirimDO }}</p>
+        @if (!empty($items->SyaratPenyerahanSKBDN))
+            <h5>Syarat Penyerahan:</h5>
+            <p style="font-size: small">{!! nl2br(e($items->SyaratPenyerahanSKBDN)) !!}</p>
+        @else
+            <h5>Alamat Kirim:</h5>
+            <p>{{ $items->AlamatKirimCustomer ?? $items->AlamatKirimDO }}</p>
+        @endif
     </div>
     <div style="width: 98%;border: 1px solid black;margin-top: 10px;padding: 0.85%;">
         <h5>Keterangan:</h5>
