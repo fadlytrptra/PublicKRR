@@ -125,92 +125,122 @@ class LoginController extends Controller
     public function register(Request $request)
     {
         $npwp = preg_replace('/[^0-9]/', '', $request->NPWP);
-        $nohp = preg_replace('/[^0-9]/', '', $request->NoHP);
+        $kodeNegara = preg_replace('/[^0-9]/', '', $request->kodeNegara);
+        $nomor = preg_replace('/[^0-9]/', '', $request->NoHP);
+
+        $nomor = ltrim($nomor, '0');
+        $nohp = $kodeNegara . $nomor;
 
         $request->merge([
             'NPWP' => $npwp,
             'NoHP' => $nohp,
         ]);
 
-        $validator = Validator::make($request->all(), [
-            'Email' => 'required|email|unique:ConnPublic.UserPublic,Email',
-            'NamaUser' => 'required',
-            'NamaPerusahaan' => 'required',
-            'AlamatPerusahaan' => 'required',
-            'NoHP' => ['required', 'regex:/^628[0-9]{8,13}$/'],
-            'otp_method' => 'required|in:email,sms',
-            'Password' => [
-                'required',
-                'min:8',
-                'regex:/[A-Z]/',
-                'regex:/[a-z]/',
-                'regex:/[^A-Za-z0-9]/'
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'Email' => ['required', 'email', 'unique:ConnPublic.UserPublic,Email'],
+                'NamaUser' => ['required'],
+                'NamaPerusahaan' => ['required'],
+                'AlamatPerusahaan' => ['required'],
+                'kodeNegara' => ['required', 'in:62,60,65,66,84,63,673,1,44,81,82,86,91,61'],
+                'NoHP' => ['required', 'regex:/^[0-9]{10,15}$/'],
+                'otp_method' => ['required', 'in:email,sms'],
+                'Password' => [
+                    'required',
+                    'min:8',
+                    'regex:/[A-Z]/',
+                    'regex:/[a-z]/',
+                    'regex:/[^A-Za-z0-9]/'
+                ]
+            ],
+            [
+                'Password.*' =>
+                    'Password harus minimal 8 karakter, mengandung huruf besar, huruf kecil, dan spesial karakter (Cth: !, @, #, $, %, &, *)',
+
+                'NoHP.regex' =>
+                    'Nomor HP harus menggunakan format internasional yang valid'
             ]
-        ], [
-            'Password.*' => 'Password harus minimal 8 karakter, mengandung huruf besar, huruf kecil, dan spesial karakter',
-            'NoHP.regex' => 'Nomor HP harus menggunakan format 628xxxxxxxxxx'
-        ]);
+        );
+
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return back()
+                ->withErrors($validator)
+                ->withInput();
         }
 
         $now = Carbon::now('Asia/Jakarta');
 
-        // cek OTP aktif berdasarkan email atau phone
         $existingOtp = DB::connection('ConnPublic')
             ->table('T_RegisterOTP')
             ->where('IsUsed', 0)
             ->where(function ($q) use ($request, $nohp) {
-                $q->where('Email', $request->Email)
-                    ->orWhere('Phone', $nohp);
+
+                $q->where(
+                    'Email',
+                    $request->Email
+                )
+                ->orWhere(
+                    'Phone',
+                    $nohp
+                );
+
             })
             ->orderByDesc('CreatedAt')
             ->first();
 
-        if ($existingOtp) {
 
+        if ($existingOtp) {
             $expiredAt = Carbon::parse(
                 $existingOtp->ExpiredAt,
                 'Asia/Jakarta'
             );
 
-            // masih dalam cooldown
             if ($now->lt($expiredAt)) {
-
-                $remainingSeconds = $now->diffInSeconds($expiredAt);
-                $remainingMinutes = ceil($remainingSeconds / 60);
-
-                return back()->withErrors([
-                    'error' =>
-                        "OTP sudah dikirim. Silakan tunggu 5 menit sebelum request ulang."
-                ])->withInput()->with('showOtp', true);
+                return back()
+                    ->withErrors([
+                        'error' =>
+                            'OTP sudah dikirim. Silakan tunggu 5 menit sebelum request ulang.'
+                    ])
+                    ->withInput()
+                    ->with('showOtp', true);
             }
         }
+        $otp = rand(
+            100000,
+            999999
+        );
 
-        $otp = rand(100000, 999999);
-
-        // invalidasi OTP lama email / phone
         DB::connection('ConnPublic')
             ->table('T_RegisterOTP')
             ->where('IsUsed', 0)
             ->where(function ($q) use ($request, $nohp) {
-                $q->where('Email', $request->Email)
-                    ->orWhere('Phone', $nohp);
+                $q->where(
+                    'Email',
+                    $request->Email
+                )
+                ->orWhere(
+                    'Phone',
+                    $nohp
+                );
+
             })
             ->update([
                 'IsUsed' => 1
             ]);
 
-        // INSERT KE DATABASE
-        DB::connection('ConnPublic')->table('T_RegisterOTP')->insert([
-            'Email' => $request->Email,
-            'OTP' => $otp,
-            'IsUsed' => 0,
-            'ExpiredAt' => $now->copy()->addMinutes(5),
-            'CreatedAt' => $now,
-            'Phone' => $nohp,
-        ]);
+        DB::connection('ConnPublic')
+            ->table('T_RegisterOTP')
+            ->insert([
+                'Email' => $request->Email,
+                'OTP' => $otp,
+                'IsUsed' => 0,
+                'ExpiredAt' => $now->copy()->addMinutes(5),
+                'CreatedAt' => $now,
+                'Phone' => $nohp,
+            ]);
+
 
         session([
             'register_data' => [
@@ -222,94 +252,151 @@ class LoginController extends Controller
                 'NPWP' => $npwp,
                 'Password' => Hash::make($request->Password),
             ],
+
             'register_otp' => $otp,
             'register_expired' => $now->copy()->addMinutes(5),
         ]);
+
 
         $message =
             "Kode OTP Verifikasi akun Anda: {$otp}\n\n" .
             "OTP berlaku selama 5 menit.";
 
 
-        // pilih metode kirim otp
+        // =========================================
+        // KIRIM OTP VIA EMAIL
+        // =========================================
         if ($request->otp_method === 'email') {
+
             Mail::mailer('MailNoReply')->raw(
                 "Kode OTP verifikasi akun Anda: $otp",
+
                 function ($message) use ($request) {
-                    $message->to($request->Email)
-                        ->from(
-                            env('MAILNOREPLY_FROM_ADDRESS'),
-                            env('MAILNOREPLY_FROM_NAME')
-                        )
-                        ->subject('OTP Verifikasi Akun');
+
+                    $message->to(
+                        $request->Email
+                    )
+                    ->from(
+                        env('MAILNOREPLY_FROM_ADDRESS'),
+                        env('MAILNOREPLY_FROM_NAME')
+                    )
+                    ->subject(
+                        'OTP Verifikasi Akun'
+                    );
                 }
             );
+
+
             Mail::mailer('MailNoReply')
                 ->to($request->Email)
-                ->send(new OTPMail($request->NamaUser, $otp, 'Registrasi User'));
-
-            $destination = $request->Email;
-            $method = 'Email';
-        }
-        // if ($request->otp_method === 'whatsapp') {
-        //     $response = Http::withHeaders([
-        //         'Authorization' => env('WA_TOKEN')
-        //     ])->post('https://api.fonnte.com/send', [
-        //         'target' => $nohp,
-        //         'message' => $message
-        //     ]);
-
-        //     if (!$response->successful()) {
-        //         \Log::error('Fonnte Error: ' . $response->body());
-
-        //         return back()->withErrors([
-        //             'error' => 'Gagal mengirim OTP WhatsApp'
-        //         ])->withInput();
-        //     }
-
-        //     $destination = $nohp;
-        //     $method = 'WhatsApp';
-
-        else {
-            $response = Http::withHeaders([
-                'Authorization' => 'App ' . env('SMSVIRO_API_KEY'),
-                'Content-Type' => 'application/json',
-            ])->post(
-                    'https://api.smsviro.com/restapi/sms/1/text/single',
-                    [
-                        'from' => env('SMSVIRO_SENDER_ID'),
-                        'to' => $nohp,
-                        'text' => $message
-                    ]
+                ->send(
+                    new OTPMail(
+                        $request->NamaUser,
+                        $otp,
+                        'Registrasi User'
+                    )
                 );
 
+
+            $destination =
+                $request->Email;
+
+            $method =
+                'Email';
+        }
+
+
+        // =========================================
+        // KIRIM OTP VIA SMS
+        // =========================================
+        else {
+
+            $response = Http::withHeaders([
+
+                'Authorization' =>
+                    'App ' . env('SMSVIRO_API_KEY'),
+
+                'Content-Type' =>
+                    'application/json',
+
+            ])->post(
+                'https://api.smsviro.com/restapi/sms/1/text/single',
+                [
+
+                    'from' =>
+                        env('SMSVIRO_SENDER_ID'),
+
+                    // NOMOR LENGKAP
+                    // CONTOH:
+                    // 6281234567890
+                    'to' =>
+                        $nohp,
+
+                    'text' =>
+                        $message
+                ]
+            );
+
+
             $dataResponse = $response->json();
-            $allowedStatus = ['PENDING', 'ACCEPTED', 'DELIVERED'];
+            $allowedStatus = [
+                'PENDING',
+                'ACCEPTED',
+                'DELIVERED'
+            ];
+
 
             if (
-                !$response->successful() ||
-                !isset($dataResponse['messages'][0]['status']['groupName']) ||
+                !$response->successful()
+                ||
+                !isset(
+                    $dataResponse['messages'][0]['status']['groupName']
+                )
+                ||
                 !in_array(
                     $dataResponse['messages'][0]['status']['groupName'],
                     $allowedStatus
                 )
             ) {
 
-                \Log::error($response->body());
+                \Log::error(
+                    $response->body()
+                );
 
-                return back()->withErrors([
-                    'error' => 'Gagal mengirim OTP SMS'
-                ])->withInput();
+
+                return back()
+                    ->withErrors([
+                        'error' =>
+                            'Gagal mengirim OTP SMS'
+                    ])
+                    ->withInput();
             }
 
-            $destination = $nohp;
-            $method = 'SMS';
+
+            $destination =
+                $nohp;
+
+            $method =
+                'SMS';
         }
 
+
+        // =========================================
+        // RETURN
+        // =========================================
         return back()
-            ->with('success', "OTP telah dikirim melalui {$method} ke {$destination}")
-            ->with('showOtp', true)
-            ->with('email', $request->Email)
+            ->with(
+                'success',
+                "OTP telah dikirim melalui {$method} ke {$destination}"
+            )
+            ->with(
+                'showOtp',
+                true
+            )
+            ->with(
+                'email',
+                $request->Email
+            )
             ->withInput();
     }
 

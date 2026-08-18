@@ -115,6 +115,40 @@
             height: 42px;
             object-fit: contain;
         }
+
+        .nohp-wrapper {
+            display: flex;
+            width: calc(90% + 16px);
+            max-width: 100%;
+            box-sizing: border-box;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+
+        .nohp-wrapper .kode-negara {
+            width: 150px;
+            min-width: 150px;
+            height: 31px;
+            padding: 4px 8px;
+            margin: 0;
+            box-sizing: border-box;
+            border: 1px solid #ced4da;
+            border-radius: 4px 0 0 4px;
+            background-color: white;
+        }
+
+        .nohp-wrapper #nohp {
+            flex: 1;
+            width: auto;
+            min-width: 0;
+            height: 31px;
+            padding: 6px 8px;
+            margin: 0;
+            box-sizing: border-box;
+            border: 1px solid #ced4da;
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+        }
     </style>
 </head>
 
@@ -179,13 +213,39 @@
             </div>
 
             <label for="NoHP">No HP</label>
-            <div>
-                <input type="text" name="NoHP" id="nohp" inputmode="numeric" maxlength="15"
-                    placeholder="Contoh: 6281234567890" required value="{{ old('NoHP', $data['NoHP'] ?? '') }}">
-                @error('NoHP')
-                    <div class="error">{{ $message }}</div>
-                @enderror
+
+            <div class="nohp-wrapper">
+                <select name="kodeNegara" id="kodeNegara" class="kode-negara">
+                    <option value="62" selected>Indonesia (62)</option>
+                    <option value="60">Malaysia (60)</option>
+                    <option value="65">Singapore (65)</option>
+                    <option value="66">Thailand (66)</option>
+                    <option value="84">Vietnam (84)</option>
+                    <option value="63">Philippines (63)</option>
+                    <option value="673">Brunei (673)</option>
+                    <option value="1">United States (1)</option>
+                    <option value="44">United Kingdom (44)</option>
+                    <option value="81">Japan (81)</option>
+                    <option value="82">South Korea (82)</option>
+                    <option value="86">China (86)</option>
+                    <option value="91">India (91)</option>
+                    <option value="61">Australia (61)</option>
+                </select>
+
+                <input
+                    type="text"
+                    name="NoHP"
+                    id="nohp"
+                    inputmode="numeric"
+                    maxlength="14"
+                    placeholder="81234567890"
+                    required
+                >
             </div>
+
+            @error('NoHP')
+                <div class="error">{{ $message }}</div>
+            @enderror
 
             <label for="NPWP">NPWP Perusahaan</label>
             <div>
@@ -344,54 +404,84 @@
             });
         }
 
+        // ========================================
+        // NO HP
+        // ========================================
         let nohpInput = document.getElementById('nohp');
 
         if (nohpInput) {
-            nohpInput.addEventListener('input', function(e) {
+            nohpInput.addEventListener('input', function (e) {
                 let value = e.target.value;
                 value = value.replace(/[^0-9]/g, '');
-
-                // max 15 digit
-                value = value.substring(0, 15);
+                value = value.replace(/^0+/, '');
+                value = value.substring(0, 14);
                 e.target.value = value;
             });
         }
 
-        let registerForm = document.querySelector('form[action="/register"]');
-        if (registerForm) {
 
+        // ========================================
+        // SET KODE NEGARA & NOMOR SAAT FORM LOAD
+        // ========================================
+        document.addEventListener('DOMContentLoaded', function () {
+            const kodeNegara = document.getElementById('kodeNegara');
+            const nohp = document.getElementById('nohp');
+
+            if (!kodeNegara || !nohp) {
+                return;
+            }
+
+            let nomor = nohp.value.replace(/[^0-9]/g, '');
+
+            if (nomor === '') {
+                return;
+            }
+
+            let kodeTerpilih = '';
+            Array.from(kodeNegara.options).forEach(function (option) {
+                const kode = option.value;
+
+                if (nomor.startsWith(kode) && kode.length > kodeTerpilih.length) {
+                    kodeTerpilih = kode;
+                }
+            });
+
+            if (kodeTerpilih !== '') {
+                kodeNegara.value = kodeTerpilih;
+                // Tampilkan hanya nomor setelah kode negara
+                nohp.value = nomor.substring(kodeTerpilih.length);
+            }
+        });
+
+        let registerForm = document.querySelector('form[action="/register"]');
+
+        if (registerForm) {
             registerForm.addEventListener(
                 'submit',
-                function(e) {
-
-                    let npwp =
-                        document.getElementById('npwp')
-                        ?.value || '';
-
-                    let nohp =
-                        document.getElementById('nohp')
-                        ?.value || '';
+                function (e) {
+                    let npwp = document.getElementById('npwp') ?.value || '';
+                    let nohp = document.getElementById('nohp') ?.value || '';
+                    let kodeNegara = document.getElementById('kodeNegara') ?.value || '';
 
                     if (npwp.length !== 16) {
+                        alert('NPWP harus 16 digit');
+                        e.preventDefault();
+                        return;
+                    }
 
-                        alert(
-                            'NPWP harus 16 digit'
-                        );
-
+                    if (!kodeNegara) {
+                        alert('Silakan pilih kode negara');
                         e.preventDefault();
                         return;
                     }
 
                     if (nohp.length < 10) {
-
-                        alert(
-                            'No HP tidak valid'
-                        );
-
+                        alert('No HP tidak valid');
                         e.preventDefault();
                         return;
                     }
-                });
+                }
+            );
         }
 
         button_backToLogin.addEventListener('click', function(e) {
