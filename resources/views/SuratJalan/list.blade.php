@@ -176,6 +176,7 @@ let table = $('#tableList').DataTable({
     },
 
     searching: false,
+    order: [],
     language: {
         lengthMenu: "_MENU_ baris per halaman"
     },
@@ -199,19 +200,39 @@ let table = $('#tableList').DataTable({
         },
         { data: 'NamaType' },
         {
-            data: 'IDPengiriman',
+            data: null,
             render: function (data) {
-                return `
-                    <button class="btn btn-primary btn-sm btn-detail" data-id="${data}">
+
+                let button = `
+                    <button class="btn btn-primary btn-sm btn-detail"
+                        data-id="${data.IDPengiriman}">
                         Lihat
                     </button>
-                    <a
-                        href="/SuratJalan/product-receipt/${data}"
-                        target="_blank"
-                        class="btn btn-warning btn-sm">
-                        Product Receipt
-                    </a>
                 `;
+
+                // Product Receipt hanya jika ACCCUSTOMER = NULL
+                if (Number(data.CanProductReceipt) === 1) {
+                    button += `
+                        <a
+                            href="/SuratJalan/product-receipt/${data.IDPengiriman}"
+                            target="_blank"
+                            class="btn btn-warning btn-sm">
+                            Product Receipt
+                        </a>
+                    `;
+                }
+                 else {
+
+                    button += `
+                        <button
+                            type="button"
+                            class="btn btn-danger btn-sm"
+                            disabled>
+                            Pending
+                        </button>
+                    `;
+                }
+                return button;
             }
         }
     ]

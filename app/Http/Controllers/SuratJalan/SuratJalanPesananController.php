@@ -243,20 +243,41 @@ class SuratJalanPesananController extends Controller
                 'sj.IDPengiriman',
                 'sj.No_PO',
                 DB::raw('CONVERT(date, MAX(sj.TglKirim)) as TglKirim'),
-                DB::raw('MIN(sj.NamaType) as NamaType')
+                DB::raw('MIN(sj.NamaType) as NamaType'),
+
+                DB::raw("
+                    CASE
+                        WHEN SUM(CASE
+                            WHEN sj.ACCCUSTOMER IS NULL
+                            THEN 1 ELSE 0
+                        END) > 0
+                        THEN 1
+                        ELSE 0
+                    END AS CanProductReceipt
+                ")
             )
             ->groupBy(
                 'sj.IDPengiriman',
                 'sj.No_PO'
             )
-
             ->havingRaw("
                 SUM(CASE
                     WHEN sj.ACCCUSTOMER IS NULL
-                    THEN 1 ELSE 0 END
-                ) > 0
+                        OR sj.ACCCUSTOMER = 0
+                    THEN 1 ELSE 0
+                END) > 0
             ")
-
+            ->orderByRaw('
+                CASE
+                    WHEN SUM(CASE
+                        WHEN sj.ACCCUSTOMER IS NULL
+                        THEN 1
+                        ELSE 0
+                    END) > 0
+                    THEN 1
+                    ELSE 0
+                END DESC
+            ')
             ->orderByDesc(DB::raw('MAX(sj.TglKirim)'))
             ->get();
 

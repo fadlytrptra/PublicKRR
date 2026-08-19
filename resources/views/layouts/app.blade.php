@@ -31,19 +31,56 @@
 <body>
     @if (!request()->is('/'))
         <nav class="navbar navbar-light bg-white shadow sticky-top px-4 py-3">
-            <div>
-                <a href="{{ url('/home') }}" class="text-decoration-none text-dark fw-bold">
+            <div class="d-flex align-items-center gap-4">
+
+                {{-- HOME --}}
+                <a href="{{ url('/home') }}"
+                    class="text-decoration-none text-dark fw-bold">
                     Home
                 </a>
+
+                {{-- PRODUCT RECEIPT --}}
+                <div class="dropdown">
+                    <a href="#"
+                        class="text-decoration-none text-dark fw-bold dropdown-toggle"
+                        role="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        Product Receipt
+                    </a>
+
+                    <ul class="dropdown-menu shadow-sm">
+                        <li>
+                            <a class="dropdown-item"
+                                href="{{ route('SuratJalan.index') }}">
+                                List Surat Jalan Belum Verifikasi
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                                href="{{ route('DokumenSJ.index') }}">
+                                List Surat Jalan Sudah Verifikasi
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
             </div>
 
+            {{-- USER --}}
             <div class="ms-auto d-flex align-items-center gap-2">
                 @if (session('user'))
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#profileModal"
+                    <a href="#"
+                        data-bs-toggle="modal"
+                        data-bs-target="#profileModal"
                         class="d-flex align-items-center gap-1 text-decoration-none text-dark">
 
                         <!-- ICON -->
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            fill="currentColor"
                             viewBox="0 0 24 24">
                             <path
                                 d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5m0-8c1.65 0 3 1.35 3 3s-1.35 3-3 3-3-1.35-3-3 1.35-3 3-3M4 22h16c.55 0 1-.45 1-1v-1c0-3.86-3.14-7-7-7h-4c-3.86 0-7 3.14-7 7v1c0 .55.45 1 1 1m6-7h4c2.76 0 5 2.24 5 5H5c0-2.76 2.24-5 5-5">
@@ -54,11 +91,15 @@
                         <span>{{ session('user')->NamaUser }}</span>
                     </a>
 
-                    |
+                    <span>|</span>
 
-                    <form action="{{ url('/logout') }}" method="POST" class="m-0">
+                    <form action="{{ url('/logout') }}"
+                        method="POST"
+                        class="m-0">
                         @csrf
-                        <button type="submit" class="no-border nav_font">
+
+                        <button type="submit"
+                            class="no-border nav_font">
                             Logout
                         </button>
                     </form>

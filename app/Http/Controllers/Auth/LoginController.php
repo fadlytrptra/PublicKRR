@@ -557,7 +557,7 @@ class LoginController extends Controller
                 'regex:/[^A-Za-z0-9]/'
             ]
         ], [
-            'password.*' => 'Password harus minimal 8 karakter, mengandung huruf besar, huruf kecil, dan spesial karakter'
+            'password.*' => 'Password harus minimal 8 karakter, mengandung huruf besar, huruf kecil, dan spesial karakter (Cth: !, @, #, $, %, &, *)'
         ]);
 
         $email = $request->email;
