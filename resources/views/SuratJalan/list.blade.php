@@ -207,7 +207,7 @@ let table = $('#tableList').DataTable({
                 // ACCCUSTOMER = NULL
                 if (Number(data.CanProductReceipt) === 1) {
                     return `
-                        <span class="badge bg-primary text-white">
+                        <span class="badge bg-warning text-dark">
                             Belum Diterima
                         </span>
                     `;
