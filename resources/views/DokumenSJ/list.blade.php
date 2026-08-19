@@ -16,7 +16,7 @@
                         <input type="text"
                                name="search"
                                class="form-control"
-                               placeholder="No Surat Jalan / Nama Perusahaan"
+                               placeholder="No Surat Jalan / No PO / Nama Barang"
                                value="{{ request('search') }}">
                     </div>
 
@@ -38,7 +38,6 @@
 
                    <div class="col-md-2 d-flex align-items-end">
                         <div class="d-flex w-100 gap-2">
-
                             <button type="submit" class="btn btn-success flex-fill">
                                 Cari
                             </button>
@@ -47,7 +46,6 @@
                             class="btn btn-warning flex-fill d-flex align-items-center justify-content-center text-nowrap">
                                 Muat Ulang
                             </a>
-
                         </div>
                     </div>
                 </div>
@@ -93,5 +91,63 @@
         </tbody>
     </table>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const searchInput = document.querySelector('input[name="search"]');
+    const form = searchInput.closest('form');
+
+    let searchTimer;
+
+    searchInput.addEventListener('input', function () {
+
+        clearTimeout(searchTimer);
+
+        searchTimer = setTimeout(function () {
+
+            // Jangan submit kalau input sedang kosong
+            if (searchInput.value.trim() === '') {
+                form.submit();
+                return;
+            }
+
+            // Simpan posisi cursor
+            const cursorPosition = searchInput.value.length;
+
+            form.submit();
+
+            // Setelah halaman reload, fokus dikembalikan
+            sessionStorage.setItem('dokumenSJSearchFocus', '1');
+            sessionStorage.setItem(
+                'dokumenSJSearchCursor',
+                cursorPosition
+            );
+
+        }, 500);
+    });
+
+
+    // Setelah halaman selesai reload
+    if (sessionStorage.getItem('dokumenSJSearchFocus') === '1') {
+
+        sessionStorage.removeItem('dokumenSJSearchFocus');
+
+        searchInput.focus();
+
+        const cursorPosition = parseInt(
+            sessionStorage.getItem('dokumenSJSearchCursor') || searchInput.value.length
+        );
+
+        searchInput.setSelectionRange(
+            cursorPosition,
+            cursorPosition
+        );
+
+        sessionStorage.removeItem('dokumenSJSearchCursor');
+    }
+
+});
+</script>
 
 @endsection

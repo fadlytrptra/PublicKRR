@@ -64,6 +64,7 @@
                         <th>Nomor PO</th>
                         <th>Tanggal Kirim</th>
                         <th>Nama Barang</th>
+                        <th>Status</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -195,10 +196,31 @@ let table = $('#tableList').DataTable({
                 let month = String(date.getMonth() + 1).padStart(2, '0');
                 let year = date.getFullYear();
 
-                return `${day}-${month}-${year}`;
+                return `${month}-${day}-${year}`;
             }
         },
         { data: 'NamaType' },
+        {
+            data: null,
+            render: function (data) {
+
+                // ACCCUSTOMER = NULL
+                if (Number(data.CanProductReceipt) === 1) {
+                    return `
+                        <span class="badge bg-primary text-white">
+                            Belum Diterima
+                        </span>
+                    `;
+                }
+
+                // ACCCUSTOMER = False / 0
+                return `
+                    <span class="badge bg-danger">
+                        Pending
+                    </span>
+                `;
+            }
+        },
         {
             data: null,
             render: function (data) {
@@ -221,40 +243,45 @@ let table = $('#tableList').DataTable({
                         </a>
                     `;
                 }
-                 else {
-
-                    button += `
-                        <button
-                            type="button"
-                            class="btn btn-danger btn-sm"
-                            disabled>
-                            Pending
-                        </button>
-                    `;
-                }
                 return button;
             }
         }
     ]
 });
 
+// ===============================
+// FILTER
+// ===============================
+
+let searchTimer;
+
+// Tombol Cari
 $('#btnFilter').on('click', function () {
-    table.ajax.reload();
+    table.ajax.reload(null, false);
 });
 
-$('#searchText').on('keypress', function(e){
-    if(e.which === 13){
-        table.ajax.reload();
-    }
+
+// Auto Search
+$('#searchText').on('input', function () {
+
+    clearTimeout(searchTimer);
+
+    searchTimer = setTimeout(function () {
+
+        table.ajax.reload(null, false);
+
+    }, 500);
 });
 
+
+// Muat Ulang
 $('#btnReset').on('click', function () {
 
     $('#searchText').val('');
     $('#dateFrom').val('');
     $('#dateTo').val('');
 
-    table.ajax.reload();
+    table.ajax.reload(null, false);
 });
 
 // detail
